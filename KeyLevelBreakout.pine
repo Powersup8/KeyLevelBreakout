@@ -82,9 +82,10 @@ _sigT     = time(i_signalTF)
 _sigChg   = ta.change(_sigT)
 newSigBar = not na(_sigChg) and _sigChg != 0
 
-// When chart TF matches signal TF, offset shapes back by 1
-// so the marker sits on the breakout candle itself
-shapeOff = timeframe.period == i_signalTF ? -1 : 0
+// Offset shapes back by 1 so the marker sits on the candle where
+// the signal-TF bar closed (breakout candle on 5m, last 1m of the
+// 5m period on a 1m chart)
+shapeOff = -1
 
 // ─── Breakout Helpers ─────────────────────────────────────
 bullBreak(float level) =>
