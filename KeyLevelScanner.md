@@ -4,7 +4,7 @@ Monitors up to 8 tickers from a single chart. One alert covers all symbols and l
 
 ## Features
 
-- **8 symbol slots** with individual enable toggles (defaults: AAPL, MSFT, GOOGL, AMZN on; META, NVDA, TSLA, SPY off)
+- **8 symbol slots** with individual enable toggles (defaults: SPY, QQQ, TSLA, TSM, AMD, NVDA on; GOOGL, AAPL off)
 - **Status table** in top-right corner — shows each symbol's last signal, highlighted green (bull) or red (bear)
 - **Single alert setup** — one `alert()` covers all symbols; messages include the ticker name
 - **All 4 level types** tracked per symbol (Premarket, Yesterday, Last Week, ORB)
@@ -34,9 +34,9 @@ Monitors up to 8 tickers from a single chart. One alert covers all symbols and l
 ## Alert Messages
 
 Messages include the ticker and direction:
-- `AAPL ▲ PM High`
-- `MSFT ▼ Yest Low`
-- `GOOGL ▲ Week High`
+- `SPY ▲ PM High`
+- `TSLA ▼ Yest Low`
+- `NVDA ▲ Week High`
 
 ## Status Table
 
@@ -44,9 +44,9 @@ The top-right table updates on each bar:
 
 | Symbol | Signal |
 |--------|--------|
-| AAPL   | ▲ PM H |
-| MSFT   | —      |
-| GOOGL  | ▼ Yest L |
-| AMZN   | —      |
+| SPY    | ▲ PM H |
+| QQQ    | —      |
+| TSLA   | ▼ Yest L |
+| TSM    | —      |
 
 Cells turn green for bullish signals, red for bearish, gray for no signal. Resets at each regular session open.
