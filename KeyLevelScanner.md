@@ -54,3 +54,8 @@ Cells turn green for bullish signals, red for bearish, gray for no signal. Reset
 ## Updating
 
 Edit the script in Pine Editor and click **Save** — all charts using the indicator update automatically. Don't click "Add to chart" again (that creates a duplicate).
+
+## Changelog
+
+- **v1.1** — Updated default watchlist: SPY, QQQ, TSLA, TSM, AMD, NVDA on; GOOGL, AAPL off
+- **v1.0** — Initial release: 8-symbol scanner, status table, unified `alert()` setup, all 4 level types per symbol

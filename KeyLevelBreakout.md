@@ -51,3 +51,9 @@ When using `Any alert() function call`, messages look like:
 ## Updating
 
 Edit the script in Pine Editor and click **Save** — all charts using the indicator update automatically. Don't click "Add to chart" again (that creates a duplicate).
+
+## Changelog
+
+- **v1.2** — Signal Timeframe input: view 1m charts while only triggering on 5m closes; marker placed on last candle of signal-TF period
+- **v1.1** — Added `alert()` calls for single-alert setup (one alert covers all levels)
+- **v1.0** — Initial release: 4 level types, toggleable pairs, first-cross-only, visual markers, 11 alert conditions
