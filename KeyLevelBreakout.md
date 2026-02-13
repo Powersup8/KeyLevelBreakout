@@ -12,7 +12,7 @@ Visual indicator that plots breakout arrows directly on your chart when price cl
 
 ## Setup
 
-1. Open TradingView Pine Editor, paste `KeyLevelBreakout.pine`, click **Add to chart** on a 5-min US stock chart
+1. Open TradingView Pine Editor, paste `KeyLevelBreakout.pine`, click **Add to chart** (works on any timeframe ≤ the Signal Timeframe — e.g. 1m chart with 5m signals)
 2. Enable **Extended Trading Hours** in chart settings (required for premarket levels)
 3. Set up alerts:
    - **Quick (recommended)**: Add one alert → Condition: `Key Level Breakout` → `Any alert() function call` — covers all levels, one toggle to switch on/off
@@ -28,6 +28,7 @@ Visual indicator that plots breakout arrows directly on your chart when price cl
 | Last Week High/Low | On | Track and alert on previous week levels |
 | ORB High/Low | On | Track and alert on opening range levels |
 | First Cross Only | On | One signal per level per day |
+| Signal Timeframe | 5 (5m) | Timeframe for breakout evaluation — signals only fire on closed bars of this TF |
 | Show Level Lines | Off | Plot horizontal lines for active levels |
 
 ## Alert Messages

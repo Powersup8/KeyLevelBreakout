@@ -10,6 +10,7 @@ i_showYest  = input.bool(true,  "Yesterday High/Low",         group="Level Toggl
 i_showWeek  = input.bool(true,  "Last Week High/Low",         group="Level Toggles")
 i_showORB   = input.bool(true,  "ORB High/Low",               group="Level Toggles")
 i_firstOnly = input.bool(true,  "First Cross Only (per day)", group="Signals")
+i_signalTF  = input.timeframe("5", "Signal Timeframe",        group="Signals")
 i_showLines = input.bool(false, "Show Level Lines",           group="Visuals")
 
 // ─── Session Detection (US Eastern) ───────────────────────
@@ -71,12 +72,26 @@ if newRegular
     xOH  := false
     xOL  := false
 
+// ─── Signal Timeframe Data (confirmed bar only) ──────────
+// Previous completed signal-TF bar's OHLC — non-repainting
+[sigC, sigO, sigPC] = request.security(syminfo.tickerid, i_signalTF,
+     [close[1], open[1], close[2]], lookahead = barmerge.lookahead_on)
+
+// Detect when a new signal-TF bar starts (previous one just closed)
+_sigT     = time(i_signalTF)
+_sigChg   = ta.change(_sigT)
+newSigBar = not na(_sigChg) and _sigChg != 0
+
+// When chart TF matches signal TF, offset shapes back by 1
+// so the marker sits on the breakout candle itself
+shapeOff = timeframe.period == i_signalTF ? -1 : 0
+
 // ─── Breakout Helpers ─────────────────────────────────────
 bullBreak(float level) =>
-    not na(level) and isRegular and close > open and close > level and close[1] <= level
+    not na(level) and isRegular and newSigBar and sigC > sigO and sigC > level and sigPC <= level
 
 bearBreak(float level) =>
-    not na(level) and isRegular and close < open and close < level and close[1] >= level
+    not na(level) and isRegular and newSigBar and sigC < sigO and sigC < level and sigPC >= level
 
 // ─── Raw Signals ──────────────────────────────────────────
 rBullPMH = i_showPM   and bullBreak(pmHigh)
@@ -122,14 +137,14 @@ anyBear     = sigBearPML or sigBearYL or sigBearWL or sigBearOL
 anyBreakout = anyBull or anyBear
 
 // ─── Plot Shapes ──────────────────────────────────────────
-plotshape(sigBullPMH, "Bull PM High",   shape.triangleup,   location.belowbar, color.green, size=size.small, text="PM H",   textcolor=color.green)
-plotshape(sigBearPML, "Bear PM Low",    shape.triangledown, location.abovebar, color.red,   size=size.small, text="PM L",   textcolor=color.red)
-plotshape(sigBullYH,  "Bull Yest High", shape.triangleup,   location.belowbar, color.green, size=size.small, text="Yest H", textcolor=color.green)
-plotshape(sigBearYL,  "Bear Yest Low",  shape.triangledown, location.abovebar, color.red,   size=size.small, text="Yest L", textcolor=color.red)
-plotshape(sigBullWH,  "Bull Week High", shape.triangleup,   location.belowbar, color.green, size=size.small, text="Week H", textcolor=color.green)
-plotshape(sigBearWL,  "Bear Week Low",  shape.triangledown, location.abovebar, color.red,   size=size.small, text="Week L", textcolor=color.red)
-plotshape(sigBullOH,  "Bull ORB High",  shape.triangleup,   location.belowbar, color.green, size=size.small, text="ORB H",  textcolor=color.green)
-plotshape(sigBearOL,  "Bear ORB Low",   shape.triangledown, location.abovebar, color.red,   size=size.small, text="ORB L",  textcolor=color.red)
+plotshape(sigBullPMH, "Bull PM High",   shape.triangleup,   location.belowbar, color.green, offset=shapeOff, size=size.small, text="PM H",   textcolor=color.green)
+plotshape(sigBearPML, "Bear PM Low",    shape.triangledown, location.abovebar, color.red,   offset=shapeOff, size=size.small, text="PM L",   textcolor=color.red)
+plotshape(sigBullYH,  "Bull Yest High", shape.triangleup,   location.belowbar, color.green, offset=shapeOff, size=size.small, text="Yest H", textcolor=color.green)
+plotshape(sigBearYL,  "Bear Yest Low",  shape.triangledown, location.abovebar, color.red,   offset=shapeOff, size=size.small, text="Yest L", textcolor=color.red)
+plotshape(sigBullWH,  "Bull Week High", shape.triangleup,   location.belowbar, color.green, offset=shapeOff, size=size.small, text="Week H", textcolor=color.green)
+plotshape(sigBearWL,  "Bear Week Low",  shape.triangledown, location.abovebar, color.red,   offset=shapeOff, size=size.small, text="Week L", textcolor=color.red)
+plotshape(sigBullOH,  "Bull ORB High",  shape.triangleup,   location.belowbar, color.green, offset=shapeOff, size=size.small, text="ORB H",  textcolor=color.green)
+plotshape(sigBearOL,  "Bear ORB Low",   shape.triangledown, location.abovebar, color.red,   offset=shapeOff, size=size.small, text="ORB L",  textcolor=color.red)
 
 // ─── Level Lines (optional, off by default) ───────────────
 plot(i_showLines and i_showPM   and isRegular ? pmHigh   : na, "PM High",   color.new(color.orange, 40), 1, plot.style_linebr)
