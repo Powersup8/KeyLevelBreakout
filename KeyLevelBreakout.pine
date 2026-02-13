@@ -1,0 +1,155 @@
+// © Key Level Breakout Alert Indicator
+// Detects bullish/bearish 5m candle closes through key levels
+// Designed for US stocks (NYSE/NASDAQ) on 5-min charts
+//@version=6
+indicator("Key Level Breakout", overlay=true, max_labels_count=500)
+
+// ─── Inputs ────────────────────────────────────────────────
+i_showPM    = input.bool(true,  "Premarket High/Low",         group="Level Toggles")
+i_showYest  = input.bool(true,  "Yesterday High/Low",         group="Level Toggles")
+i_showWeek  = input.bool(true,  "Last Week High/Low",         group="Level Toggles")
+i_showORB   = input.bool(true,  "ORB High/Low",               group="Level Toggles")
+i_firstOnly = input.bool(true,  "First Cross Only (per day)", group="Signals")
+i_showLines = input.bool(false, "Show Level Lines",           group="Visuals")
+
+// ─── Session Detection (US Eastern) ───────────────────────
+TZ           = "America/New_York"
+isPremarket  = not na(time(timeframe.period, "0400-0930:23456", TZ))
+isRegular    = not na(time(timeframe.period, "0930-1600:23456", TZ))
+isORBwin     = not na(time(timeframe.period, "0930-0935:23456", TZ))
+newPremarket = isPremarket and not isPremarket[1]
+newRegular   = isRegular   and not isRegular[1]
+
+// ─── Level Calculation ────────────────────────────────────
+
+// Premarket High/Low — track during premarket, freeze at 9:30
+var float pmHigh = na
+var float pmLow  = na
+if newPremarket
+    pmHigh := high
+    pmLow  := low
+else if isPremarket
+    pmHigh := math.max(pmHigh, high)
+    pmLow  := math.min(pmLow, low)
+
+// Yesterday High/Low (non-repainting)
+yestHigh = request.security(syminfo.tickerid, "D", high[1], lookahead = barmerge.lookahead_on)
+yestLow  = request.security(syminfo.tickerid, "D", low[1],  lookahead = barmerge.lookahead_on)
+
+// Last Week High/Low (non-repainting)
+weekHigh = request.security(syminfo.tickerid, "W", high[1], lookahead = barmerge.lookahead_on)
+weekLow  = request.security(syminfo.tickerid, "W", low[1],  lookahead = barmerge.lookahead_on)
+
+// ORB High/Low — first 5-min bar(s) of regular session
+var float orbHigh = na
+var float orbLow  = na
+if isORBwin
+    if not isORBwin[1]
+        orbHigh := high
+        orbLow  := low
+    else
+        orbHigh := math.max(orbHigh, high)
+        orbLow  := math.min(orbLow, low)
+
+// ─── First-Cross Flags (reset each regular session) ──────
+var bool xPMH = false
+var bool xPML = false
+var bool xYH  = false
+var bool xYL  = false
+var bool xWH  = false
+var bool xWL  = false
+var bool xOH  = false
+var bool xOL  = false
+
+if newRegular
+    xPMH := false
+    xPML := false
+    xYH  := false
+    xYL  := false
+    xWH  := false
+    xWL  := false
+    xOH  := false
+    xOL  := false
+
+// ─── Breakout Helpers ─────────────────────────────────────
+bullBreak(float level) =>
+    not na(level) and isRegular and close > open and close > level and close[1] <= level
+
+bearBreak(float level) =>
+    not na(level) and isRegular and close < open and close < level and close[1] >= level
+
+// ─── Raw Signals ──────────────────────────────────────────
+rBullPMH = i_showPM   and bullBreak(pmHigh)
+rBearPML = i_showPM   and bearBreak(pmLow)
+rBullYH  = i_showYest  and bullBreak(yestHigh)
+rBearYL  = i_showYest  and bearBreak(yestLow)
+rBullWH  = i_showWeek  and bullBreak(weekHigh)
+rBearWL  = i_showWeek  and bearBreak(weekLow)
+rBullOH  = i_showORB   and not isORBwin and bullBreak(orbHigh)
+rBearOL  = i_showORB   and not isORBwin and bearBreak(orbLow)
+
+// ─── Filtered Signals (first-cross-only when enabled) ────
+sigBullPMH = rBullPMH and (not i_firstOnly or not xPMH)
+sigBearPML = rBearPML and (not i_firstOnly or not xPML)
+sigBullYH  = rBullYH  and (not i_firstOnly or not xYH)
+sigBearYL  = rBearYL  and (not i_firstOnly or not xYL)
+sigBullWH  = rBullWH  and (not i_firstOnly or not xWH)
+sigBearWL  = rBearWL  and (not i_firstOnly or not xWL)
+sigBullOH  = rBullOH  and (not i_firstOnly or not xOH)
+sigBearOL  = rBearOL  and (not i_firstOnly or not xOL)
+
+// Update flags after signal evaluation
+if rBullPMH
+    xPMH := true
+if rBearPML
+    xPML := true
+if rBullYH
+    xYH := true
+if rBearYL
+    xYL := true
+if rBullWH
+    xWH := true
+if rBearWL
+    xWL := true
+if rBullOH
+    xOH := true
+if rBearOL
+    xOL := true
+
+// ─── Combined Signals ────────────────────────────────────
+anyBull     = sigBullPMH or sigBullYH or sigBullWH or sigBullOH
+anyBear     = sigBearPML or sigBearYL or sigBearWL or sigBearOL
+anyBreakout = anyBull or anyBear
+
+// ─── Plot Shapes ──────────────────────────────────────────
+plotshape(sigBullPMH, "Bull PM High",   shape.triangleup,   location.belowbar, color.green, size=size.small, text="PM H",   textcolor=color.green)
+plotshape(sigBearPML, "Bear PM Low",    shape.triangledown, location.abovebar, color.red,   size=size.small, text="PM L",   textcolor=color.red)
+plotshape(sigBullYH,  "Bull Yest High", shape.triangleup,   location.belowbar, color.green, size=size.small, text="Yest H", textcolor=color.green)
+plotshape(sigBearYL,  "Bear Yest Low",  shape.triangledown, location.abovebar, color.red,   size=size.small, text="Yest L", textcolor=color.red)
+plotshape(sigBullWH,  "Bull Week High", shape.triangleup,   location.belowbar, color.green, size=size.small, text="Week H", textcolor=color.green)
+plotshape(sigBearWL,  "Bear Week Low",  shape.triangledown, location.abovebar, color.red,   size=size.small, text="Week L", textcolor=color.red)
+plotshape(sigBullOH,  "Bull ORB High",  shape.triangleup,   location.belowbar, color.green, size=size.small, text="ORB H",  textcolor=color.green)
+plotshape(sigBearOL,  "Bear ORB Low",   shape.triangledown, location.abovebar, color.red,   size=size.small, text="ORB L",  textcolor=color.red)
+
+// ─── Level Lines (optional, off by default) ───────────────
+plot(i_showLines and i_showPM   and isRegular ? pmHigh   : na, "PM High",   color.new(color.orange, 40), 1, plot.style_linebr)
+plot(i_showLines and i_showPM   and isRegular ? pmLow    : na, "PM Low",    color.new(color.orange, 40), 1, plot.style_linebr)
+plot(i_showLines and i_showYest and isRegular ? yestHigh : na, "Yest High", color.new(color.blue, 40),   1, plot.style_linebr)
+plot(i_showLines and i_showYest and isRegular ? yestLow  : na, "Yest Low",  color.new(color.blue, 40),   1, plot.style_linebr)
+plot(i_showLines and i_showWeek and isRegular ? weekHigh : na, "Week High", color.new(color.purple, 40), 1, plot.style_linebr)
+plot(i_showLines and i_showWeek and isRegular ? weekLow  : na, "Week Low",  color.new(color.purple, 40), 1, plot.style_linebr)
+plot(i_showLines and i_showORB  and isRegular ? orbHigh  : na, "ORB High",  color.new(color.teal, 40),   1, plot.style_linebr)
+plot(i_showLines and i_showORB  and isRegular ? orbLow   : na, "ORB Low",   color.new(color.teal, 40),   1, plot.style_linebr)
+
+// ─── Alert Conditions ─────────────────────────────────────
+alertcondition(sigBullPMH,  "Bullish PM High Breakout",   "Bullish breakout above Premarket High")
+alertcondition(sigBearPML,  "Bearish PM Low Breakout",    "Bearish breakout below Premarket Low")
+alertcondition(sigBullYH,   "Bullish Yest High Breakout", "Bullish breakout above Yesterday High")
+alertcondition(sigBearYL,   "Bearish Yest Low Breakout",  "Bearish breakout below Yesterday Low")
+alertcondition(sigBullWH,   "Bullish Week High Breakout", "Bullish breakout above Last Week High")
+alertcondition(sigBearWL,   "Bearish Week Low Breakout",  "Bearish breakout below Last Week Low")
+alertcondition(sigBullOH,   "Bullish ORB High Breakout",  "Bullish breakout above ORB High")
+alertcondition(sigBearOL,   "Bearish ORB Low Breakout",   "Bearish breakout below ORB Low")
+alertcondition(anyBull,     "Any Bullish Breakout",       "Bullish breakout detected")
+alertcondition(anyBear,     "Any Bearish Breakout",       "Bearish breakout detected")
+alertcondition(anyBreakout, "Any Breakout",               "Breakout detected (bull or bear)")
