@@ -141,7 +141,25 @@ plot(i_showLines and i_showWeek and isRegular ? weekLow  : na, "Week Low",  colo
 plot(i_showLines and i_showORB  and isRegular ? orbHigh  : na, "ORB High",  color.new(color.teal, 40),   1, plot.style_linebr)
 plot(i_showLines and i_showORB  and isRegular ? orbLow   : na, "ORB Low",   color.new(color.teal, 40),   1, plot.style_linebr)
 
-// ─── Alert Conditions ─────────────────────────────────────
+// ─── Programmatic Alerts (one alert covers all) ───────────
+if sigBullPMH
+    alert("Bullish breakout above Premarket High", alert.freq_once_per_bar_close)
+if sigBearPML
+    alert("Bearish breakout below Premarket Low", alert.freq_once_per_bar_close)
+if sigBullYH
+    alert("Bullish breakout above Yesterday High", alert.freq_once_per_bar_close)
+if sigBearYL
+    alert("Bearish breakout below Yesterday Low", alert.freq_once_per_bar_close)
+if sigBullWH
+    alert("Bullish breakout above Last Week High", alert.freq_once_per_bar_close)
+if sigBearWL
+    alert("Bearish breakout below Last Week Low", alert.freq_once_per_bar_close)
+if sigBullOH
+    alert("Bullish breakout above ORB High", alert.freq_once_per_bar_close)
+if sigBearOL
+    alert("Bearish breakout below ORB Low", alert.freq_once_per_bar_close)
+
+// ─── Alert Conditions (for granular per-level alerts) ─────
 alertcondition(sigBullPMH,  "Bullish PM High Breakout",   "Bullish breakout above Premarket High")
 alertcondition(sigBearPML,  "Bearish PM Low Breakout",    "Bearish breakout below Premarket Low")
 alertcondition(sigBullYH,   "Bullish Yest High Breakout", "Bullish breakout above Yesterday High")
