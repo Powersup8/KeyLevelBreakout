@@ -9,7 +9,7 @@ i_showPM    = input.bool(true,  "Premarket High/Low",         group="Level Toggl
 i_showYest  = input.bool(true,  "Yesterday High/Low",         group="Level Toggles")
 i_showWeek  = input.bool(true,  "Last Week High/Low",         group="Level Toggles")
 i_showORB   = input.bool(true,  "ORB High/Low",               group="Level Toggles")
-i_firstOnly = input.bool(true,  "First Cross Only (per day)", group="Signals")
+i_firstOnly = input.bool(true,  "Once Per Breakout", group="Signals")
 i_signalTF  = input.timeframe("5", "Signal Timeframe",        group="Signals")
 i_showLines = input.bool(false, "Show Level Lines",           group="Visuals")
 
@@ -52,7 +52,7 @@ if isORBwin
         orbHigh := math.max(orbHigh, high)
         orbLow  := math.min(orbLow, low)
 
-// ─── First-Cross Flags (reset each regular session) ──────
+// ─── Breakout Flags (reset each regular session) ────────
 var bool xPMH = false
 var bool xPML = false
 var bool xYH  = false
@@ -87,6 +87,25 @@ newSigBar = not na(_sigChg) and _sigChg != 0
 // 5m period on a 1m chart)
 shapeOff = -1
 
+// ─── Invalidation: re-arm when price closes back through level ──
+if i_firstOnly and newSigBar
+    if xPMH and not na(pmHigh) and sigC <= pmHigh
+        xPMH := false
+    if xPML and not na(pmLow) and sigC >= pmLow
+        xPML := false
+    if xYH and not na(yestHigh) and sigC <= yestHigh
+        xYH := false
+    if xYL and not na(yestLow) and sigC >= yestLow
+        xYL := false
+    if xWH and not na(weekHigh) and sigC <= weekHigh
+        xWH := false
+    if xWL and not na(weekLow) and sigC >= weekLow
+        xWL := false
+    if xOH and not na(orbHigh) and sigC <= orbHigh
+        xOH := false
+    if xOL and not na(orbLow) and sigC >= orbLow
+        xOL := false
+
 // ─── Breakout Helpers ─────────────────────────────────────
 bullBreak(float level) =>
     not na(level) and isRegular and newSigBar and sigC > sigO and sigC > level and sigPC <= level
@@ -104,7 +123,7 @@ rBearWL  = i_showWeek  and bearBreak(weekLow)
 rBullOH  = i_showORB   and not isORBwin and bullBreak(orbHigh)
 rBearOL  = i_showORB   and not isORBwin and bearBreak(orbLow)
 
-// ─── Filtered Signals (first-cross-only when enabled) ────
+// ─── Filtered Signals (suppressed when flag active) ──────
 sigBullPMH = rBullPMH and (not i_firstOnly or not xPMH)
 sigBearPML = rBearPML and (not i_firstOnly or not xPML)
 sigBullYH  = rBullYH  and (not i_firstOnly or not xYH)

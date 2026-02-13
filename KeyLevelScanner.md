@@ -8,7 +8,7 @@ Monitors up to 8 tickers from a single chart. One alert covers all symbols and l
 - **Status table** in top-right corner — shows each symbol's last signal, highlighted green (bull) or red (bear)
 - **Single alert setup** — one `alert()` covers all symbols; messages include the ticker name
 - **All 4 level types** tracked per symbol (Premarket, Yesterday, Last Week, ORB)
-- **First Cross Only** per symbol per level per day
+- **Once Per Breakout** per symbol per level — re-arms after invalidation
 - Uses 24 of 40 allowed `request.security()` calls (3 per symbol)
 
 ## Setup
@@ -27,9 +27,19 @@ Monitors up to 8 tickers from a single chart. One alert covers all symbols and l
 | Yesterday High/Low | On | Track previous day levels for all symbols |
 | Last Week High/Low | On | Track previous week levels for all symbols |
 | ORB High/Low | On | Track opening range levels for all symbols |
-| First Cross Only | On | One signal per level per symbol per day |
+| Once Per Breakout | On | One signal per level per symbol; re-arms after invalidation |
 | Symbol 1–6 | SPY, QQQ, TSLA, TSM, AMD, NVDA | Enabled by default |
 | Symbol 7–8 | GOOGL, AAPL | Disabled by default |
+
+## Once Per Breakout (Invalidation Logic)
+
+When enabled (default), each level per symbol fires **one signal** then stays suppressed until **invalidated**:
+
+- Bullish breakout above PM High fires — suppressed while price holds above
+- Price closes back below PM High — **invalidated** (re-armed)
+- Next bullish close above PM High — fires again
+
+Each level is tracked independently — a suppressed PM High does not block a subsequent Yesterday High breakout. All flags reset at each regular session open. Turn **off** to fire on every qualifying cross (useful for backtesting).
 
 ## Alert Messages
 
@@ -57,5 +67,6 @@ Edit the script in Pine Editor and click **Save** — all charts using the indic
 
 ## Changelog
 
+- **v1.2** — Invalidation-based signal logic: re-arms after price closes back through the level (replaces first-cross-only-per-day)
 - **v1.1** — Updated default watchlist: SPY, QQQ, TSLA, TSM, AMD, NVDA on; GOOGL, AAPL off
 - **v1.0** — Initial release: 8-symbol scanner, status table, unified `alert()` setup, all 4 level types per symbol

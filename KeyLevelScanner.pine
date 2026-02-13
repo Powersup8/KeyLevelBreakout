@@ -9,7 +9,7 @@ i_showPM    = input.bool(true,  "Premarket High/Low",         group="Levels")
 i_showYest  = input.bool(true,  "Yesterday High/Low",         group="Levels")
 i_showWeek  = input.bool(true,  "Last Week High/Low",         group="Levels")
 i_showORB   = input.bool(true,  "ORB High/Low",               group="Levels")
-i_firstOnly = input.bool(true,  "First Cross Only (per day)", group="Signals")
+i_firstOnly = input.bool(true,  "Once Per Breakout", group="Signals")
 
 i_en1 = input.bool(true,  "Symbol 1", inline="s1", group="Watchlist")
 i_s1  = input.symbol("SPY",  "",       inline="s1", group="Watchlist")
@@ -85,12 +85,27 @@ chk(int si, string nm, string lv, bool bull, float c, float o, float pc, float l
                 array.set(sigs, si, (bull ? "▲ " : "▼ ") + lv)
             array.set(xF, fi, true)
 
+inv(int si, float pc, float level, int li, bool isBull) =>
+    int fi = si * 8 + li
+    if not na(level) and array.get(xF, fi)
+        if isBull ? pc <= level : pc >= level
+            array.set(xF, fi, false)
+
 scan(int i, string sym, bool en, float h, float l, float c, float o, float pc,
      float yH, float yL, float wH, float wL) =>
     if en
         string nm = ticker(sym)
         trackPM(i, h, l)
         trackORB(i, h, l)
+        if i_firstOnly
+            inv(i, pc, array.get(pmHi, i), 0, true)
+            inv(i, pc, array.get(pmLo, i), 1, false)
+            inv(i, pc, yH, 2, true)
+            inv(i, pc, yL, 3, false)
+            inv(i, pc, wH, 4, true)
+            inv(i, pc, wL, 5, false)
+            inv(i, pc, array.get(orbHi, i), 6, true)
+            inv(i, pc, array.get(orbLo, i), 7, false)
         if i_showPM
             chk(i, nm, "PM High", true,  c, o, pc, array.get(pmHi, i), 0)
             chk(i, nm, "PM Low",  false, c, o, pc, array.get(pmLo, i), 1)
