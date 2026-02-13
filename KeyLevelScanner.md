@@ -50,3 +50,7 @@ The top-right table updates on each bar:
 | TSM    | —      |
 
 Cells turn green for bullish signals, red for bearish, gray for no signal. Resets at each regular session open.
+
+## Updating
+
+Edit the script in Pine Editor and click **Save** — all charts using the indicator update automatically. Don't click "Add to chart" again (that creates a duplicate).

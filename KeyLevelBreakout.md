@@ -37,3 +37,7 @@ When using `Any alert() function call`, messages look like:
 - `Bullish breakout above Premarket High`
 - `Bearish breakout below Yesterday Low`
 - `Bullish breakout above ORB High`
+
+## Updating
+
+Edit the script in Pine Editor and click **Save** — all charts using the indicator update automatically. Don't click "Add to chart" again (that creates a duplicate).
