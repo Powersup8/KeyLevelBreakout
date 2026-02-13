@@ -13,7 +13,7 @@ Monitors up to 8 tickers from a single chart. One alert covers all symbols and l
 
 ## Setup
 
-1. Add `KeyLevelScanner.pine` to any 5-min US stock chart (the chart symbol doesn't matter)
+1. Add `KeyLevelScanner.pine` to a **5-min** US stock chart (the chart symbol doesn't matter, but the chart timeframe must be 5m since the scanner evaluates breakouts on chart-timeframe candles)
 2. Enable **Extended Trading Hours** in chart settings
 3. Configure tickers in the **Watchlist** input group
 4. Add **one alert** → Condition: `Key Level Breakout Scanner` → `Any alert() function call`

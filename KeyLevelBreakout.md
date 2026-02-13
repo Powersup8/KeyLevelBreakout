@@ -31,6 +31,16 @@ Visual indicator that plots breakout arrows directly on your chart when price cl
 | Signal Timeframe | 5 (5m) | Timeframe for breakout evaluation — signals only fire on closed bars of this TF |
 | Show Level Lines | Off | Plot horizontal lines for active levels |
 
+## Signal Timeframe
+
+The **Signal Timeframe** input (default: 5m) controls which candle closes are evaluated for breakouts. This lets you view a lower timeframe chart (e.g. 1m) for more detail while only triggering signals on completed 5m candles.
+
+- **Chart on 5m, Signal TF = 5m**: Markers appear directly on the breakout candle (default behavior)
+- **Chart on 1m, Signal TF = 5m**: Markers appear on the first 1m bar after the 5m candle closes — only one signal per 5m bar, not on every 1m candle
+- **Chart timeframe must be ≤ Signal Timeframe** (e.g. 1m or 3m chart with 5m signals works; 15m chart with 5m signals does not)
+
+Level tracking (premarket, ORB) still uses chart-native data for maximum granularity.
+
 ## Alert Messages
 
 When using `Any alert() function call`, messages look like:
