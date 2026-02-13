@@ -1,0 +1,171 @@
+// © Key Level Breakout Scanner
+// Multi-symbol version — monitors up to 8 tickers from one chart
+// Fires alert() with symbol name + level for single-alert setup
+//@version=6
+indicator("Key Level Breakout Scanner", overlay=true)
+
+// ═══ INPUTS ═══════════════════════════════════════════════
+i_showPM    = input.bool(true,  "Premarket High/Low",         group="Levels")
+i_showYest  = input.bool(true,  "Yesterday High/Low",         group="Levels")
+i_showWeek  = input.bool(true,  "Last Week High/Low",         group="Levels")
+i_showORB   = input.bool(true,  "ORB High/Low",               group="Levels")
+i_firstOnly = input.bool(true,  "First Cross Only (per day)", group="Signals")
+
+i_en1 = input.bool(true,  "Symbol 1", inline="s1", group="Watchlist")
+i_s1  = input.symbol("AAPL", "",       inline="s1", group="Watchlist")
+i_en2 = input.bool(true,  "Symbol 2", inline="s2", group="Watchlist")
+i_s2  = input.symbol("MSFT", "",       inline="s2", group="Watchlist")
+i_en3 = input.bool(true,  "Symbol 3", inline="s3", group="Watchlist")
+i_s3  = input.symbol("GOOGL", "",      inline="s3", group="Watchlist")
+i_en4 = input.bool(true,  "Symbol 4", inline="s4", group="Watchlist")
+i_s4  = input.symbol("AMZN", "",       inline="s4", group="Watchlist")
+i_en5 = input.bool(false, "Symbol 5", inline="s5", group="Watchlist")
+i_s5  = input.symbol("META", "",       inline="s5", group="Watchlist")
+i_en6 = input.bool(false, "Symbol 6", inline="s6", group="Watchlist")
+i_s6  = input.symbol("NVDA", "",       inline="s6", group="Watchlist")
+i_en7 = input.bool(false, "Symbol 7", inline="s7", group="Watchlist")
+i_s7  = input.symbol("TSLA", "",       inline="s7", group="Watchlist")
+i_en8 = input.bool(false, "Symbol 8", inline="s8", group="Watchlist")
+i_s8  = input.symbol("SPY",  "",       inline="s8", group="Watchlist")
+
+// ═══ SESSION DETECTION ════════════════════════════════════
+TZ           = "America/New_York"
+isPremarket  = not na(time(timeframe.period, "0400-0930:23456", TZ))
+isRegular    = not na(time(timeframe.period, "0930-1600:23456", TZ))
+isORBwin     = not na(time(timeframe.period, "0930-0935:23456", TZ))
+newPremarket = isPremarket and not isPremarket[1]
+newRegular   = isRegular   and not isRegular[1]
+
+// ═══ STATE ════════════════════════════════════════════════
+var pmHi  = array.new_float(8, na)
+var pmLo  = array.new_float(8, na)
+var orbHi = array.new_float(8, na)
+var orbLo = array.new_float(8, na)
+var xF    = array.new_bool(64, false)
+var sigs  = array.new_string(8, "—")
+var tbl   = table.new(position.top_right, 2, 9, border_width=0)
+
+if newRegular
+    for i = 0 to 63
+        array.set(xF, i, false)
+    for i = 0 to 7
+        array.set(sigs, i, "—")
+
+// ═══ HELPERS ══════════════════════════════════════════════
+ticker(string sym) =>
+    int p = str.pos(sym, ":")
+    na(p) ? sym : str.substring(sym, p + 1)
+
+trackPM(int i, float h, float l) =>
+    if newPremarket
+        array.set(pmHi, i, h)
+        array.set(pmLo, i, l)
+    else if isPremarket
+        float cur = array.get(pmHi, i)
+        array.set(pmHi, i, na(cur) ? h : math.max(cur, h))
+        float curL = array.get(pmLo, i)
+        array.set(pmLo, i, na(curL) ? l : math.min(curL, l))
+
+trackORB(int i, float h, float l) =>
+    if isORBwin
+        if not isORBwin[1]
+            array.set(orbHi, i, h)
+            array.set(orbLo, i, l)
+        else
+            array.set(orbHi, i, math.max(array.get(orbHi, i), h))
+            array.set(orbLo, i, math.min(array.get(orbLo, i), l))
+
+chk(int si, string nm, string lv, bool bull, float c, float o, float pc, float level, int li) =>
+    if not na(level) and isRegular
+        bool cond = bull ? (c > o and c > level and pc <= level) : (c < o and c < level and pc >= level)
+        if cond
+            int fi = si * 8 + li
+            if not i_firstOnly or not array.get(xF, fi)
+                alert(nm + (bull ? " ▲ " : " ▼ ") + lv, alert.freq_once_per_bar_close)
+                array.set(sigs, si, (bull ? "▲ " : "▼ ") + lv)
+            array.set(xF, fi, true)
+
+scan(int i, string sym, bool en, float h, float l, float c, float o, float pc,
+     float yH, float yL, float wH, float wL) =>
+    if en
+        string nm = ticker(sym)
+        trackPM(i, h, l)
+        trackORB(i, h, l)
+        if i_showPM
+            chk(i, nm, "PM High", true,  c, o, pc, array.get(pmHi, i), 0)
+            chk(i, nm, "PM Low",  false, c, o, pc, array.get(pmLo, i), 1)
+        if i_showYest
+            chk(i, nm, "Yest High", true,  c, o, pc, yH, 2)
+            chk(i, nm, "Yest Low",  false, c, o, pc, yL, 3)
+        if i_showWeek
+            chk(i, nm, "Week High", true,  c, o, pc, wH, 4)
+            chk(i, nm, "Week Low",  false, c, o, pc, wL, 5)
+        if i_showORB and not isORBwin
+            chk(i, nm, "ORB High", true,  c, o, pc, array.get(orbHi, i), 6)
+            chk(i, nm, "ORB Low",  false, c, o, pc, array.get(orbLo, i), 7)
+
+// ═══ DATA FETCH (3 request.security calls per symbol) ════
+
+[_h1, _l1, _c1, _o1, _pc1] = request.security(i_s1, timeframe.period, [high, low, close, open, close[1]], ignore_invalid_symbol=true)
+[_dh1, _dl1] = request.security(i_s1, "D", [high[1], low[1]], lookahead=barmerge.lookahead_on, ignore_invalid_symbol=true)
+[_wh1, _wl1] = request.security(i_s1, "W", [high[1], low[1]], lookahead=barmerge.lookahead_on, ignore_invalid_symbol=true)
+
+[_h2, _l2, _c2, _o2, _pc2] = request.security(i_s2, timeframe.period, [high, low, close, open, close[1]], ignore_invalid_symbol=true)
+[_dh2, _dl2] = request.security(i_s2, "D", [high[1], low[1]], lookahead=barmerge.lookahead_on, ignore_invalid_symbol=true)
+[_wh2, _wl2] = request.security(i_s2, "W", [high[1], low[1]], lookahead=barmerge.lookahead_on, ignore_invalid_symbol=true)
+
+[_h3, _l3, _c3, _o3, _pc3] = request.security(i_s3, timeframe.period, [high, low, close, open, close[1]], ignore_invalid_symbol=true)
+[_dh3, _dl3] = request.security(i_s3, "D", [high[1], low[1]], lookahead=barmerge.lookahead_on, ignore_invalid_symbol=true)
+[_wh3, _wl3] = request.security(i_s3, "W", [high[1], low[1]], lookahead=barmerge.lookahead_on, ignore_invalid_symbol=true)
+
+[_h4, _l4, _c4, _o4, _pc4] = request.security(i_s4, timeframe.period, [high, low, close, open, close[1]], ignore_invalid_symbol=true)
+[_dh4, _dl4] = request.security(i_s4, "D", [high[1], low[1]], lookahead=barmerge.lookahead_on, ignore_invalid_symbol=true)
+[_wh4, _wl4] = request.security(i_s4, "W", [high[1], low[1]], lookahead=barmerge.lookahead_on, ignore_invalid_symbol=true)
+
+[_h5, _l5, _c5, _o5, _pc5] = request.security(i_s5, timeframe.period, [high, low, close, open, close[1]], ignore_invalid_symbol=true)
+[_dh5, _dl5] = request.security(i_s5, "D", [high[1], low[1]], lookahead=barmerge.lookahead_on, ignore_invalid_symbol=true)
+[_wh5, _wl5] = request.security(i_s5, "W", [high[1], low[1]], lookahead=barmerge.lookahead_on, ignore_invalid_symbol=true)
+
+[_h6, _l6, _c6, _o6, _pc6] = request.security(i_s6, timeframe.period, [high, low, close, open, close[1]], ignore_invalid_symbol=true)
+[_dh6, _dl6] = request.security(i_s6, "D", [high[1], low[1]], lookahead=barmerge.lookahead_on, ignore_invalid_symbol=true)
+[_wh6, _wl6] = request.security(i_s6, "W", [high[1], low[1]], lookahead=barmerge.lookahead_on, ignore_invalid_symbol=true)
+
+[_h7, _l7, _c7, _o7, _pc7] = request.security(i_s7, timeframe.period, [high, low, close, open, close[1]], ignore_invalid_symbol=true)
+[_dh7, _dl7] = request.security(i_s7, "D", [high[1], low[1]], lookahead=barmerge.lookahead_on, ignore_invalid_symbol=true)
+[_wh7, _wl7] = request.security(i_s7, "W", [high[1], low[1]], lookahead=barmerge.lookahead_on, ignore_invalid_symbol=true)
+
+[_h8, _l8, _c8, _o8, _pc8] = request.security(i_s8, timeframe.period, [high, low, close, open, close[1]], ignore_invalid_symbol=true)
+[_dh8, _dl8] = request.security(i_s8, "D", [high[1], low[1]], lookahead=barmerge.lookahead_on, ignore_invalid_symbol=true)
+[_wh8, _wl8] = request.security(i_s8, "W", [high[1], low[1]], lookahead=barmerge.lookahead_on, ignore_invalid_symbol=true)
+
+// ═══ PROCESS ═════════════════════════════════════════════
+scan(0, i_s1, i_en1, _h1, _l1, _c1, _o1, _pc1, _dh1, _dl1, _wh1, _wl1)
+scan(1, i_s2, i_en2, _h2, _l2, _c2, _o2, _pc2, _dh2, _dl2, _wh2, _wl2)
+scan(2, i_s3, i_en3, _h3, _l3, _c3, _o3, _pc3, _dh3, _dl3, _wh3, _wl3)
+scan(3, i_s4, i_en4, _h4, _l4, _c4, _o4, _pc4, _dh4, _dl4, _wh4, _wl4)
+scan(4, i_s5, i_en5, _h5, _l5, _c5, _o5, _pc5, _dh5, _dl5, _wh5, _wl5)
+scan(5, i_s6, i_en6, _h6, _l6, _c6, _o6, _pc6, _dh6, _dl6, _wh6, _wl6)
+scan(6, i_s7, i_en7, _h7, _l7, _c7, _o7, _pc7, _dh7, _dl7, _wh7, _wl7)
+scan(7, i_s8, i_en8, _h8, _l8, _c8, _o8, _pc8, _dh8, _dl8, _wh8, _wl8)
+
+// ═══ STATUS TABLE ═════════════════════════════════════════
+if barstate.islast
+    table.cell(tbl, 0, 0, "Symbol", text_color=color.white, text_size=size.small, bgcolor=color.new(color.gray, 40))
+    table.cell(tbl, 1, 0, "Signal", text_color=color.white, text_size=size.small, bgcolor=color.new(color.gray, 40))
+
+    symNames = array.from(i_s1, i_s2, i_s3, i_s4, i_s5, i_s6, i_s7, i_s8)
+    symEns   = array.from(i_en1, i_en2, i_en3, i_en4, i_en5, i_en6, i_en7, i_en8)
+
+    int row = 1
+    for i = 0 to 7
+        if array.get(symEns, i)
+            string sig = array.get(sigs, i)
+            color bg = sig == "—" ? color.new(color.gray, 80) : str.contains(sig, "▲") ? color.new(color.green, 50) : color.new(color.red, 50)
+            table.cell(tbl, 0, row, ticker(array.get(symNames, i)), text_color=color.white, text_size=size.small, bgcolor=color.new(color.gray, 80))
+            table.cell(tbl, 1, row, sig, text_color=color.white, text_size=size.small, bgcolor=bg)
+            row := row + 1
+
+    // Clear unused rows
+    for i = row to 8
+        table.cell(tbl, 0, i, "", bgcolor=color.new(color.white, 100))
+        table.cell(tbl, 1, i, "", bgcolor=color.new(color.white, 100))
