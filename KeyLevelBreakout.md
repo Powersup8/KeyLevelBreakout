@@ -17,6 +17,7 @@ Visual indicator that plots breakout arrows directly on your chart when price cl
 3. Set up alerts:
    - **Quick (recommended)**: Add one alert → Condition: `Key Level Breakout` → `Any alert() function call` — covers all levels, one toggle to switch on/off
    - **Granular**: Use individual `alertcondition()` entries from the dropdown for specific levels
+   - Visual markers (triangles + labels) always appear on the chart regardless of alert setup — alerts and visuals fire from the same signals
 
 ## Inputs
 
