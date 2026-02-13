@@ -28,8 +28,8 @@ Monitors up to 8 tickers from a single chart. One alert covers all symbols and l
 | Last Week High/Low | On | Track previous week levels for all symbols |
 | ORB High/Low | On | Track opening range levels for all symbols |
 | First Cross Only | On | One signal per level per symbol per day |
-| Symbol 1–4 | AAPL, MSFT, GOOGL, AMZN | Enabled by default |
-| Symbol 5–8 | META, NVDA, TSLA, SPY | Disabled by default |
+| Symbol 1–6 | SPY, QQQ, TSLA, TSM, AMD, NVDA | Enabled by default |
+| Symbol 7–8 | GOOGL, AAPL | Disabled by default |
 
 ## Alert Messages
 
