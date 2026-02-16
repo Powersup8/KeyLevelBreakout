@@ -1,0 +1,152 @@
+// © EMA Pullback Entry Indicator
+// Detects pullback entries after strong moves away from 9 EMA
+// Short side (Puts): bull candle above EMA → bear pullback to EMA
+// Long side (Calls): bear candle below EMA → bull pullback to EMA
+// Designed for 5-min charts, ATR from Daily
+//@version=6
+indicator("EMA Pullback", overlay=true, max_lines_count=500, max_labels_count=500)
+
+// ─── Inputs ────────────────────────────────────────────────
+i_enableShort  = input.bool(true,    "Enable Short (Puts)",       group="Direction")
+i_enableLong   = input.bool(true,    "Enable Long (Calls)",       group="Direction")
+i_qualShort    = input.string("Close", "Short Qualify Mode",      options=["Close", "High"], group="Direction")
+i_qualLong     = input.string("Close", "Long Qualify Mode",       options=["Close", "Low"],  group="Direction")
+i_atrThresh    = input.float(20.0,   "ATR Threshold %",           minval=1.0, maxval=100.0, step=1.0, group="Parameters")
+i_atrLen       = input.int(14,       "ATR Length (Daily)",         minval=1, group="Parameters")
+i_emaLen       = input.int(9,        "EMA Length",                 minval=1, group="Parameters")
+i_lineExtend   = input.int(2,        "Line Extend (bars)",         minval=0, maxval=10, group="Visuals")
+
+// ─── EMA ───────────────────────────────────────────────────
+ema9 = ta.ema(close, i_emaLen)
+plot(ema9, "9 EMA", color.new(color.yellow, 30), 1)
+
+// ─── Daily ATR (non-repainting) ────────────────────────────
+dailyATR = request.security(syminfo.tickerid, "D", ta.atr(i_atrLen)[1], lookahead=barmerge.lookahead_on)
+atrOffset = dailyATR * i_atrThresh / 100.0
+
+// ─── Candle Properties ────────────────────────────────────
+isBull = close > open
+isBear = close < open
+
+// ─── SHORT SIDE (Puts) ────────────────────────────────────
+
+// State: 0=SCANNING, 1=WAITING_FOR_PULLBACK, 2=IN_TRADE
+var int   shortState    = 0
+var float shortQualHigh = na
+var float shortQualLow  = na
+var int   shortQualBar  = na
+var line  shortEntryLn  = na
+var line  shortSLLn     = na
+
+if i_enableShort
+    if shortState == 0 or shortState == 1
+        // Check for qualifying bullish candle
+        qualAbove = i_qualShort == "Close" ? close >= ema9 + atrOffset : high >= ema9 + atrOffset
+        if isBull and qualAbove
+            shortQualHigh := high
+            shortQualLow  := low
+            shortQualBar  := bar_index
+            shortState    := 1
+
+    if shortState == 1
+        // Check for bearish pullback touching EMA
+        if isBear and low <= ema9
+            // ── Signal: Entry ──
+            entryPrice = shortQualHigh - (shortQualHigh - shortQualLow) / 3.0
+            slPrice    = shortQualHigh
+            x1         = shortQualBar - i_lineExtend
+            x2         = bar_index + i_lineExtend
+
+            // Delete old lines
+            if not na(shortEntryLn)
+                line.delete(shortEntryLn)
+            if not na(shortSLLn)
+                line.delete(shortSLLn)
+
+            shortEntryLn := line.new(x1, entryPrice, x2, entryPrice, color=color.green, style=line.style_dashed, width=2)
+            shortSLLn    := line.new(x1, slPrice,    x2, slPrice,    color=color.red,   style=line.style_solid,  width=2)
+
+            label.new(x2, entryPrice, "Entry", style=label.style_label_left, color=color.new(color.green, 80), textcolor=color.green, size=size.small)
+            label.new(x2, slPrice,    "SL",    style=label.style_label_left, color=color.new(color.red, 80),   textcolor=color.red,   size=size.small)
+
+            shortState := 2
+            alert("EMA Pullback Short Entry – " + syminfo.ticker, alert.freq_once_per_bar_close)
+
+    if shortState == 2
+        // Check for exit: candle completely above EMA
+        if low > ema9
+            shortState := 0
+            alert("EMA Pullback Short Exit – " + syminfo.ticker, alert.freq_once_per_bar_close)
+
+// ─── LONG SIDE (Calls) ───────────────────────────────────
+
+var int   longState    = 0
+var float longQualHigh = na
+var float longQualLow  = na
+var int   longQualBar  = na
+var line  longEntryLn  = na
+var line  longSLLn     = na
+
+if i_enableLong
+    if longState == 0 or longState == 1
+        // Check for qualifying bearish candle
+        qualBelow = i_qualLong == "Close" ? close <= ema9 - atrOffset : low <= ema9 - atrOffset
+        if isBear and qualBelow
+            longQualHigh := high
+            longQualLow  := low
+            longQualBar  := bar_index
+            longState    := 1
+
+    if longState == 1
+        // Check for bullish pullback touching EMA
+        if isBull and high >= ema9
+            // ── Signal: Entry ──
+            entryPrice = longQualLow + (longQualHigh - longQualLow) / 3.0
+            slPrice    = longQualLow
+            x1         = longQualBar - i_lineExtend
+            x2         = bar_index + i_lineExtend
+
+            // Delete old lines
+            if not na(longEntryLn)
+                line.delete(longEntryLn)
+            if not na(longSLLn)
+                line.delete(longSLLn)
+
+            longEntryLn := line.new(x1, entryPrice, x2, entryPrice, color=color.green, style=line.style_dashed, width=2)
+            longSLLn    := line.new(x1, slPrice,    x2, slPrice,    color=color.red,   style=line.style_solid,  width=2)
+
+            label.new(x2, entryPrice, "Entry", style=label.style_label_left, color=color.new(color.green, 80), textcolor=color.green, size=size.small)
+            label.new(x2, slPrice,    "SL",    style=label.style_label_left, color=color.new(color.red, 80),   textcolor=color.red,   size=size.small)
+
+            longState := 2
+            alert("EMA Pullback Long Entry – " + syminfo.ticker, alert.freq_once_per_bar_close)
+
+    if longState == 2
+        // Check for exit: candle completely below EMA
+        if high < ema9
+            longState := 0
+            alert("EMA Pullback Long Exit – " + syminfo.ticker, alert.freq_once_per_bar_close)
+
+// ─── Plot Shapes ──────────────────────────────────────────
+
+// Short entry marker (red triangle above bar)
+plotshape(i_enableShort and shortState[1] == 1 and shortState == 2,
+     "Short Entry", shape.triangledown, location.abovebar, color.red, size=size.small, text="Put")
+
+// Short exit marker (orange triangle below bar)
+plotshape(i_enableShort and shortState[1] == 2 and shortState == 0,
+     "Short Exit", shape.triangleup, location.belowbar, color.orange, size=size.small, text="Exit")
+
+// Long entry marker (green triangle below bar)
+plotshape(i_enableLong and longState[1] == 1 and longState == 2,
+     "Long Entry", shape.triangleup, location.belowbar, color.green, size=size.small, text="Call")
+
+// Long exit marker (orange triangle above bar)
+plotshape(i_enableLong and longState[1] == 2 and longState == 0,
+     "Long Exit", shape.triangledown, location.abovebar, color.orange, size=size.small, text="Exit")
+
+// ─── Alert Conditions ─────────────────────────────────────
+alertcondition(i_enableShort and shortState[1] == 1 and shortState == 2, "Short Entry (Puts)", "EMA Pullback Short Entry")
+alertcondition(i_enableShort and shortState[1] == 2 and shortState == 0, "Short Exit",         "EMA Pullback Short Exit")
+alertcondition(i_enableLong  and longState[1]  == 1 and longState  == 2, "Long Entry (Calls)", "EMA Pullback Long Entry")
+alertcondition(i_enableLong  and longState[1]  == 2 and longState  == 0, "Long Exit",          "EMA Pullback Long Exit")
