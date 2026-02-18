@@ -1,0 +1,33 @@
+// © Touch & Turn Scalper
+// Detects liquidity candles on the 15m opening range
+// Signals reversal entries on 1m chart with Fibonacci TP
+//@version=6
+indicator("Touch & Turn", overlay=true, max_lines_count=500, max_labels_count=500)
+
+// ─── Inputs ────────────────────────────────────────────────
+i_tpLevel  = input.string("38.2%", "TP Level", options=["38.2%", "61.8%"], group="Parameters")
+i_atrLen   = input.int(14, "ATR Length (Daily)", minval=1, group="Parameters")
+i_session  = input.session("0930-1600", "Session", group="Parameters")
+
+// ─── Daily ATR (non-repainting) ────────────────────────────
+dailyATR = request.security(syminfo.tickerid, "D", ta.atr(i_atrLen)[1], lookahead=barmerge.lookahead_on)
+atrThreshold = dailyATR * 0.25
+
+// ─── 15m Opening Candle (confirmed bar only) ──────────────
+[o15, h15, l15, c15] = request.security(syminfo.tickerid, "15",
+     [open[1], high[1], low[1], close[1]], lookahead=barmerge.lookahead_on)
+
+// ─── Session & Opening Bar Detection ──────────────────────
+_t15       = time("15")
+_t15chg    = ta.change(_t15)
+new15bar   = not na(_t15chg) and _t15chg != 0
+
+inSession  = not na(time(timeframe.period, i_session))
+_sesChg    = ta.change(inSession ? 1 : 0)
+sessionOpen = _sesChg > 0  // first bar of session
+
+// ─── Debug: plot ATR value as label on session open ────────
+if sessionOpen
+    label.new(bar_index, high, "ATR: " + str.tostring(dailyATR, "#.##") +
+         "\nThreshold: " + str.tostring(atrThreshold, "#.##"),
+         style=label.style_label_down, color=color.gray, textcolor=color.white, size=size.small)
