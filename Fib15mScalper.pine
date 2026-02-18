@@ -27,7 +27,7 @@ _sesChg    = ta.change(inSession ? 1 : 0)
 sessionOpen = _sesChg > 0  // first bar of session
 
 // ─── State Machine ────────────────────────────────────────
-// 0=WAITING_FOR_OPEN, 1=QUALIFYING, 2=ARMED, 3=IN_TRADE, 4=DONE
+// 0=WAITING_FOR_OPEN, 2=ARMED, 3=IN_TRADE, 4=DONE
 var int   state      = 0
 var float rangeHigh  = na
 var float rangeLow   = na
@@ -107,6 +107,9 @@ if state == 0 and new15bar and inSession and not sessionOpen
 
 // ─── Qualification Labels ─────────────────────────────────
 var label qualLabel = na
+if sessionOpen and not na(qualLabel)
+    label.delete(qualLabel)
+    qualLabel := na
 if state == 2 and state[1] != 2
     if not na(qualLabel)
         label.delete(qualLabel)
@@ -179,9 +182,9 @@ if state == 2 and state[1] != 2
 bool entryFilled = false
 
 if state == 2
-    // Check 90-minute timeout (bar_index distance from rangeBar)
-    // On 1m chart, 90 bars ≈ 90 minutes
-    if bar_index - rangeBar > 90
+    // Check 90-minute-from-open timeout (75 bars from rangeBar on 1m chart,
+    // since the 15m opening candle takes the first 15 minutes)
+    if bar_index - rangeBar > 75
         state := 4  // DONE — timeout
         label.new(bar_index, direction == 1 ? low : high, "Timeout",
              style=direction == 1 ? label.style_label_up : label.style_label_down,
