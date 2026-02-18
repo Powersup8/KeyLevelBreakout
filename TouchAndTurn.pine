@@ -39,8 +39,26 @@ var float entryPrice = na
 var float tpPrice    = na
 var float slPrice    = na
 
+// ─── Visuals: Range Box + Fibonacci Lines ─────────────────
+var box   rangeBox  = na
+var line  fib382Ln  = na
+var line  fib500Ln  = na
+var line  fib618Ln  = na
+
 // Reset at session open
 if sessionOpen
+    if not na(rangeBox)
+        box.delete(rangeBox)
+        rangeBox := na
+    if not na(fib382Ln)
+        line.delete(fib382Ln)
+        fib382Ln := na
+    if not na(fib500Ln)
+        line.delete(fib500Ln)
+        fib500Ln := na
+    if not na(fib618Ln)
+        line.delete(fib618Ln)
+        fib618Ln := na
     state := 0
     rangeHigh  := na
     rangeLow   := na
@@ -96,3 +114,26 @@ else if state == 4 and state[1] != 4 and not na(rangeBar)
         label.delete(qualLabel)
     qualLabel := label.new(bar_index, high, "Not Qualified",
          style=label.style_label_down, color=color.gray, textcolor=color.white, size=size.small)
+
+// ─── Draw Range Box + Fibonacci Lines ────────────────────
+// Draw on qualification (state just became 2 or 4 with valid range)
+if not na(rangeBar) and (state == 2 or state == 4) and na(rangeBox)
+    // Range box — extends to end of day (we'll use a far-right bar)
+    boxColor  = state == 2 ? color.new(color.blue, 90) : color.new(color.gray, 90)
+    borderClr = state == 2 ? color.new(color.blue, 60) : color.new(color.gray, 60)
+    rangeBox := box.new(rangeBar, rangeHigh, rangeBar + 390, rangeLow,
+         bgcolor=boxColor, border_color=borderClr, border_width=1)
+
+    if state == 2  // Only draw Fib lines for qualified setups
+        range   = rangeHigh - rangeLow
+        fib382  = rangeLow + range * 0.382
+        fib500  = rangeLow + range * 0.5
+        fib618  = rangeLow + range * 0.618
+        farBar  = rangeBar + 390
+
+        fib382Ln := line.new(rangeBar, fib382, farBar, fib382,
+             color=color.new(color.purple, 30), style=line.style_dashed, width=1)
+        fib500Ln := line.new(rangeBar, fib500, farBar, fib500,
+             color=color.new(color.gray, 50), style=line.style_dotted, width=1)
+        fib618Ln := line.new(rangeBar, fib618, farBar, fib618,
+             color=color.new(color.purple, 30), style=line.style_dashed, width=1)
