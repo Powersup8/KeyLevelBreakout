@@ -44,6 +44,9 @@ var box   rangeBox  = na
 var line  fib382Ln  = na
 var line  fib500Ln  = na
 var line  fib618Ln  = na
+var line  entryLn   = na
+var line  tpLn      = na
+var line  slLn      = na
 
 // Reset at session open
 if sessionOpen
@@ -59,6 +62,15 @@ if sessionOpen
     if not na(fib618Ln)
         line.delete(fib618Ln)
         fib618Ln := na
+    if not na(entryLn)
+        line.delete(entryLn)
+        entryLn := na
+    if not na(tpLn)
+        line.delete(tpLn)
+        tpLn := na
+    if not na(slLn)
+        line.delete(slLn)
+        slLn := na
     state := 0
     rangeHigh  := na
     rangeLow   := na
@@ -137,3 +149,60 @@ if not na(rangeBar) and (state == 2 or state == 4) and na(rangeBox)
              color=color.new(color.gray, 50), style=line.style_dotted, width=1)
         fib618Ln := line.new(rangeBar, fib618, farBar, fib618,
              color=color.new(color.purple, 30), style=line.style_dashed, width=1)
+
+// ─── Trade Level Calculation + Lines ──────────────────────
+if state == 2 and state[1] != 2
+    range    = rangeHigh - rangeLow
+    fibMult  = i_tpLevel == "38.2%" ? 0.382 : 0.618
+
+    if direction == 1  // LONG
+        entryPrice := rangeLow
+        tpPrice    := rangeLow + range * fibMult
+        slPrice    := rangeLow - (tpPrice - rangeLow) / 2.0
+    else  // SHORT
+        entryPrice := rangeHigh
+        tpPrice    := rangeHigh - range * fibMult
+        slPrice    := rangeHigh + (rangeHigh - tpPrice) / 2.0
+
+    farBar = rangeBar + 390
+
+    entryLn := line.new(rangeBar, entryPrice, farBar, entryPrice,
+         color=color.green, style=line.style_dashed, width=2)
+    tpLn    := line.new(rangeBar, tpPrice,    farBar, tpPrice,
+         color=color.blue,  style=line.style_dashed, width=2)
+    slLn    := line.new(rangeBar, slPrice,    farBar, slPrice,
+         color=color.red,   style=line.style_solid,  width=2)
+
+    label.new(farBar, entryPrice, "Entry",
+         style=label.style_label_left, color=color.new(color.green, 80), textcolor=color.green, size=size.small)
+    label.new(farBar, tpPrice, "TP " + i_tpLevel,
+         style=label.style_label_left, color=color.new(color.blue, 80), textcolor=color.blue, size=size.small)
+    label.new(farBar, slPrice, "SL",
+         style=label.style_label_left, color=color.new(color.red, 80), textcolor=color.red, size=size.small)
+
+// ─── Entry Fill Detection ─────────────────────────────────
+bool entryFilled = false
+
+if state == 2
+    // Check 90-minute timeout (bar_index distance from rangeBar)
+    // On 1m chart, 90 bars ≈ 90 minutes
+    if bar_index - rangeBar > 90
+        state := 4  // DONE — timeout
+        label.new(bar_index, direction == 1 ? low : high, "Timeout",
+             style=direction == 1 ? label.style_label_up : label.style_label_down,
+             color=color.gray, textcolor=color.white, size=size.small)
+    else
+        // Check if price touched entry level
+        if direction == 1 and low <= entryPrice
+            state := 3
+            entryFilled := true
+        else if direction == -1 and high >= entryPrice
+            state := 3
+            entryFilled := true
+
+    if entryFilled
+        label.new(bar_index, direction == 1 ? low : high,
+             direction == 1 ? "Long Fill" : "Short Fill",
+             style=direction == 1 ? label.style_label_up : label.style_label_down,
+             color=direction == 1 ? color.green : color.red,
+             textcolor=color.white, size=size.small)
