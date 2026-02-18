@@ -1,4 +1,4 @@
-# Touch & Turn Scalper — Opening Range Reversal Indicator
+# 15m Fib Scalper — Opening Range Reversal Indicator
 
 Detects liquidity candles on the first 15-minute candle after market open, confirms via daily ATR, then signals reversal entries with Fibonacci-based take profit and fixed 2:1 risk-reward ratio. Designed for 1-minute charts.
 
@@ -46,10 +46,10 @@ WAITING_FOR_OPEN → first 15m candle qualifies → ARMED → price touches entr
 
 ## Setup
 
-1. Open TradingView Pine Editor, paste `TouchAndTurn.pine`, click **Add to chart**
+1. Open TradingView Pine Editor, paste `Fib15mScalper.pine`, click **Add to chart**
 2. Use on a 1-minute chart — the indicator handles 15m and daily data internally
 3. Set up alerts:
-   - **Quick**: Add one alert → Condition: `Touch & Turn Scalper` → `Any alert() function call` — covers all signals
+   - **Quick**: Add one alert → Condition: `15m Fib Scalper` → `Any alert() function call` — covers all signals
    - **Granular**: Use individual `alertcondition()` entries:
      - Qualified Setup
      - Entry Filled
@@ -61,11 +61,11 @@ WAITING_FOR_OPEN → first 15m candle qualifies → ARMED → price touches entr
 
 | Alert | Message |
 |-------|---------|
-| Qualified setup | `Touch&Turn: Qualified LONG/SHORT setup – TICKER` |
-| Entry filled | `Touch&Turn: Entry filled LONG/SHORT – TICKER` |
-| TP hit | `Touch&Turn: TP hit – TICKER` |
-| SL hit | `Touch&Turn: SL hit – TICKER` |
-| Timeout | `Touch&Turn: Timeout – TICKER` |
+| Qualified setup | `15mFib: Qualified LONG/SHORT setup – TICKER` |
+| Entry filled | `15mFib: Entry filled LONG/SHORT – TICKER` |
+| TP hit | `15mFib: TP hit – TICKER` |
+| SL hit | `15mFib: SL hit – TICKER` |
+| Timeout | `15mFib: Timeout – TICKER` |
 
 ## Non-Repainting
 

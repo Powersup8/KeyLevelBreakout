@@ -1,8 +1,8 @@
-// © Touch & Turn Scalper
+// © 15m Fib Scalper
 // Detects liquidity candles on the 15m opening range
 // Signals reversal entries on 1m chart with Fibonacci TP
 //@version=6
-indicator("Touch & Turn", overlay=true, max_lines_count=500, max_labels_count=500)
+indicator("15m Fib Scalper", overlay=true, max_lines_count=500, max_labels_count=500)
 
 // ─── Inputs ────────────────────────────────────────────────
 i_tpLevel  = input.string("38.2%", "TP Level", options=["38.2%", "61.8%"], group="Parameters")
@@ -99,7 +99,7 @@ if state == 0 and new15bar and inSession and not sessionOpen
 
         if direction != 0
             state := 2  // skip to ARMED (qualification + arming in one step)
-            alert("Touch&Turn: Qualified " + (direction == 1 ? "LONG" : "SHORT") + " setup – " + syminfo.ticker, alert.freq_once_per_bar_close)
+            alert("15mFib: Qualified " + (direction == 1 ? "LONG" : "SHORT") + " setup – " + syminfo.ticker, alert.freq_once_per_bar_close)
         else
             state := 4  // DONE — doji, no trade
     else
@@ -186,17 +186,17 @@ if state == 2
         label.new(bar_index, direction == 1 ? low : high, "Timeout",
              style=direction == 1 ? label.style_label_up : label.style_label_down,
              color=color.gray, textcolor=color.white, size=size.small)
-        alert("Touch&Turn: Timeout – " + syminfo.ticker, alert.freq_once_per_bar_close)
+        alert("15mFib: Timeout – " + syminfo.ticker, alert.freq_once_per_bar_close)
     else
         // Check if price touched entry level
         if direction == 1 and low <= entryPrice
             state := 3
             entryFilled := true
-            alert("Touch&Turn: Entry filled " + (direction == 1 ? "LONG" : "SHORT") + " – " + syminfo.ticker, alert.freq_once_per_bar_close)
+            alert("15mFib: Entry filled " + (direction == 1 ? "LONG" : "SHORT") + " – " + syminfo.ticker, alert.freq_once_per_bar_close)
         else if direction == -1 and high >= entryPrice
             state := 3
             entryFilled := true
-            alert("Touch&Turn: Entry filled " + (direction == 1 ? "LONG" : "SHORT") + " – " + syminfo.ticker, alert.freq_once_per_bar_close)
+            alert("15mFib: Entry filled " + (direction == 1 ? "LONG" : "SHORT") + " – " + syminfo.ticker, alert.freq_once_per_bar_close)
 
     if entryFilled
         label.new(bar_index, direction == 1 ? low : high,
@@ -216,26 +216,26 @@ if state == 3
             tpHit := true
             label.new(bar_index, high, "TP",
                  style=label.style_label_down, color=color.blue, textcolor=color.white, size=size.small)
-            alert("Touch&Turn: TP hit – " + syminfo.ticker, alert.freq_once_per_bar_close)
+            alert("15mFib: TP hit – " + syminfo.ticker, alert.freq_once_per_bar_close)
         else if low <= slPrice
             state := 4
             slHit := true
             label.new(bar_index, low, "SL",
                  style=label.style_label_up, color=color.red, textcolor=color.white, size=size.small)
-            alert("Touch&Turn: SL hit – " + syminfo.ticker, alert.freq_once_per_bar_close)
+            alert("15mFib: SL hit – " + syminfo.ticker, alert.freq_once_per_bar_close)
     else  // SHORT
         if low <= tpPrice
             state := 4
             tpHit := true
             label.new(bar_index, low, "TP",
                  style=label.style_label_up, color=color.blue, textcolor=color.white, size=size.small)
-            alert("Touch&Turn: TP hit – " + syminfo.ticker, alert.freq_once_per_bar_close)
+            alert("15mFib: TP hit – " + syminfo.ticker, alert.freq_once_per_bar_close)
         else if high >= slPrice
             state := 4
             slHit := true
             label.new(bar_index, high, "SL",
                  style=label.style_label_down, color=color.red, textcolor=color.white, size=size.small)
-            alert("Touch&Turn: SL hit – " + syminfo.ticker, alert.freq_once_per_bar_close)
+            alert("15mFib: SL hit – " + syminfo.ticker, alert.freq_once_per_bar_close)
 
 // ─── Plot Shapes ──────────────────────────────────────────
 plotshape(entryFilled and direction == 1,
@@ -245,12 +245,12 @@ plotshape(entryFilled and direction == -1,
 
 // ─── Alert Conditions ─────────────────────────────────────
 alertcondition(state == 2 and state[1] != 2,
-     "Qualified Setup", "Touch&Turn: Qualified setup")
+     "Qualified Setup", "15mFib: Qualified setup")
 alertcondition(entryFilled,
-     "Entry Filled", "Touch&Turn: Entry filled")
+     "Entry Filled", "15mFib: Entry filled")
 alertcondition(tpHit,
-     "TP Hit", "Touch&Turn: TP hit")
+     "TP Hit", "15mFib: TP hit")
 alertcondition(slHit,
-     "SL Hit", "Touch&Turn: SL hit")
+     "SL Hit", "15mFib: SL hit")
 alertcondition(state == 4 and state[1] == 2,
-     "Timeout", "Touch&Turn: Timeout")
+     "Timeout", "15mFib: Timeout")
