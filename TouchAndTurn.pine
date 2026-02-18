@@ -206,3 +206,31 @@ if state == 2
              style=direction == 1 ? label.style_label_up : label.style_label_down,
              color=direction == 1 ? color.green : color.red,
              textcolor=color.white, size=size.small)
+
+// ─── Trade Exit Monitoring ────────────────────────────────
+bool tpHit = false
+bool slHit = false
+
+if state == 3
+    if direction == 1  // LONG
+        if high >= tpPrice
+            state := 4
+            tpHit := true
+            label.new(bar_index, high, "TP",
+                 style=label.style_label_down, color=color.blue, textcolor=color.white, size=size.small)
+        else if low <= slPrice
+            state := 4
+            slHit := true
+            label.new(bar_index, low, "SL",
+                 style=label.style_label_up, color=color.red, textcolor=color.white, size=size.small)
+    else  // SHORT
+        if low <= tpPrice
+            state := 4
+            tpHit := true
+            label.new(bar_index, low, "TP",
+                 style=label.style_label_up, color=color.blue, textcolor=color.white, size=size.small)
+        else if high >= slPrice
+            state := 4
+            slHit := true
+            label.new(bar_index, high, "SL",
+                 style=label.style_label_down, color=color.red, textcolor=color.white, size=size.small)
