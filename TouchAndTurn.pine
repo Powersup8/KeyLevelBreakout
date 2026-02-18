@@ -31,8 +31,6 @@ sessionOpen = _sesChg > 0  // first bar of session
 var int   state      = 0
 var float rangeHigh  = na
 var float rangeLow   = na
-var float rangeOpen  = na
-var float rangeClose = na
 var int   rangeBar   = na   // bar_index of the opening 15m bar close
 var int   direction  = 0    // 1=long, -1=short
 var float entryPrice = na
@@ -74,8 +72,6 @@ if sessionOpen
     state := 0
     rangeHigh  := na
     rangeLow   := na
-    rangeOpen  := na
-    rangeClose := na
     rangeBar   := na
     direction  := 0
     entryPrice := na
@@ -87,8 +83,6 @@ if sessionOpen
 if state == 0 and new15bar and inSession and not sessionOpen
     rangeHigh  := h15
     rangeLow   := l15
-    rangeOpen  := o15
-    rangeClose := c15
     rangeBar   := bar_index
 
     candleRange = h15 - l15
@@ -122,7 +116,7 @@ if state == 2 and state[1] != 2
          style=direction == 1 ? label.style_label_up : label.style_label_down,
          color=direction == 1 ? color.green : color.red,
          textcolor=color.white, size=size.small)
-else if state == 4 and state[1] != 4 and not na(rangeBar)
+else if state == 4 and state[1] == 0 and not na(rangeBar)
     if not na(qualLabel)
         label.delete(qualLabel)
     qualLabel := label.new(bar_index, high, "Not Qualified",
