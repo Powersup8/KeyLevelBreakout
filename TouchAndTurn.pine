@@ -26,8 +26,73 @@ inSession  = not na(time(timeframe.period, i_session))
 _sesChg    = ta.change(inSession ? 1 : 0)
 sessionOpen = _sesChg > 0  // first bar of session
 
-// ─── Debug: plot ATR value as label on session open ────────
+// ─── State Machine ────────────────────────────────────────
+// 0=WAITING_FOR_OPEN, 1=QUALIFYING, 2=ARMED, 3=IN_TRADE, 4=DONE
+var int   state      = 0
+var float rangeHigh  = na
+var float rangeLow   = na
+var float rangeOpen  = na
+var float rangeClose = na
+var int   rangeBar   = na   // bar_index of the opening 15m bar close
+var int   direction  = 0    // 1=long, -1=short
+var float entryPrice = na
+var float tpPrice    = na
+var float slPrice    = na
+
+// Reset at session open
 if sessionOpen
-    label.new(bar_index, high, "ATR: " + str.tostring(dailyATR, "#.##") +
-         "\nThreshold: " + str.tostring(atrThreshold, "#.##"),
+    state := 0
+    rangeHigh  := na
+    rangeLow   := na
+    rangeOpen  := na
+    rangeClose := na
+    rangeBar   := na
+    direction  := 0
+    entryPrice := na
+    tpPrice    := na
+    slPrice    := na
+
+// ─── Qualifying: detect first completed 15m bar after open ─
+// The first new15bar AFTER sessionOpen captures the completed opening candle
+if state == 0 and new15bar and inSession and not sessionOpen
+    rangeHigh  := h15
+    rangeLow   := l15
+    rangeOpen  := o15
+    rangeClose := c15
+    rangeBar   := bar_index
+
+    candleRange = h15 - l15
+    qualified   = candleRange >= atrThreshold
+
+    if qualified
+        // Determine direction: opposite to opening candle
+        if c15 < o15   // bearish open → go long
+            direction := 1
+        else if c15 > o15  // bullish open → go short
+            direction := -1
+        else
+            direction := 0  // doji — skip
+
+        if direction != 0
+            state := 2  // skip to ARMED (qualification + arming in one step)
+        else
+            state := 4  // DONE — doji, no trade
+    else
+        state := 4  // DONE — not qualified
+
+// ─── Qualification Labels ─────────────────────────────────
+var label qualLabel = na
+if state == 2 and state[1] != 2
+    if not na(qualLabel)
+        label.delete(qualLabel)
+    dirText = direction == 1 ? "LONG" : "SHORT"
+    qualLabel := label.new(bar_index, direction == 1 ? low : high,
+         "Qualified: " + dirText,
+         style=direction == 1 ? label.style_label_up : label.style_label_down,
+         color=direction == 1 ? color.green : color.red,
+         textcolor=color.white, size=size.small)
+else if state == 4 and state[1] != 4 and not na(rangeBar)
+    if not na(qualLabel)
+        label.delete(qualLabel)
+    qualLabel := label.new(bar_index, high, "Not Qualified",
          style=label.style_label_down, color=color.gray, textcolor=color.white, size=size.small)
