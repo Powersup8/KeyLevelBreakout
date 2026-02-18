@@ -132,10 +132,10 @@ if not na(rangeBar) and (state == 2 or state == 4) and na(rangeBox)
          bgcolor=boxColor, border_color=borderClr, border_width=1)
 
     if state == 2  // Only draw Fib lines for qualified setups
-        range   = rangeHigh - rangeLow
-        fib382  = rangeLow + range * 0.382
-        fib500  = rangeLow + range * 0.5
-        fib618  = rangeLow + range * 0.618
+        rng     = rangeHigh - rangeLow
+        fib382  = rangeLow + rng * 0.382
+        fib500  = rangeLow + rng * 0.5
+        fib618  = rangeLow + rng * 0.618
         farBar  = rangeBar + 390
 
         fib382Ln := line.new(rangeBar, fib382, farBar, fib382,
@@ -147,16 +147,16 @@ if not na(rangeBar) and (state == 2 or state == 4) and na(rangeBox)
 
 // ─── Trade Level Calculation + Lines ──────────────────────
 if state == 2 and state[1] != 2
-    range    = rangeHigh - rangeLow
+    rng      = rangeHigh - rangeLow
     fibMult  = i_tpLevel == "38.2%" ? 0.382 : 0.618
 
     if direction == 1  // LONG
         entryPrice := rangeLow
-        tpPrice    := rangeLow + range * fibMult
+        tpPrice    := rangeLow + rng * fibMult
         slPrice    := rangeLow - (tpPrice - rangeLow) / 2.0
     else  // SHORT
         entryPrice := rangeHigh
-        tpPrice    := rangeHigh - range * fibMult
+        tpPrice    := rangeHigh - rng * fibMult
         slPrice    := rangeHigh + (rangeHigh - tpPrice) / 2.0
 
     farBar = rangeBar + 390
