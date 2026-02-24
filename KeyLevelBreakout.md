@@ -18,7 +18,7 @@ Visual indicator that plots breakout arrows directly on your chart when price cl
 - **Optional level lines** — Horizontal lines for all active levels (off by default to reduce clutter)
 - **Once Per Breakout** — One signal per level, re-arms after invalidation (on by default); turn off for backtesting
 - **`alert()` calls** — One merged alert per direction per bar (e.g. "Bullish breakout: PM H + Yest H")
-- **3 `alertcondition()` entries** — "Any Bullish" + "Any Bearish" + "Any Breakout" for simple filtering in TradingView's alert dropdown
+- **7 `alertcondition()` entries** — "Any Bullish/Bearish Breakout", "Any Breakout", "Any Bullish/Bearish Reversal", "Any Reversal", "Any Setup" for filtering in TradingView's alert dropdown
 
 ## Setup
 

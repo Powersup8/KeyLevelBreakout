@@ -1,37 +1,40 @@
-Detects breakouts through key intraday levels on confirmed signal-TF candle closes. Designed for US equities on 1m/5m charts.
+Detects breakouts, reversals, and reclaims at key intraday levels on confirmed signal-TF candle closes. Designed for US equities on 1m/5m charts.
 
 **Levels tracked:** Premarket High/Low, Yesterday High/Low, Last Week High/Low, ORB High/Low (all toggleable).
 
-**How it works:**
-A breakout fires when a completed signal-TF bar (default 5m) closes through a key level as a bullish/bearish candle, with the prior bar(s) on the opposite side. Labels appear directly on the chart with volume and conviction data.
+**Three setup types:**
+
+**Breakout (Continuation)** — signal-TF bar closes through a key level as a bullish/bearish candle, with prior bar(s) on the other side. Green/red labels.
+
+**Reversal (~)** — wick enters a level zone but close rejects back. Bullish reversals fire at LOW levels, bearish at HIGH levels. Blue/orange labels. Only fires within the Setup Active Window (default 9:30-11:30 ET).
+
+**Reclaim (~~)** — a reversal that fires after a prior breakout at the same level was invalidated. The "false breakout then rejection" pattern. Same blue/orange labels, brighter.
+
+**Level Zones:** Each level becomes a range (wick-to-body) instead of a single price. Daily/weekly use actual candle body data. PM/ORB use ATR-derived width. Toggleable — when off, levels are single lines.
 
 **Filters (all toggleable):**
-- **Volume** — requires above-average volume (default 1.5x SMA). Uses directional 2-bar lookback: borrows prior bar's volume only if it was moving in the same direction as the breakout.
-- **ATR Buffer** — wick must push past level +/- X% of daily ATR(14), while close only needs to hold beyond the raw level. Separates momentum (wick) from conviction (close).
-- **Once Per Breakout** — one signal per level, re-arms when price closes back through with a smaller ATR buffer. Resets each session.
+- **Volume** — requires above-average volume (default 1.5x SMA). Directional 2-bar lookback borrows prior bar's volume only if same direction.
+- **ATR Buffer** — wick must push past level +/- X% of daily ATR(14), close holds beyond raw level.
+- **Once Per Breakout** — one signal per level, re-arms on invalidation. Resets each session.
 
-**Label format:** `PM H 2.1x ^78`
-- `PM H` = level name (merged for confluence: `PM H + Yest H`)
-- `2.1x` = volume ratio vs baseline
-- `^78` = close position (78% toward the high = strong buying pressure)
-- Label opacity scales with volume conviction (bright = strong, faded = borderline)
+**Label format:** `PM H 2.1x ^78` / `~ Yest L 1.8x ^72` / `~~ Yest H 2.3x v85`
+- Level name (merged for confluence), volume ratio, close position %
+- Label opacity scales with volume conviction
 
 **Post-Breakout Confirmation:**
-After a breakout fires, subsequent chart-TF bars are monitored. The label updates with:
-- **checkmark** = follow-through (price held for N bars)
-- **retest checkmark** = price pulled back to the level and held (broken resistance became support)
-- **X** = failed (price closed back through, label turns gray)
-
-Fires separate "Confirmed" / "Failed" alerts.
+After a breakout fires, chart-TF bars are monitored:
+- **checkmark** = follow-through (held N bars)
+- **retest checkmark** = pulled back to level and held
+- **X** = failed (closed back through, label turns gray)
 
 **Alerts:**
-- One merged `alert()` per direction per bar (e.g. "Bullish breakout: PM H + Yest H 2.1x ^78")
-- 3 `alertcondition()` entries: "Any Bullish", "Any Bearish", "Any Breakout"
+- Merged `alert()` per direction per bar (breakouts + reversals)
+- 7 `alertcondition()` entries for granular filtering
 - Confirmation alerts: "Confirmed: ..." / "Failed: ..."
 
 **Setup:**
-1. Add to chart (works on any TF <= Signal Timeframe)
-2. Enable Extended Trading Hours (required for premarket)
+1. Add to chart (any TF <= Signal Timeframe)
+2. Enable Extended Trading Hours (for premarket)
 3. Add alert -> "Any alert() function call" for full coverage
 
-**Signal Timeframe:** Breakouts evaluate on closed bars of the chosen TF (default 5m). Use a 1m chart with 5m signals for more detail while avoiding noise.
+**Signal Timeframe:** Breakouts evaluate on closed signal-TF bars (default 5m). Use 1m chart with 5m signals for detail without noise.
