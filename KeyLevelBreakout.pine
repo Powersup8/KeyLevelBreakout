@@ -225,20 +225,28 @@ bearClosePos = sigRng > 0 ? math.round((sigH - sigC) / sigRng * 100) : na
 if i_firstOnly and newSigBar
     if xPMH and not na(pmHigh) and sigC <= (pmHigh - rearmBuf)
         xPMH := false
+        hadBrkPMH := true
     if xPML and not na(pmLow) and sigC >= (pmLow + rearmBuf)
         xPML := false
+        hadBrkPML := true
     if xYH and not na(yestHigh) and sigC <= (yestHigh - rearmBuf)
         xYH := false
+        hadBrkYH := true
     if xYL and not na(yestLow) and sigC >= (yestLow + rearmBuf)
         xYL := false
+        hadBrkYL := true
     if xWH and not na(weekHigh) and sigC <= (weekHigh - rearmBuf)
         xWH := false
+        hadBrkWH := true
     if xWL and not na(weekLow) and sigC >= (weekLow + rearmBuf)
         xWL := false
+        hadBrkWL := true
     if xOH and not na(orbHigh) and sigC <= (orbHigh - rearmBuf)
         xOH := false
+        hadBrkOH := true
     if xOL and not na(orbLow) and sigC >= (orbLow + rearmBuf)
         xOL := false
+        hadBrkOL := true
     // Reversal re-arm: price moved decisively away from the rejection zone
     if rPMH and not na(pmHigh) and sigC > (pmHigh + rearmBuf)
         rPMH := false
