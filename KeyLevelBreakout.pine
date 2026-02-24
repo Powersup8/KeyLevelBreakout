@@ -239,6 +239,23 @@ if i_firstOnly and newSigBar
         xOH := false
     if xOL and not na(orbLow) and sigC >= (orbLow + rearmBuf)
         xOL := false
+    // Reversal re-arm: price moved decisively away from the rejection zone
+    if rPMH and not na(pmHigh) and sigC > (pmHigh + rearmBuf)
+        rPMH := false
+    if rPML and not na(pmLow) and sigC < (pmLow - rearmBuf)
+        rPML := false
+    if rYH and not na(yestHigh) and sigC > (yestHigh + rearmBuf)
+        rYH := false
+    if rYL and not na(yestLow) and sigC < (yestLow - rearmBuf)
+        rYL := false
+    if rWH and not na(weekHigh) and sigC > (weekHigh + rearmBuf)
+        rWH := false
+    if rWL and not na(weekLow) and sigC < (weekLow - rearmBuf)
+        rWL := false
+    if rOH and not na(orbHigh) and sigC > (orbHigh + rearmBuf)
+        rOH := false
+    if rOL and not na(orbLow) and sigC < (orbLow - rearmBuf)
+        rOL := false
 
 // ─── Breakout Helpers ─────────────────────────────────────
 // 2-bar lookback: if EITHER of the two prior closes was on the other
@@ -305,6 +322,47 @@ if rBullOH
     xOH := true
 if rBearOL
     xOL := true
+
+// ─── Raw Reversal Signals ──────────────────────────────
+// Bull reversal fires at LOW levels (rejection = buy). Bear at HIGH (rejection = sell).
+rRevBullPML = i_showReversal and i_showPM   and i_revPM   and bullRev(pmLow,  pmLBody)
+rRevBullYL  = i_showReversal and i_showYest  and i_revYest and bullRev(yestLow, yestLBody)
+rRevBullWL  = i_showReversal and i_showWeek  and i_revWeek and bullRev(weekLow, weekLBody)
+rRevBullOL  = i_showReversal and i_showORB   and i_revORB  and not isORBwin and bullRev(orbLow, orbLBody)
+
+rRevBearPMH = i_showReversal and i_showPM   and i_revPM   and bearRev(pmHigh,  pmHBody)
+rRevBearYH  = i_showReversal and i_showYest  and i_revYest and bearRev(yestHigh, yestHBody)
+rRevBearWH  = i_showReversal and i_showWeek  and i_revWeek and bearRev(weekHigh, weekHBody)
+rRevBearOH  = i_showReversal and i_showORB   and i_revORB  and not isORBwin and bearRev(orbHigh, orbHBody)
+
+// ─── Filtered Reversal Signals ────────────────────────
+sigRevBullPML = rRevBullPML and (not i_firstOnly or not rPML)
+sigRevBullYL  = rRevBullYL  and (not i_firstOnly or not rYL)
+sigRevBullWL  = rRevBullWL  and (not i_firstOnly or not rWL)
+sigRevBullOL  = rRevBullOL  and (not i_firstOnly or not rOL)
+
+sigRevBearPMH = rRevBearPMH and (not i_firstOnly or not rPMH)
+sigRevBearYH  = rRevBearYH  and (not i_firstOnly or not rYH)
+sigRevBearWH  = rRevBearWH  and (not i_firstOnly or not rWH)
+sigRevBearOH  = rRevBearOH  and (not i_firstOnly or not rOH)
+
+// Update reversal flags
+if rRevBullPML
+    rPML := true
+if rRevBullYL
+    rYL := true
+if rRevBullWL
+    rWL := true
+if rRevBullOL
+    rOL := true
+if rRevBearPMH
+    rPMH := true
+if rRevBearYH
+    rYH := true
+if rRevBearWH
+    rWH := true
+if rRevBearOH
+    rOH := true
 
 // ─── Combined Signals ────────────────────────────────────
 anyBull     = sigBullPMH or sigBullYH or sigBullWH or sigBullOH
