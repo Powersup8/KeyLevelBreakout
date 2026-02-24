@@ -12,6 +12,11 @@ i_enableLong   = input.bool(true,    "Enable Long (Calls)",       group="Directi
 i_qualShort    = input.string("Close", "Short Qualify Mode",      options=["Close", "High"], group="Direction")
 i_qualLong     = input.string("Close", "Long Qualify Mode",       options=["Close", "Low"],  group="Direction")
 i_retestMode   = input.string("EMA Touch", "Retest Mode",         options=["EMA Touch", "Any Opposite"], group="Direction")
+i_signalTF     = input.timeframe("5", "Signal Timeframe",         group="Signals")
+i_bodyFilter   = input.string("None", "Min Body %",               options=["None", "50%", "75%"], group="Parameters")
+i_closeInval   = input.bool(true,    "Close Invalidation",        group="Parameters")
+i_freshCross   = input.bool(true,    "Fresh Cross Filter",        group="Parameters")
+i_retestWin    = input.string("1",   "Retest Window",             options=["1", "2", "3", "Any"], group="Parameters")
 i_atrThresh    = input.float(20.0,   "ATR Threshold %",           minval=1.0, maxval=100.0, step=1.0, group="Parameters")
 i_atrLen       = input.int(14,       "ATR Length (Daily)",         minval=1, group="Parameters")
 i_emaLen       = input.int(9,        "EMA Length",                 minval=1, group="Parameters")
@@ -25,9 +30,20 @@ plot(ema9, "9 EMA", color.new(color.yellow, 30), 1)
 dailyATR = request.security(syminfo.tickerid, "D", ta.atr(i_atrLen)[1], lookahead=barmerge.lookahead_on)
 atrOffset = dailyATR * i_atrThresh / 100.0
 
-// ─── Candle Properties ────────────────────────────────────
-isBull = close > open
-isBear = close < open
+// ─── Signal Timeframe Data (confirmed bar only) ────────────
+[sigO, sigH, sigL, sigC, sigPC] = request.security(syminfo.tickerid, i_signalTF,
+     [open[1], high[1], low[1], close[1], close[2]], lookahead = barmerge.lookahead_on)
+sigEma = request.security(syminfo.tickerid, i_signalTF, ta.ema(close, i_emaLen)[1], lookahead = barmerge.lookahead_on)
+
+_sigT     = time(i_signalTF)
+_sigChg   = ta.change(_sigT)
+newSigBar = not na(_sigChg) and _sigChg != 0
+
+shapeOff = -1
+
+// ─── Signal-TF Candle Properties ────────────────────────────
+sigIsBull = sigC > sigO
+sigIsBear = sigC < sigO
 
 // ─── SHORT SIDE (Puts) ────────────────────────────────────
 
@@ -37,38 +53,41 @@ var float shortQualHigh  = na
 var float shortQualLow   = na
 var float shortQualClose = na
 var int   shortQualBar   = na
-var line  shortEntryLn  = na
-var line  shortSLLn     = na
-var bool  shortCrossed  = false
-bool      shortEntered  = false
-bool      shortSLhit    = false
-bool      shortExited   = false
+var int   shortQualAge   = 0
+var line  shortEntryLn   = na
+var line  shortSLLn      = na
+var bool  shortCrossed   = false
+bool      shortEntered   = false
+bool      shortSLhit     = false
+bool      shortExited    = false
 
-if i_enableShort
+if i_enableShort and newSigBar
     if shortState == 0 or shortState == 1
         // Check for qualifying bullish candle
-        qualAbove = i_qualShort == "Close" ? close >= ema9 + atrOffset : high >= ema9 + atrOffset
-        strongBody = math.abs(close - open) > (high - low) * 0.75
-        freshCross = close[1] <= ema9
-        if isBull and qualAbove and strongBody and freshCross
-            shortQualHigh  := high
-            shortQualLow   := low
-            shortQualClose := close
-            shortQualBar   := bar_index
+        qualAbove  = i_qualShort == "Close" ? sigC >= sigEma + atrOffset : sigH >= sigEma + atrOffset
+        strongBody = i_bodyFilter == "None" ? true : math.abs(sigC - sigO) > (sigH - sigL) * (i_bodyFilter == "75%" ? 0.75 : 0.5)
+        freshCross = not i_freshCross or sigPC <= sigEma
+        if sigIsBull and qualAbove and strongBody and freshCross
+            shortQualHigh  := sigH
+            shortQualLow   := sigL
+            shortQualClose := sigC
+            shortQualBar   := bar_index - 1
+            shortQualAge   := 0
             shortState     := 1
 
     if shortState == 1
+        shortQualAge += 1
         // Invalidate if EMA rose past qualifying candle's close
-        if shortQualClose <= ema9
+        if i_closeInval and shortQualClose <= sigEma
             shortState := 0
-        // Check for bearish pullback
-        shortRetest = i_retestMode == "EMA Touch" ? (isBear and low <= ema9) : isBear
+        // Check for bearish pullback (must be the next candle)
+        shortRetest = i_retestMode == "EMA Touch" ? (sigIsBear and sigL <= sigEma) : sigIsBear
         if shortState == 1 and shortRetest
             // ── Signal: Entry ──
             entryPrice = shortQualHigh - (shortQualHigh - shortQualLow) / 3.0
             slPrice    = shortQualHigh
             x1         = shortQualBar - i_lineExtend
-            x2         = bar_index + i_lineExtend
+            x2         = bar_index - 1 + i_lineExtend
 
             // Delete old lines
             if not na(shortEntryLn)
@@ -86,22 +105,24 @@ if i_enableShort
             shortCrossed := false
             shortEntered := true
             alert("EMA Pullback Short Entry – " + syminfo.ticker, alert.freq_once_per_bar_close)
+        else if i_retestWin != "Any" and shortQualAge > (i_retestWin == "1" ? 1 : i_retestWin == "2" ? 2 : 3)
+            shortState := 0
 
     if shortState == 2 and not shortEntered
         // Track if price has crossed below EMA
-        if not shortCrossed and close < ema9
+        if not shortCrossed and sigC < sigEma
             shortCrossed := true
         // Exit: SL (always active) or body above EMA (only after crossing)
-        if high >= shortQualHigh
+        if sigH >= shortQualHigh
             shortState := 0
             shortSLhit := true
-            label.new(bar_index, shortQualHigh, "Put SL",
+            label.new(bar_index - 1, shortQualHigh, "Put SL",
                  style=label.style_label_down, color=color.red, textcolor=color.white, size=size.small)
             alert("EMA Pullback Short SL – " + syminfo.ticker, alert.freq_once_per_bar_close)
-        else if shortCrossed and math.min(open, close) > ema9
+        else if shortCrossed and math.min(sigO, sigC) > sigEma
             shortState  := 0
             shortExited := true
-            label.new(bar_index, low, "Put Exit",
+            label.new(bar_index - 1, sigL, "Put Exit",
                  style=label.style_label_up, color=color.orange, textcolor=color.white, size=size.small)
             alert("EMA Pullback Short Exit – " + syminfo.ticker, alert.freq_once_per_bar_close)
 
@@ -112,38 +133,41 @@ var float longQualHigh  = na
 var float longQualLow   = na
 var float longQualClose = na
 var int   longQualBar   = na
-var line  longEntryLn  = na
-var line  longSLLn     = na
-var bool  longCrossed  = false
-bool      longEntered  = false
-bool      longSLhit    = false
-bool      longExited   = false
+var int   longQualAge   = 0
+var line  longEntryLn   = na
+var line  longSLLn      = na
+var bool  longCrossed   = false
+bool      longEntered   = false
+bool      longSLhit     = false
+bool      longExited    = false
 
-if i_enableLong
+if i_enableLong and newSigBar
     if longState == 0 or longState == 1
         // Check for qualifying bearish candle
-        qualBelow = i_qualLong == "Close" ? close <= ema9 - atrOffset : low <= ema9 - atrOffset
-        strongBody = math.abs(close - open) > (high - low) * 0.75
-        freshCross = close[1] >= ema9
-        if isBear and qualBelow and strongBody and freshCross
-            longQualHigh  := high
-            longQualLow   := low
-            longQualClose := close
-            longQualBar   := bar_index
+        qualBelow  = i_qualLong == "Close" ? sigC <= sigEma - atrOffset : sigL <= sigEma - atrOffset
+        strongBody = i_bodyFilter == "None" ? true : math.abs(sigC - sigO) > (sigH - sigL) * (i_bodyFilter == "75%" ? 0.75 : 0.5)
+        freshCross = not i_freshCross or sigPC >= sigEma
+        if sigIsBear and qualBelow and strongBody and freshCross
+            longQualHigh  := sigH
+            longQualLow   := sigL
+            longQualClose := sigC
+            longQualBar   := bar_index - 1
+            longQualAge   := 0
             longState     := 1
 
     if longState == 1
+        longQualAge += 1
         // Invalidate if EMA dropped past qualifying candle's close
-        if longQualClose >= ema9
+        if i_closeInval and longQualClose >= sigEma
             longState := 0
-        // Check for bullish pullback
-        longRetest = i_retestMode == "EMA Touch" ? (isBull and high >= ema9) : isBull
+        // Check for bullish pullback (must be the next candle)
+        longRetest = i_retestMode == "EMA Touch" ? (sigIsBull and sigH >= sigEma) : sigIsBull
         if longState == 1 and longRetest
             // ── Signal: Entry ──
             entryPrice = longQualLow + (longQualHigh - longQualLow) / 3.0
             slPrice    = longQualLow
             x1         = longQualBar - i_lineExtend
-            x2         = bar_index + i_lineExtend
+            x2         = bar_index - 1 + i_lineExtend
 
             // Delete old lines
             if not na(longEntryLn)
@@ -161,22 +185,24 @@ if i_enableLong
             longCrossed := false
             longEntered := true
             alert("EMA Pullback Long Entry – " + syminfo.ticker, alert.freq_once_per_bar_close)
+        else if i_retestWin != "Any" and longQualAge > (i_retestWin == "1" ? 1 : i_retestWin == "2" ? 2 : 3)
+            longState := 0
 
     if longState == 2 and not longEntered
         // Track if price has crossed above EMA
-        if not longCrossed and close > ema9
+        if not longCrossed and sigC > sigEma
             longCrossed := true
         // Exit: SL (always active) or body below EMA (only after crossing)
-        if low <= longQualLow
+        if sigL <= longQualLow
             longState := 0
             longSLhit := true
-            label.new(bar_index, longQualLow, "Call SL",
+            label.new(bar_index - 1, longQualLow, "Call SL",
                  style=label.style_label_up, color=color.red, textcolor=color.white, size=size.small)
             alert("EMA Pullback Long SL – " + syminfo.ticker, alert.freq_once_per_bar_close)
-        else if longCrossed and math.max(open, close) < ema9
+        else if longCrossed and math.max(sigO, sigC) < sigEma
             longState  := 0
             longExited := true
-            label.new(bar_index, high, "Call Exit",
+            label.new(bar_index - 1, sigH, "Call Exit",
                  style=label.style_label_down, color=color.orange, textcolor=color.white, size=size.small)
             alert("EMA Pullback Long Exit – " + syminfo.ticker, alert.freq_once_per_bar_close)
 
@@ -184,11 +210,11 @@ if i_enableLong
 
 // Short entry marker (red triangle above bar)
 plotshape(i_enableShort and shortEntered,
-     "Short Entry", shape.triangledown, location.abovebar, color.red, size=size.small, text="Put")
+     "Short Entry", shape.triangledown, location.abovebar, color.red, offset=shapeOff, size=size.small, text="Put")
 
 // Long entry marker (green triangle below bar)
 plotshape(i_enableLong and longEntered,
-     "Long Entry", shape.triangleup, location.belowbar, color.green, size=size.small, text="Call")
+     "Long Entry", shape.triangleup, location.belowbar, color.green, offset=shapeOff, size=size.small, text="Call")
 
 // ─── Alert Conditions ─────────────────────────────────────
 alertcondition(i_enableShort and shortEntered, "Short Entry (Puts)", "EMA Pullback Short Entry")

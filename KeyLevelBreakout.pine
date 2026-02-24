@@ -12,6 +12,22 @@ i_showORB   = input.bool(true,  "ORB High/Low",               group="Level Toggl
 i_firstOnly = input.bool(true,  "Once Per Breakout", group="Signals")
 i_signalTF  = input.timeframe("5", "Signal Timeframe",        group="Signals")
 i_showLines = input.bool(false, "Show Level Lines",           group="Visuals")
+i_fadeOld   = input.bool(true,  "Fade Old Labels",            group="Visuals")
+i_fadeAge   = input.int(100,    "Fade After (bars)",           minval=10, group="Visuals")
+
+// ─── Filter Inputs ──────────────────────────────────────
+i_volFilter  = input.bool(true,  "Require Above-Avg Volume",    group="Filters")
+i_volMode    = input.string("Signal TF SMA", "Volume Baseline", options=["Signal TF SMA", "Daily Average"], group="Filters")
+i_volMult    = input.float(1.5,  "Volume Multiplier",           minval=0.5, step=0.1, group="Filters")
+i_volLen     = input.int(20,     "Volume SMA Length",            minval=5, group="Filters")
+i_atrBuf     = input.bool(true,  "Use ATR Buffer",              group="Filters")
+i_atrPct     = input.float(5.0,  "Breakout Buffer (% of ATR)",  minval=0, step=1, group="Filters")
+i_atrRearm   = input.float(3.0,  "Re-arm Buffer (% of ATR)",    minval=0, step=1, group="Filters")
+
+i_closePos    = input.bool(true,  "Show Close Position %",           group="Quality")
+
+i_confirm     = input.bool(true,  "Post-Breakout Confirmation",     group="Confirmation")
+i_confirmBars = input.int(10,     "Confirmation Window (chart bars)", minval=3, maxval=30, group="Confirmation")
 
 // ─── Session Detection (US Eastern) ───────────────────────
 TZ           = "America/New_York"
@@ -41,6 +57,10 @@ yestLow  = request.security(syminfo.tickerid, "D", low[1],  lookahead = barmerge
 weekHigh = request.security(syminfo.tickerid, "W", high[1], lookahead = barmerge.lookahead_on)
 weekLow  = request.security(syminfo.tickerid, "W", low[1],  lookahead = barmerge.lookahead_on)
 
+// Daily ATR + Average Volume (non-repainting)
+dailyATR    = request.security(syminfo.tickerid, "D", ta.atr(14)[1], lookahead = barmerge.lookahead_on)
+dailyVolSma = request.security(syminfo.tickerid, "D", ta.sma(volume, i_volLen)[1], lookahead = barmerge.lookahead_on)
+
 // ORB High/Low — first 5-min bar(s) of regular session
 var float orbHigh = na
 var float orbLow  = na
@@ -62,6 +82,21 @@ var bool xWL  = false
 var bool xOH  = false
 var bool xOL  = false
 
+// ─── Post-Breakout Confirmation State ───────────────────
+var label  lastBullLbl       = na
+var string lastBullText      = ""
+var float  lastBullLvl       = na
+var int    lastBullStart     = 0
+var int    lastBullState     = 0  // 0=none, 1=monitoring, 2=retest-confirmed, 3=time-confirmed, -1=failed
+var int    prevBullConfState = 0
+
+var label  lastBearLbl       = na
+var string lastBearText      = ""
+var float  lastBearLvl       = na
+var int    lastBearStart     = 0
+var int    lastBearState     = 0
+var int    prevBearConfState = 0
+
 if newRegular
     xPMH := false
     xPML := false
@@ -71,11 +106,17 @@ if newRegular
     xWL  := false
     xOH  := false
     xOL  := false
+    // Reset confirmation state at session open
+    if i_confirm
+        lastBullState     := 0
+        lastBearState     := 0
+        prevBullConfState := 0
+        prevBearConfState := 0
 
 // ─── Signal Timeframe Data (confirmed bar only) ──────────
 // Previous completed signal-TF bar's OHLC — non-repainting
-[sigC, sigO, sigPC] = request.security(syminfo.tickerid, i_signalTF,
-     [close[1], open[1], close[2]], lookahead = barmerge.lookahead_on)
+[sigC, sigO, sigH, sigL, sigPC, sigPC2, sigVol, sigVolPrev, sigVolSma] = request.security(syminfo.tickerid, i_signalTF,
+     [close[1], open[1], high[1], low[1], close[2], close[3], volume[1], volume[2], ta.sma(volume, i_volLen)[1]], lookahead = barmerge.lookahead_on)
 
 // Detect when a new signal-TF bar starts (previous one just closed)
 _sigT     = time(i_signalTF)
@@ -87,31 +128,69 @@ newSigBar = not na(_sigChg) and _sigChg != 0
 // 5m period on a 1m chart)
 shapeOff = -1
 
+// ─── Filter Computations ────────────────────────────────
+breakBuf = i_atrBuf and not na(dailyATR) ? dailyATR * i_atrPct / 100.0 : 0.0
+rearmBuf = i_atrBuf and not na(dailyATR) ? dailyATR * i_atrRearm / 100.0 : 0.0
+
+tfSecs      = timeframe.in_seconds(i_signalTF)
+barsPerDay  = tfSecs > 0 ? 23400.0 / tfSecs : 1.0
+dailyBarVol = barsPerDay > 0 ? dailyVolSma / barsPerDay : na
+volBase     = i_volMode == "Signal TF SMA" ? sigVolSma : dailyBarVol
+volThreshold = not na(volBase) ? volBase * i_volMult : na
+// Directional volume: borrow prior bar only if it moved in the same direction
+sigVolBull   = sigPC > sigPC2 ? math.max(nz(sigVol), nz(sigVolPrev)) : nz(sigVol)
+sigVolBear   = sigPC < sigPC2 ? math.max(nz(sigVol), nz(sigVolPrev)) : nz(sigVol)
+volPassBull  = not i_volFilter or na(volThreshold) or sigVolBull > volThreshold
+volPassBear  = not i_volFilter or na(volThreshold) or sigVolBear > volThreshold
+volRatioBull = not na(volBase) and volBase > 0 ? sigVolBull / volBase : na
+volRatioBear = not na(volBase) and volBase > 0 ? sigVolBear / volBase : na
+bullVolStr   = i_volFilter and not na(volRatioBull) ? " " + str.tostring(volRatioBull, "#.#") + "x" : ""
+bearVolStr   = i_volFilter and not na(volRatioBear) ? " " + str.tostring(volRatioBear, "#.#") + "x" : ""
+bullVolAlpha = i_volFilter and not na(volRatioBull) ? math.max(0, math.round(60 - volRatioBull * 20)) : 0
+bearVolAlpha = i_volFilter and not na(volRatioBear) ? math.max(0, math.round(60 - volRatioBear * 20)) : 0
+bullColor    = color.new(color.green, bullVolAlpha)
+bearColor    = color.new(color.red, bearVolAlpha)
+
+// Close position: where did the close land within the bar's range? (0-100%)
+sigRng       = sigH - sigL
+bullClosePos = sigRng > 0 ? math.round((sigC - sigL) / sigRng * 100) : na
+bearClosePos = sigRng > 0 ? math.round((sigH - sigC) / sigRng * 100) : na
+
 // ─── Invalidation: re-arm when price closes back through level ──
 if i_firstOnly and newSigBar
-    if xPMH and not na(pmHigh) and sigC <= pmHigh
+    if xPMH and not na(pmHigh) and sigC <= (pmHigh - rearmBuf)
         xPMH := false
-    if xPML and not na(pmLow) and sigC >= pmLow
+    if xPML and not na(pmLow) and sigC >= (pmLow + rearmBuf)
         xPML := false
-    if xYH and not na(yestHigh) and sigC <= yestHigh
+    if xYH and not na(yestHigh) and sigC <= (yestHigh - rearmBuf)
         xYH := false
-    if xYL and not na(yestLow) and sigC >= yestLow
+    if xYL and not na(yestLow) and sigC >= (yestLow + rearmBuf)
         xYL := false
-    if xWH and not na(weekHigh) and sigC <= weekHigh
+    if xWH and not na(weekHigh) and sigC <= (weekHigh - rearmBuf)
         xWH := false
-    if xWL and not na(weekLow) and sigC >= weekLow
+    if xWL and not na(weekLow) and sigC >= (weekLow + rearmBuf)
         xWL := false
-    if xOH and not na(orbHigh) and sigC <= orbHigh
+    if xOH and not na(orbHigh) and sigC <= (orbHigh - rearmBuf)
         xOH := false
-    if xOL and not na(orbLow) and sigC >= orbLow
+    if xOL and not na(orbLow) and sigC >= (orbLow + rearmBuf)
         xOL := false
 
 // ─── Breakout Helpers ─────────────────────────────────────
+// 2-bar lookback: if EITHER of the two prior closes was on the other
+// side of the level, the cross is valid.  This prevents a scenario
+// where a bearish candle crosses the level first, making sigPC already
+// past the level so the subsequent bullish breakout never fires.
 bullBreak(float level) =>
-    not na(level) and isRegular and newSigBar and sigC > sigO and sigC > level and sigPC <= level
+    float effLvl = level + breakBuf
+    not na(level) and isRegular and newSigBar and sigC > sigO
+     and sigC > level and sigH > effLvl
+     and (sigPC <= effLvl or sigPC2 <= effLvl) and volPassBull
 
 bearBreak(float level) =>
-    not na(level) and isRegular and newSigBar and sigC < sigO and sigC < level and sigPC >= level
+    float effLvl = level - breakBuf
+    not na(level) and isRegular and newSigBar and sigC < sigO
+     and sigC < level and sigL < effLvl
+     and (sigPC >= effLvl or sigPC2 >= effLvl) and volPassBear
 
 // ─── Raw Signals ──────────────────────────────────────────
 rBullPMH = i_showPM   and bullBreak(pmHigh)
@@ -156,15 +235,134 @@ anyBull     = sigBullPMH or sigBullYH or sigBullWH or sigBullOH
 anyBear     = sigBearPML or sigBearYL or sigBearWL or sigBearOL
 anyBreakout = anyBull or anyBear
 
-// ─── Plot Shapes ──────────────────────────────────────────
-plotshape(sigBullPMH, "Bull PM High",   shape.triangleup,   location.belowbar, color.green, offset=shapeOff, size=size.small, text="PM H",   textcolor=color.green)
-plotshape(sigBearPML, "Bear PM Low",    shape.triangledown, location.abovebar, color.red,   offset=shapeOff, size=size.small, text="PM L",   textcolor=color.red)
-plotshape(sigBullYH,  "Bull Yest High", shape.triangleup,   location.belowbar, color.green, offset=shapeOff, size=size.small, text="Yest H", textcolor=color.green)
-plotshape(sigBearYL,  "Bear Yest Low",  shape.triangledown, location.abovebar, color.red,   offset=shapeOff, size=size.small, text="Yest L", textcolor=color.red)
-plotshape(sigBullWH,  "Bull Week High", shape.triangleup,   location.belowbar, color.green, offset=shapeOff, size=size.small, text="Week H", textcolor=color.green)
-plotshape(sigBearWL,  "Bear Week Low",  shape.triangledown, location.abovebar, color.red,   offset=shapeOff, size=size.small, text="Week L", textcolor=color.red)
-plotshape(sigBullOH,  "Bull ORB High",  shape.triangleup,   location.belowbar, color.green, offset=shapeOff, size=size.small, text="ORB H",  textcolor=color.green)
-plotshape(sigBearOL,  "Bear ORB Low",   shape.triangledown, location.abovebar, color.red,   offset=shapeOff, size=size.small, text="ORB L",  textcolor=color.red)
+// ─── Signal Labels (confluent levels merged) ────────────────
+bullText = ""
+if sigBullPMH
+    bullText := bullText + (bullText != "" ? " + " : "") + "PM H"
+if sigBullYH
+    bullText := bullText + (bullText != "" ? " + " : "") + "Yest H"
+if sigBullWH
+    bullText := bullText + (bullText != "" ? " + " : "") + "Week H"
+if sigBullOH
+    bullText := bullText + (bullText != "" ? " + " : "") + "ORB H"
+
+bearText = ""
+if sigBearPML
+    bearText := bearText + (bearText != "" ? " + " : "") + "PM L"
+if sigBearYL
+    bearText := bearText + (bearText != "" ? " + " : "") + "Yest L"
+if sigBearWL
+    bearText := bearText + (bearText != "" ? " + " : "") + "Week L"
+if sigBearOL
+    bearText := bearText + (bearText != "" ? " + " : "") + "ORB L"
+
+// Close position suffix: "^78" = close at 78% toward the high
+bullPosStr = i_closePos and not na(bullClosePos) ? " ^" + str.tostring(bullClosePos) : ""
+bearPosStr = i_closePos and not na(bearClosePos) ? " v" + str.tostring(bearClosePos) : ""
+
+bullCount = (sigBullPMH ? 1 : 0) + (sigBullYH ? 1 : 0) + (sigBullWH ? 1 : 0) + (sigBullOH ? 1 : 0)
+bearCount = (sigBearPML ? 1 : 0) + (sigBearYL ? 1 : 0) + (sigBearWL ? 1 : 0) + (sigBearOL ? 1 : 0)
+
+isOld = i_fadeOld and (last_bar_index - bar_index) > i_fadeAge
+
+if bullText != ""
+    string fullBullText = bullText + bullVolStr + bullPosStr
+    label lbl = label.new(bar_index + shapeOff, na, fullBullText,
+         yloc=yloc.belowbar, style=label.style_label_up,
+         color=isOld ? color.new(color.gray, 90) : bullColor,
+         textcolor=isOld ? color.new(color.gray, 70) : color.white,
+         size=bullCount > 1 ? size.normal : size.small)
+    if i_confirm and not isOld
+        // Auto-promote previous monitoring to confirmed (survived until next signal)
+        if lastBullState == 1
+            lastBullState := 3
+            label.set_text(lastBullLbl, lastBullText + " ✓")
+        // Track most conservative level (lowest for bull = hardest to hold)
+        float lvl = na
+        if sigBullPMH
+            lvl := na(lvl) ? pmHigh : math.min(lvl, pmHigh)
+        if sigBullYH
+            lvl := na(lvl) ? yestHigh : math.min(lvl, yestHigh)
+        if sigBullWH
+            lvl := na(lvl) ? weekHigh : math.min(lvl, weekHigh)
+        if sigBullOH
+            lvl := na(lvl) ? orbHigh : math.min(lvl, orbHigh)
+        lastBullLbl   := lbl
+        lastBullText  := fullBullText
+        lastBullLvl   := lvl
+        lastBullStart := bar_index
+        lastBullState := 1
+
+if bearText != ""
+    string fullBearText = bearText + bearVolStr + bearPosStr
+    label lbl = label.new(bar_index + shapeOff, na, fullBearText,
+         yloc=yloc.abovebar, style=label.style_label_down,
+         color=isOld ? color.new(color.gray, 90) : bearColor,
+         textcolor=isOld ? color.new(color.gray, 70) : color.white,
+         size=bearCount > 1 ? size.normal : size.small)
+    if i_confirm and not isOld
+        if lastBearState == 1
+            lastBearState := 3
+            label.set_text(lastBearLbl, lastBearText + " ✓")
+        float lvl = na
+        if sigBearPML
+            lvl := na(lvl) ? pmLow : math.max(lvl, pmLow)
+        if sigBearYL
+            lvl := na(lvl) ? yestLow : math.max(lvl, yestLow)
+        if sigBearWL
+            lvl := na(lvl) ? weekLow : math.max(lvl, weekLow)
+        if sigBearOL
+            lvl := na(lvl) ? orbLow : math.max(lvl, orbLow)
+        lastBearLbl   := lbl
+        lastBearText  := fullBearText
+        lastBearLvl   := lvl
+        lastBearStart := bar_index
+        lastBearState := 1
+
+// ─── Post-Breakout Confirmation Monitoring ────────────────
+// Runs every chart bar (not gated by newSigBar) for real-time feedback.
+if i_confirm and lastBullState == 1 and not na(lastBullLvl)
+    int elapsed = bar_index - lastBullStart
+    if close < lastBullLvl - rearmBuf
+        lastBullState := -1
+        label.set_text(lastBullLbl, lastBullText + " ✗")
+        label.set_color(lastBullLbl, color.new(color.gray, 60))
+        label.set_textcolor(lastBullLbl, color.new(color.gray, 40))
+    else if elapsed >= 2 and low <= lastBullLvl + rearmBuf and close > lastBullLvl
+        lastBullState := 2
+        label.set_text(lastBullLbl, lastBullText + " ⟳✓")
+    else if elapsed >= i_confirmBars
+        lastBullState := 3
+        label.set_text(lastBullLbl, lastBullText + " ✓")
+
+if i_confirm and lastBearState == 1 and not na(lastBearLvl)
+    int elapsed = bar_index - lastBearStart
+    if close > lastBearLvl + rearmBuf
+        lastBearState := -1
+        label.set_text(lastBearLbl, lastBearText + " ✗")
+        label.set_color(lastBearLbl, color.new(color.gray, 60))
+        label.set_textcolor(lastBearLbl, color.new(color.gray, 40))
+    else if elapsed >= 2 and high >= lastBearLvl - rearmBuf and close < lastBearLvl
+        lastBearState := 2
+        label.set_text(lastBearLbl, lastBearText + " ⟳✓")
+    else if elapsed >= i_confirmBars
+        lastBearState := 3
+        label.set_text(lastBearLbl, lastBearText + " ✓")
+
+// Confirmation alerts (fire once per state transition)
+if i_confirm
+    if lastBullState != prevBullConfState
+        if lastBullState == 2 or lastBullState == 3
+            alert("Confirmed: " + lastBullText, alert.freq_once_per_bar_close)
+        if lastBullState == -1
+            alert("Failed: " + lastBullText, alert.freq_once_per_bar_close)
+        prevBullConfState := lastBullState
+    if lastBearState != prevBearConfState
+        if lastBearState == 2 or lastBearState == 3
+            alert("Confirmed: " + lastBearText, alert.freq_once_per_bar_close)
+        if lastBearState == -1
+            alert("Failed: " + lastBearText, alert.freq_once_per_bar_close)
+        prevBearConfState := lastBearState
 
 // ─── Level Lines (optional, off by default) ───────────────
 plot(i_showLines and i_showPM   and isRegular ? pmHigh   : na, "PM High",   color.new(color.orange, 40), 1, plot.style_linebr)
@@ -176,33 +374,17 @@ plot(i_showLines and i_showWeek and isRegular ? weekLow  : na, "Week Low",  colo
 plot(i_showLines and i_showORB  and isRegular ? orbHigh  : na, "ORB High",  color.new(color.teal, 40),   1, plot.style_linebr)
 plot(i_showLines and i_showORB  and isRegular ? orbLow   : na, "ORB Low",   color.new(color.teal, 40),   1, plot.style_linebr)
 
-// ─── Programmatic Alerts (one alert covers all) ───────────
-if sigBullPMH
-    alert("Bullish breakout above Premarket High", alert.freq_once_per_bar_close)
-if sigBearPML
-    alert("Bearish breakout below Premarket Low", alert.freq_once_per_bar_close)
-if sigBullYH
-    alert("Bullish breakout above Yesterday High", alert.freq_once_per_bar_close)
-if sigBearYL
-    alert("Bearish breakout below Yesterday Low", alert.freq_once_per_bar_close)
-if sigBullWH
-    alert("Bullish breakout above Last Week High", alert.freq_once_per_bar_close)
-if sigBearWL
-    alert("Bearish breakout below Last Week Low", alert.freq_once_per_bar_close)
-if sigBullOH
-    alert("Bullish breakout above ORB High", alert.freq_once_per_bar_close)
-if sigBearOL
-    alert("Bearish breakout below ORB Low", alert.freq_once_per_bar_close)
+// ─── Programmatic Alerts (merged like labels) ───────────
+if bullText != ""
+    alert("Bullish breakout: " + bullText + bullVolStr + bullPosStr, alert.freq_once_per_bar_close)
+if bearText != ""
+    alert("Bearish breakout: " + bearText + bearVolStr + bearPosStr, alert.freq_once_per_bar_close)
 
-// ─── Alert Conditions (for granular per-level alerts) ─────
-alertcondition(sigBullPMH,  "Bullish PM High Breakout",   "Bullish breakout above Premarket High")
-alertcondition(sigBearPML,  "Bearish PM Low Breakout",    "Bearish breakout below Premarket Low")
-alertcondition(sigBullYH,   "Bullish Yest High Breakout", "Bullish breakout above Yesterday High")
-alertcondition(sigBearYL,   "Bearish Yest Low Breakout",  "Bearish breakout below Yesterday Low")
-alertcondition(sigBullWH,   "Bullish Week High Breakout", "Bullish breakout above Last Week High")
-alertcondition(sigBearWL,   "Bearish Week Low Breakout",  "Bearish breakout below Last Week Low")
-alertcondition(sigBullOH,   "Bullish ORB High Breakout",  "Bullish breakout above ORB High")
-alertcondition(sigBearOL,   "Bearish ORB Low Breakout",   "Bearish breakout below ORB Low")
+// ─── Alert Conditions ───────────────────────────────────────
+// Note: per-level alertconditions removed — "Any alert() function call"
+// catches both alert() and alertcondition(), causing duplicate notifications.
+// Use "Any alert() function call" for merged alerts (recommended).
+// Use the conditions below for simple bull/bear/any filtering.
 alertcondition(anyBull,     "Any Bullish Breakout",       "Bullish breakout detected")
 alertcondition(anyBear,     "Any Bearish Breakout",       "Bearish breakout detected")
 alertcondition(anyBreakout, "Any Breakout",               "Breakout detected (bull or bear)")
