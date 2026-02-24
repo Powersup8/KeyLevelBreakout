@@ -29,6 +29,19 @@ i_closePos    = input.bool(true,  "Show Close Position %",           group="Qual
 i_confirm     = input.bool(true,  "Post-Breakout Confirmation",     group="Confirmation")
 i_confirmBars = input.int(10,     "Confirmation Window (chart bars)", minval=3, maxval=30, group="Confirmation")
 
+// ─── Setup Inputs ──────────────────────────────────────
+i_showReversal = input.bool(true,   "Show Reversal Setups",            group="Setups")
+i_showReclaim  = input.bool(true,   "Show Reclaim Setups",             group="Setups")
+i_setupWindow  = input.string("0930-1130", "Setup Active Window (ET)", group="Setups")
+
+i_useZones     = input.bool(true,   "Use Level Zones (wick-to-body)",  group="Zones")
+i_zoneATRPct   = input.float(3.0,   "Zone Width for PM/ORB (% of ATR)", minval=0, step=0.5, group="Zones")
+
+i_revPM   = input.bool(true, "PM H/L Reversal/Reclaim",   group="Reversal/Reclaim Toggles")
+i_revYest = input.bool(true, "Yest H/L Reversal/Reclaim", group="Reversal/Reclaim Toggles")
+i_revWeek = input.bool(true, "Week H/L Reversal/Reclaim", group="Reversal/Reclaim Toggles")
+i_revORB  = input.bool(true, "ORB H/L Reversal/Reclaim",  group="Reversal/Reclaim Toggles")
+
 // ─── Session Detection (US Eastern) ───────────────────────
 TZ           = "America/New_York"
 isPremarket  = not na(time(timeframe.period, "0400-0930:23456", TZ))
