@@ -177,6 +177,14 @@ vwapVal = ta.vwap
 
 ---
 
+### 8.5. Reversal + Reclaim Setups (HIGH impact) ✅ IMPLEMENTED v1.7
+
+**Problem:** Only detected breakouts (continuation). Missed reversal (rejection off level) and reclaim (false breakout + rejection) patterns from the PDH/PDL strategy.
+
+**Implemented:** Three setup types in one indicator: Continuation (existing breakout, refined), Reversal (wick enters zone, close rejects), Reclaim (reversal after invalidated breakout). Level zones (wick-to-body) for D/W, ATR-derived for PM/ORB. Configurable time window (default 9:30-11:30 ET). Per-level toggles. Blue/orange labels for reversals.
+
+---
+
 ### 8. Backtest Strategy Version (LOW-MEDIUM impact)
 
 **Problem:** No way to validate if breakout signals actually produce profitable trades.

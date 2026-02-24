@@ -11,6 +11,10 @@ Visual indicator that plots breakout arrows directly on your chart when price cl
 - **Post-Breakout Confirmation** — monitors chart-TF bars after breakout for follow-through (✓), retest-and-hold (⟳✓), or failure (✗)
 - **Conviction coloring** — label opacity scales with volume ratio (faded = barely passed, bright = strong conviction)
 - **Confluence merging** — when multiple levels break on the same bar, labels and alerts merge (e.g. "PM H + Yest H 2.1x") with a larger label size
+- **Reversal setups** — detects rejection off level zones (wick enters zone, close rejects); bullish at LOW levels (blue), bearish at HIGH levels (orange)
+- **Reclaim setups** — context-enriched reversal when a prior breakout was invalidated (false breakout → rejection); labeled with `~~` prefix
+- **Level zones** — wick-to-body zones for daily/weekly levels (candle body data), ATR-derived for PM/ORB (toggleable)
+- **Setup time window** — configurable active window for reversal/reclaim signals (default 9:30-11:30 ET)
 - **Optional level lines** — Horizontal lines for all active levels (off by default to reduce clutter)
 - **Once Per Breakout** — One signal per level, re-arms after invalidation (on by default); turn off for backtesting
 - **`alert()` calls** — One merged alert per direction per bar (e.g. "Bullish breakout: PM H + Yest H")
@@ -48,6 +52,15 @@ Visual indicator that plots breakout arrows directly on your chart when price cl
 | Show Close Position % | On | Quality | Display where the close landed within the bar's range (0-100%) |
 | Post-Breakout Confirmation | On | Confirmation | Monitor chart-TF bars after breakout for follow-through or failure |
 | Confirmation Window | 10 | Confirmation | How many chart bars to monitor (e.g. 10 bars = 10 min on 1m chart) |
+| Show Reversal Setups | On | Setups | Enable reversal signal detection at level zones |
+| Show Reclaim Setups | On | Setups | Enable reclaim labeling (reversal after failed breakout) |
+| Setup Active Window (ET) | 0930-1130 | Setups | Time window for reversal/reclaim signals (ET format) |
+| Use Level Zones | On | Zones | Use wick-to-body zones instead of single-price levels |
+| Zone Width for PM/ORB | 3.0 | Zones | ATR% zone width for levels without candle body data |
+| PM H/L Reversal/Reclaim | On | Rev/Recl Toggles | Enable reversal/reclaim at premarket levels |
+| Yest H/L Reversal/Reclaim | On | Rev/Recl Toggles | Enable reversal/reclaim at yesterday levels |
+| Week H/L Reversal/Reclaim | On | Rev/Recl Toggles | Enable reversal/reclaim at weekly levels |
+| ORB H/L Reversal/Reclaim | On | Rev/Recl Toggles | Enable reversal/reclaim at opening range levels |
 
 ## Once Per Breakout (Invalidation Logic)
 
@@ -81,6 +94,21 @@ Retest detection requires at least 2 chart bars after the breakout (prevents fal
 
 Confirmation also fires separate `alert()` calls: `"Confirmed: ORB H 2.1x ^78"` or `"Failed: ORB H 2.1x ^78"`.
 
+## Reversal & Reclaim Setups
+
+When enabled, the indicator detects two additional setup types at level zones:
+
+**Reversal (`~` prefix):** A single-bar rejection pattern. The signal-TF bar's wick enters the level zone, but the close rejects back outside. Bullish reversals fire at LOW levels (e.g., `~ Yest L`), bearish at HIGH levels (e.g., `~ Yest H`). Labels are blue (bull) and orange (bear).
+
+**Reclaim (`~~` prefix):** A reversal that occurs after a prior breakout at the same level was invalidated. For example: price breaks above Yesterday High, falls back below (invalidated), then a bearish reversal fires at Yesterday High — labeled as `~~ Yest H` instead of `~ Yest H`. This "false breakout → rejection" pattern often carries stronger conviction.
+
+**Level Zones:** Each level is treated as a range (body edge to wick edge) rather than a single price:
+- **Daily/Weekly levels:** Zone from candle body edge (`max(open, close)` for highs, `min(open, close)` for lows) to the wick (high/low)
+- **PM/ORB levels:** Zone derived from ATR (configurable width, default 3%)
+- When zones are disabled, all levels collapse back to single-price lines
+
+Reversal/reclaim signals respect all existing filters (volume, Once Per Breakout) and only fire within the Setup Active Window (default 9:30-11:30 ET). Breakout signals continue to fire all session regardless of this window.
+
 ## Alert Messages
 
 When using `Any alert() function call`, messages are merged per direction per bar:
@@ -96,6 +124,7 @@ Edit the script in Pine Editor and click **Save** — all charts using the indic
 
 ## Changelog
 
+- **v1.7** — Reversal + Reclaim + Zones: wick-to-body zone detection for all levels (D/W from candle body, PM/ORB from ATR); reversal signals at level zones (~ prefix, blue/orange labels); reclaim signals when prior breakout invalidated (~~ prefix); configurable setup time window (default 9:30-11:30 ET); per-level reversal/reclaim toggles; 4 new alert conditions (Any Bullish/Bearish Reversal, Any Reversal, Any Setup)
 - **v1.6** — Directional volume + close position + post-breakout confirmation: volume borrowing now direction-aware (only borrows prior bar if same-direction momentum); ATR buffer uses wick for push, close for hold; close position % shows buying/selling pressure in labels; post-breakout monitoring on chart TF with follow-through (✓), retest (⟳✓), and failure (✗) markers plus confirmation alerts
 - **v1.5** — Fix cross-detection bug: 2-bar lookback prevents missed breakouts when a bearish candle crosses the level before a bullish confirmation (e.g., TSLA ORB High). Removed per-level alertcondition entries (duplicate alerts with "Any alert() function call")
 - **v1.4** — Volume Confirmation filter (toggleable, Signal TF SMA or Daily Average baseline, multiplier in labels, conviction coloring), ATR Buffer Zone (separate breakout/re-arm buffers as % of daily ATR), confluence merging (combined labels + alerts when multiple levels break same bar), fade old labels (toggle for clean chart vs analysis mode), labels replace plotshape for dynamic text
