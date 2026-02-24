@@ -62,13 +62,13 @@ else if isPremarket
     pmHigh := math.max(pmHigh, high)
     pmLow  := math.min(pmLow, low)
 
-// Yesterday High/Low (non-repainting)
-yestHigh = request.security(syminfo.tickerid, "D", high[1], lookahead = barmerge.lookahead_on)
-yestLow  = request.security(syminfo.tickerid, "D", low[1],  lookahead = barmerge.lookahead_on)
+// Yesterday OHLC (non-repainting) — tuple reduces request.security calls
+[yestHigh, yestLow, yestOpen, yestClose] = request.security(syminfo.tickerid, "D",
+     [high[1], low[1], open[1], close[1]], lookahead = barmerge.lookahead_on)
 
-// Last Week High/Low (non-repainting)
-weekHigh = request.security(syminfo.tickerid, "W", high[1], lookahead = barmerge.lookahead_on)
-weekLow  = request.security(syminfo.tickerid, "W", low[1],  lookahead = barmerge.lookahead_on)
+// Last Week OHLC (non-repainting) — tuple reduces request.security calls
+[weekHigh, weekLow, weekOpen, weekClose] = request.security(syminfo.tickerid, "W",
+     [high[1], low[1], open[1], close[1]], lookahead = barmerge.lookahead_on)
 
 // Daily ATR + Average Volume (non-repainting)
 dailyATR    = request.security(syminfo.tickerid, "D", ta.atr(14)[1], lookahead = barmerge.lookahead_on)
@@ -84,6 +84,19 @@ if isORBwin
     else
         orbHigh := math.max(orbHigh, high)
         orbLow  := math.min(orbLow, low)
+
+// ─── Zone Bounds ───────────────────────────────────────
+// D/W levels: body edge from candle OHLC. PM/ORB: ATR-derived width.
+// When zones OFF: body = wick (zone collapses to single line).
+zoneWidth = i_useZones and not na(dailyATR) ? dailyATR * i_zoneATRPct / 100.0 : 0.0
+pmHBody   = i_useZones ? pmHigh - zoneWidth : pmHigh
+pmLBody   = i_useZones ? pmLow  + zoneWidth : pmLow
+yestHBody = i_useZones and not na(yestOpen) ? math.max(yestOpen, yestClose) : yestHigh
+yestLBody = i_useZones and not na(yestOpen) ? math.min(yestOpen, yestClose) : yestLow
+weekHBody = i_useZones and not na(weekOpen) ? math.max(weekOpen, weekClose) : weekHigh
+weekLBody = i_useZones and not na(weekOpen) ? math.min(weekOpen, weekClose) : weekLow
+orbHBody  = i_useZones ? orbHigh - zoneWidth : orbHigh
+orbLBody  = i_useZones ? orbLow  + zoneWidth : orbLow
 
 // ─── Breakout Flags (reset each regular session) ────────
 var bool xPMH = false
