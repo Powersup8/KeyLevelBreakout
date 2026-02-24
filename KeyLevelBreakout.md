@@ -130,6 +130,82 @@ Four setup types, each with a clear directional rule:
 
 **Retest example (Yest H = $150):** After bullish breakout, price dips back to $150 and holds above → original breakout label updated with `⟳✓`. If price falls back through → `✗` and label grays out.
 
+### Visual Reference
+
+```
+  AT HIGH LEVELS (resistance)            AT LOW LEVELS (support)
+  ═══════════════════════════            ═════════════════════════
+
+  BREAKOUT                               BREAKOUT
+  Price breaks ABOVE                     Price breaks BELOW
+  ▲ LONG (green label)                   ▼ SHORT (red label)
+  "Yest H 2.1x ^78"                     "Yest L 1.8x v72"
+
+  REVERSAL ~                             REVERSAL ~
+  Wick enters zone from below,           Wick enters zone from above,
+  close rejects BELOW                    close rejects ABOVE
+  ▼ SHORT (orange label)                 ▲ LONG (blue label)
+  "~ Yest H 1.8x v82"                   "~ Yest L 2.0x ^75"
+
+  RECLAIM ~~                             RECLAIM ~~
+  Prior bull break FAILED,               Prior bear break FAILED,
+  now rejecting DOWN                     now rejecting UP
+  ▼ SHORT (orange, brighter)             ▲ LONG (blue, brighter)
+  "~~ Yest H 2.3x v85"                  "~~ Yest L 2.5x ^80"
+
+  RETEST ⟳✓                             RETEST ⟳✓
+  Pullback to level,                     Bounce to level,
+  held ABOVE → confirmed                 held BELOW → confirmed
+  ▲ confirms LONG                        ▼ confirms SHORT
+```
+
+### Flow at a HIGH Level
+
+```
+  Price at HIGH level (e.g. Yest H):
+
+       breaks above ──→ BREAKOUT (LONG) ──→ holds? ──→ ✓ confirmed
+            │                                    │
+            │                               pulls back
+            │                                    │
+            │                              ⟳✓ retest OK
+            │                                 or
+            │                              ✗ failed ──→ hadBrk = true
+            │                                                │
+            └── rejected ──→ REVERSAL (SHORT)                │
+                                  │                          │
+                                  └── if hadBrk ──→ RECLAIM (SHORT)
+                                       (stronger conviction)
+```
+
+### Retest vs Reclaim
+
+Both happen after a breakout — the difference is whether it held or failed:
+
+```
+  Breakout fires (e.g. bull break above Yest H)
+       │
+       ├── price pulls back to level, holds ABOVE
+       │   → ⟳✓ RETEST — confirms original direction (LONG)
+       │   "broken resistance is now support"
+       │
+       └── price closes back BELOW level (invalidation)
+           → ✗ FAILED — breakout is dead
+                │
+                └── price approaches level again, rejected
+                    → ~~ RECLAIM — opposite direction (SHORT)
+                    "breakout was a trap, fade it"
+```
+
+|  | Retest `⟳✓` | Reclaim `~~` |
+|---|---|---|
+| Breakout outcome | Held (successful) | Failed (invalidated) |
+| Direction | Same as breakout | Opposite to breakout |
+| What it means | Level flipped role (resistance → support) | Trapped participants, fade them |
+| Visually | Updates original breakout label | Creates a new label |
+
+These are **mutually exclusive** — at the same level, you either get a retest (breakout worked) or eventually a reclaim (breakout failed). Never both.
+
 ## Alert Messages
 
 When using `Any alert() function call`, messages are merged per direction per bar:
