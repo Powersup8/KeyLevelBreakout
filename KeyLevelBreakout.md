@@ -109,6 +109,27 @@ When enabled, the indicator detects two additional setup types at level zones:
 
 Reversal/reclaim signals respect all existing filters (volume, Once Per Breakout) and only fire within the Setup Active Window (default 9:30-11:30 ET). Breakout signals continue to fire all session regardless of this window.
 
+When a new reversal/reclaim fires at a level that already had a prior reversal/reclaim signal, the prior label is grayed out (superseded by the newer signal with more context).
+
+## Setup Direction Reference
+
+Four setup types, each with a clear directional rule:
+
+| Setup | At HIGH level (resistance) | At LOW level (support) | Rule |
+|-------|---------------------------|----------------------|------|
+| **Breakout** | Bullish break above → LONG | Bearish break below → SHORT | Trade the break |
+| **Reversal `~`** | Bearish rejection down → SHORT | Bullish rejection up → LONG | Fade the approach |
+| **Reclaim `~~`** | Bearish rejection after failed bull break → SHORT | Bullish rejection after failed bear break → LONG | Fade the trapped side |
+| **Retest `⟳✓`** | Pullback to level, held above → confirms LONG | Bounce to level, held below → confirms SHORT | Confirms original break |
+
+**Breakout example (Yest H = $150):** Price closes above $150 on a green candle with volume → LONG. Green label: `Yest H 2.1x ^78`.
+
+**Reversal example (Yest H = $150):** Price wicks into $150 zone from below, closes back below on a red candle → SHORT. Orange label: `~ Yest H 1.8x v82`.
+
+**Reclaim example (Yest H = $150):** Earlier bullish breakout above $150 failed (price fell back below). Price approaches $150 zone again, wicks in, closes back below → SHORT. Orange label (brighter): `~~ Yest H 2.3x v85`.
+
+**Retest example (Yest H = $150):** After bullish breakout, price dips back to $150 and holds above → original breakout label updated with `⟳✓`. If price falls back through → `✗` and label grays out.
+
 ## Alert Messages
 
 When using `Any alert() function call`, messages are merged per direction per bar:

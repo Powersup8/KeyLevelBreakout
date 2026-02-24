@@ -129,6 +129,16 @@ var bool hadBrkWL  = false
 var bool hadBrkOH  = false
 var bool hadBrkOL  = false
 
+// ─── Reversal Label Tracking (gray out prior on supersede) ──
+var label revLblPML = na
+var label revLblYL  = na
+var label revLblWL  = na
+var label revLblOL  = na
+var label revLblPMH = na
+var label revLblYH  = na
+var label revLblWH  = na
+var label revLblOH  = na
+
 // ─── Post-Breakout Confirmation State ───────────────────
 var label  lastBullLbl       = na
 var string lastBullText      = ""
@@ -171,6 +181,15 @@ if newRegular
     hadBrkWL  := false
     hadBrkOH  := false
     hadBrkOL  := false
+    // Reset reversal label tracking
+    revLblPML := na
+    revLblYL  := na
+    revLblWL  := na
+    revLblOL  := na
+    revLblPMH := na
+    revLblYH  := na
+    revLblWH  := na
+    revLblOH  := na
     // Reset confirmation state at session open
     if i_confirm
         lastBullState     := 0
@@ -522,20 +541,66 @@ revBullColor = color.new(color.blue, revBullAlpha)
 revBearColor = color.new(color.orange, revBearAlpha)
 
 if revBullText != ""
+    // Gray out prior reversal/reclaim labels at the same levels (superseded)
+    if not isOld
+        if sigRevBullPML and not na(revLblPML)
+            label.set_color(revLblPML, color.new(color.gray, 80))
+            label.set_textcolor(revLblPML, color.new(color.gray, 60))
+        if sigRevBullYL and not na(revLblYL)
+            label.set_color(revLblYL, color.new(color.gray, 80))
+            label.set_textcolor(revLblYL, color.new(color.gray, 60))
+        if sigRevBullWL and not na(revLblWL)
+            label.set_color(revLblWL, color.new(color.gray, 80))
+            label.set_textcolor(revLblWL, color.new(color.gray, 60))
+        if sigRevBullOL and not na(revLblOL)
+            label.set_color(revLblOL, color.new(color.gray, 80))
+            label.set_textcolor(revLblOL, color.new(color.gray, 60))
     string fullRevBullText = revBullText + bullVolStr + bullPosStr
-    label.new(bar_index + shapeOff, na, fullRevBullText,
+    label lbl = label.new(bar_index + shapeOff, na, fullRevBullText,
          yloc=yloc.belowbar, style=label.style_label_up,
          color=isOld ? color.new(color.gray, 90) : revBullColor,
          textcolor=isOld ? color.new(color.gray, 70) : color.white,
          size=revBullCount > 1 ? size.normal : size.small)
+    if not isOld
+        if sigRevBullPML
+            revLblPML := lbl
+        if sigRevBullYL
+            revLblYL := lbl
+        if sigRevBullWL
+            revLblWL := lbl
+        if sigRevBullOL
+            revLblOL := lbl
 
 if revBearText != ""
+    // Gray out prior reversal/reclaim labels at the same levels (superseded)
+    if not isOld
+        if sigRevBearPMH and not na(revLblPMH)
+            label.set_color(revLblPMH, color.new(color.gray, 80))
+            label.set_textcolor(revLblPMH, color.new(color.gray, 60))
+        if sigRevBearYH and not na(revLblYH)
+            label.set_color(revLblYH, color.new(color.gray, 80))
+            label.set_textcolor(revLblYH, color.new(color.gray, 60))
+        if sigRevBearWH and not na(revLblWH)
+            label.set_color(revLblWH, color.new(color.gray, 80))
+            label.set_textcolor(revLblWH, color.new(color.gray, 60))
+        if sigRevBearOH and not na(revLblOH)
+            label.set_color(revLblOH, color.new(color.gray, 80))
+            label.set_textcolor(revLblOH, color.new(color.gray, 60))
     string fullRevBearText = revBearText + bearVolStr + bearPosStr
-    label.new(bar_index + shapeOff, na, fullRevBearText,
+    label lbl = label.new(bar_index + shapeOff, na, fullRevBearText,
          yloc=yloc.abovebar, style=label.style_label_down,
          color=isOld ? color.new(color.gray, 90) : revBearColor,
          textcolor=isOld ? color.new(color.gray, 70) : color.white,
          size=revBearCount > 1 ? size.normal : size.small)
+    if not isOld
+        if sigRevBearPMH
+            revLblPMH := lbl
+        if sigRevBearYH
+            revLblYH := lbl
+        if sigRevBearWH
+            revLblWH := lbl
+        if sigRevBearOH
+            revLblOH := lbl
 
 // ─── Post-Breakout Confirmation Monitoring ────────────────
 // Runs every chart bar (not gated by newSigBar) for real-time feedback.
