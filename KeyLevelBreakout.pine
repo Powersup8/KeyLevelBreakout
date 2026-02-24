@@ -597,6 +597,10 @@ if bullText != ""
     alert("Bullish breakout: " + bullText + bullVolStr + bullPosStr, alert.freq_once_per_bar_close)
 if bearText != ""
     alert("Bearish breakout: " + bearText + bearVolStr + bearPosStr, alert.freq_once_per_bar_close)
+if revBullText != ""
+    alert("Bullish reversal: " + revBullText + bullVolStr + bullPosStr, alert.freq_once_per_bar_close)
+if revBearText != ""
+    alert("Bearish reversal: " + revBearText + bearVolStr + bearPosStr, alert.freq_once_per_bar_close)
 
 // ─── Alert Conditions ───────────────────────────────────────
 // Note: per-level alertconditions removed — "Any alert() function call"
@@ -606,3 +610,7 @@ if bearText != ""
 alertcondition(anyBull,     "Any Bullish Breakout",       "Bullish breakout detected")
 alertcondition(anyBear,     "Any Bearish Breakout",       "Bearish breakout detected")
 alertcondition(anyBreakout, "Any Breakout",               "Breakout detected (bull or bear)")
+alertcondition(anyRevBull,  "Any Bullish Reversal",       "Bullish reversal detected")
+alertcondition(anyRevBear,  "Any Bearish Reversal",       "Bearish reversal detected")
+alertcondition(anyReversal, "Any Reversal",               "Reversal detected (bull or bear)")
+alertcondition(anyBreakout or anyReversal, "Any Setup",   "Breakout or reversal detected")
