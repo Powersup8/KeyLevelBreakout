@@ -377,6 +377,10 @@ anyBull     = sigBullPMH or sigBullYH or sigBullWH or sigBullOH
 anyBear     = sigBearPML or sigBearYL or sigBearWL or sigBearOL
 anyBreakout = anyBull or anyBear
 
+anyRevBull  = sigRevBullPML or sigRevBullYL or sigRevBullWL or sigRevBullOL
+anyRevBear  = sigRevBearPMH or sigRevBearYH or sigRevBearWH or sigRevBearOH
+anyReversal = anyRevBull or anyRevBear
+
 // ─── Signal Labels (confluent levels merged) ────────────────
 bullText = ""
 if sigBullPMH
@@ -404,6 +408,56 @@ bearPosStr = i_closePos and not na(bearClosePos) ? " v" + str.tostring(bearClose
 
 bullCount = (sigBullPMH ? 1 : 0) + (sigBullYH ? 1 : 0) + (sigBullWH ? 1 : 0) + (sigBullOH ? 1 : 0)
 bearCount = (sigBearPML ? 1 : 0) + (sigBearYL ? 1 : 0) + (sigBearWL ? 1 : 0) + (sigBearOL ? 1 : 0)
+
+// ─── Reversal/Reclaim Label Text ──────────────────────
+revBullText = ""
+revBullHasReclaim = false
+if sigRevBullPML
+    string pfx = i_showReclaim and hadBrkPML ? "~~ " : "~ "
+    revBullText := revBullText + (revBullText != "" ? " + " : "") + pfx + "PM L"
+    if i_showReclaim and hadBrkPML
+        revBullHasReclaim := true
+if sigRevBullYL
+    string pfx = i_showReclaim and hadBrkYL ? "~~ " : "~ "
+    revBullText := revBullText + (revBullText != "" ? " + " : "") + pfx + "Yest L"
+    if i_showReclaim and hadBrkYL
+        revBullHasReclaim := true
+if sigRevBullWL
+    string pfx = i_showReclaim and hadBrkWL ? "~~ " : "~ "
+    revBullText := revBullText + (revBullText != "" ? " + " : "") + pfx + "Week L"
+    if i_showReclaim and hadBrkWL
+        revBullHasReclaim := true
+if sigRevBullOL
+    string pfx = i_showReclaim and hadBrkOL ? "~~ " : "~ "
+    revBullText := revBullText + (revBullText != "" ? " + " : "") + pfx + "ORB L"
+    if i_showReclaim and hadBrkOL
+        revBullHasReclaim := true
+
+revBearText = ""
+revBearHasReclaim = false
+if sigRevBearPMH
+    string pfx = i_showReclaim and hadBrkPMH ? "~~ " : "~ "
+    revBearText := revBearText + (revBearText != "" ? " + " : "") + pfx + "PM H"
+    if i_showReclaim and hadBrkPMH
+        revBearHasReclaim := true
+if sigRevBearYH
+    string pfx = i_showReclaim and hadBrkYH ? "~~ " : "~ "
+    revBearText := revBearText + (revBearText != "" ? " + " : "") + pfx + "Yest H"
+    if i_showReclaim and hadBrkYH
+        revBearHasReclaim := true
+if sigRevBearWH
+    string pfx = i_showReclaim and hadBrkWH ? "~~ " : "~ "
+    revBearText := revBearText + (revBearText != "" ? " + " : "") + pfx + "Week H"
+    if i_showReclaim and hadBrkWH
+        revBearHasReclaim := true
+if sigRevBearOH
+    string pfx = i_showReclaim and hadBrkOH ? "~~ " : "~ "
+    revBearText := revBearText + (revBearText != "" ? " + " : "") + pfx + "ORB H"
+    if i_showReclaim and hadBrkOH
+        revBearHasReclaim := true
+
+revBullCount = (sigRevBullPML ? 1 : 0) + (sigRevBullYL ? 1 : 0) + (sigRevBullWL ? 1 : 0) + (sigRevBullOL ? 1 : 0)
+revBearCount = (sigRevBearPMH ? 1 : 0) + (sigRevBearYH ? 1 : 0) + (sigRevBearWH ? 1 : 0) + (sigRevBearOH ? 1 : 0)
 
 isOld = i_fadeOld and (last_bar_index - bar_index) > i_fadeAge
 
@@ -460,6 +514,28 @@ if bearText != ""
         lastBearLvl   := lvl
         lastBearStart := bar_index
         lastBearState := 1
+
+// ─── Reversal/Reclaim Labels ────────────────────────────
+revBullAlpha = revBullHasReclaim ? math.max(0, bullVolAlpha - 10) : bullVolAlpha
+revBearAlpha = revBearHasReclaim ? math.max(0, bearVolAlpha - 10) : bearVolAlpha
+revBullColor = color.new(color.blue, revBullAlpha)
+revBearColor = color.new(color.orange, revBearAlpha)
+
+if revBullText != ""
+    string fullRevBullText = revBullText + bullVolStr + bullPosStr
+    label.new(bar_index + shapeOff, na, fullRevBullText,
+         yloc=yloc.belowbar, style=label.style_label_up,
+         color=isOld ? color.new(color.gray, 90) : revBullColor,
+         textcolor=isOld ? color.new(color.gray, 70) : color.white,
+         size=revBullCount > 1 ? size.normal : size.small)
+
+if revBearText != ""
+    string fullRevBearText = revBearText + bearVolStr + bearPosStr
+    label.new(bar_index + shapeOff, na, fullRevBearText,
+         yloc=yloc.abovebar, style=label.style_label_down,
+         color=isOld ? color.new(color.gray, 90) : revBearColor,
+         textcolor=isOld ? color.new(color.gray, 70) : color.white,
+         size=revBearCount > 1 ? size.normal : size.small)
 
 // ─── Post-Breakout Confirmation Monitoring ────────────────
 // Runs every chart bar (not gated by newSigBar) for real-time feedback.
