@@ -257,6 +257,17 @@ bearBreak(float level) =>
      and sigC < level and sigL < effLvl
      and (sigPC >= effLvl or sigPC2 >= effLvl) and volPassBear
 
+// ─── Reversal Helpers ───────────────────────────────────
+// Bull reversal at LOW level: wick dips into zone, close rejects above body edge.
+// Bear reversal at HIGH level: wick pushes into zone, close rejects below body edge.
+bullRev(float wick, float body) =>
+    not na(wick) and not na(body) and isRegular and newSigBar and isSetupWindow
+     and sigC > sigO and sigL <= body and sigC > body and volPassBull
+
+bearRev(float wick, float body) =>
+    not na(wick) and not na(body) and isRegular and newSigBar and isSetupWindow
+     and sigC < sigO and sigH >= body and sigC < body and volPassBear
+
 // ─── Raw Signals ──────────────────────────────────────────
 rBullPMH = i_showPM   and bullBreak(pmHigh)
 rBearPML = i_showPM   and bearBreak(pmLow)
