@@ -49,6 +49,7 @@ isRegular    = not na(time(timeframe.period, "0930-1600:23456", TZ))
 isORBwin     = not na(time(timeframe.period, "0930-0935:23456", TZ))
 newPremarket = isPremarket and not isPremarket[1]
 newRegular   = isRegular   and not isRegular[1]
+isSetupWindow = not na(time(timeframe.period, i_setupWindow + ":23456", TZ))
 
 // ─── Level Calculation ────────────────────────────────────
 
@@ -108,6 +109,26 @@ var bool xWL  = false
 var bool xOH  = false
 var bool xOL  = false
 
+// ─── Reversal Flags (reset each regular session) ──────
+var bool rPMH = false
+var bool rPML = false
+var bool rYH  = false
+var bool rYL  = false
+var bool rWH  = false
+var bool rWL  = false
+var bool rOH  = false
+var bool rOL  = false
+
+// ─── Reclaim Context (was this level broken + invalidated?) ──
+var bool hadBrkPMH = false
+var bool hadBrkPML = false
+var bool hadBrkYH  = false
+var bool hadBrkYL  = false
+var bool hadBrkWH  = false
+var bool hadBrkWL  = false
+var bool hadBrkOH  = false
+var bool hadBrkOL  = false
+
 // ─── Post-Breakout Confirmation State ───────────────────
 var label  lastBullLbl       = na
 var string lastBullText      = ""
@@ -132,6 +153,24 @@ if newRegular
     xWL  := false
     xOH  := false
     xOL  := false
+    // Reset reversal flags
+    rPMH := false
+    rPML := false
+    rYH  := false
+    rYL  := false
+    rWH  := false
+    rWL  := false
+    rOH  := false
+    rOL  := false
+    // Reset reclaim context
+    hadBrkPMH := false
+    hadBrkPML := false
+    hadBrkYH  := false
+    hadBrkYL  := false
+    hadBrkWH  := false
+    hadBrkWL  := false
+    hadBrkOH  := false
+    hadBrkOL  := false
     // Reset confirmation state at session open
     if i_confirm
         lastBullState     := 0
