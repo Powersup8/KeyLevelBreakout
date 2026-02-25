@@ -6,41 +6,48 @@ Detects breakouts, reversals, reclaims, and retests at key intraday levels on co
 
 **Breakout** — signal-TF bar closes through a key level as a bullish/bearish candle, with prior bar(s) on the other side. Green/red labels.
 
-**Reversal (~)** — wick enters level zone, close rejects back. Bull at LOW levels, bear at HIGH levels. Blue/orange labels. Setup Active Window only (default 9:30-11:30 ET).
+**Reversal (~)** — wick enters level zone, close rejects back. Bull at LOW levels, bear at HIGH levels. Blue/orange labels. Fires all session by default; optionally limited to Setup Active Window.
 
 **Reclaim (~~)** — reversal after a prior breakout was invalidated. "False breakout then rejection" pattern. Same colors, brighter.
 
-**Retest (⟳)** — per-level tracking after breakout. Price dips back to broken level and holds on breakout side. Each retest shows bar count + PA quality: `⟳³ ORB H 2.1x ^85`.
+**Retest (◆)** — per-level tracking after breakout. Price dips back to broken level (within configurable proximity) and holds on breakout side. Independent label at retest bar + updates original breakout label. Configurable window: Short (50 min), Extended (2.5 hr), or Session (until invalidated). Format: `◆³ ORB H 2.1x ^85`.
 
 **Level Zones:** Wick-to-body range for D/W (actual candle data), ATR-derived for PM/ORB. Toggleable. When Show Level Lines is on, shaded bands visualize zone width — wide band = strong rejection.
 
 **Filters (toggleable):**
 - **Volume** — above-average required (default 1.5x SMA). Directional 2-bar lookback.
 - **ATR Buffer** — wick must push past level ± X% ATR(14), close holds beyond raw level.
+- **VWAP Directional Filter** — suppress counter-trend reversals (bear above VWAP, bull below VWAP). Off by default.
 - **Once Per Breakout** — one signal per level, re-arms on invalidation. Resets each session.
+
+**Label management:**
+- Same-bar breakout + reversal in same direction → merged into one label
+- Cooldown dimming: rapid same-direction signals within N bars render dimmer/smaller (default 2 signal bars)
+- Vertical offset: adjacent labels shifted by ATR to prevent overlap
 
 **Label format (line breaks):**
 ```
 ORB H + Yest H
 1.8x ^82
-⟳³ ORB H 2.1x ^85
-⟳⁷ Yest H 1.4x ^71
+◆³ ORB H 2.1x ^85
+◆⁷ Yest H 1.4x ^71
 ```
 Line 1: level names (merged for confluence). Line 2: volume ratio + close position %. Line 3+: per-level retests with superscript bar count.
 
 **Retest-Only Mode:** Suppress breakout labels (gray dot). Only retest signals fire their own labels and alerts. Reversals/reclaims unchanged.
 
-**Post-Breakout Monitoring:** Each broken level tracked independently. Failure (✗) = price closes back through most conservative level. Auto-promotion (✓) when next breakout fires.
+**Post-Breakout Monitoring:** Breakout signals evaluated on signal-TF bars — labels are identical on 1m and 5m charts. Each broken level tracked independently. Retest detection runs on chart-TF bars for precision. Failure (✗) = close back through most conservative level. Auto-promotion (✓) when next breakout fires.
 
 **Alerts:**
-- Merged `alert()` per direction per bar (breakouts + reversals + retests)
-- 7 `alertcondition()` entries for granular filtering
-- Retest alerts: "Retest: ⟳³ ORB H 2.1x ^85"
+- Merged `alert()` per direction per bar (breakouts + reversals)
+- Retest alerts fire in all modes: "Retest: ◆³ ORB H 2.1x ^85"
 - Failure alerts: "Failed: ORB H + Yest H"
+- Reversal alerts: "Bullish reversal: ~ PM L 1.9x ^75"
+- 7 `alertcondition()` entries for granular filtering
 
 **Setup:**
 1. Add to chart (any TF <= Signal Timeframe)
 2. Enable Extended Trading Hours (for premarket)
 3. Add alert -> "Any alert() function call" for full coverage
 
-**Signal Timeframe:** Breakouts evaluate on closed signal-TF bars (default 5m). Use 1m chart with 5m signals for detail without noise.
+**Signal Timeframe:** All signals and failures evaluate on closed signal-TF bars (default 5m). Retest detection uses chart-TF bars for wick precision. Use 1m chart with 5m signals for detail without noise — labels are identical regardless of chart timeframe.

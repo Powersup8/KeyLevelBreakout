@@ -106,26 +106,11 @@ bearBreak(float level) =>
 
 ---
 
-### 3. VWAP Bias Filter (MEDIUM impact, ~10 lines)
+### 3. VWAP Bias Filter (MEDIUM impact, ~10 lines) ✅ IMPLEMENTED v2.0
 
-**Problem:** No intraday directional context. Bull breakout in a bearish session (price below VWAP) is lower probability.
+**Problem:** No intraday directional context. Counter-trend reversals are the #1 noise source.
 
-**Implementation:**
-```pine
-// New inputs
-i_vwapFilter = input.bool(false, "VWAP Directional Filter", group="Filters")
-
-// Compute VWAP (Pine v6 built-in)
-vwapVal = ta.vwap
-
-// Gate: only allow bull breakouts when sigC > vwapVal
-//        only allow bear breakouts when sigC < vwapVal
-// Add to bullBreak / bearBreak:
-//   and (not i_vwapFilter or sigC > vwapVal)   // for bull
-//   and (not i_vwapFilter or sigC < vwapVal)   // for bear
-```
-
-**Default OFF** — this is an opinionated filter that some traders may not want.
+**Implemented:** VWAP directional filter gates **reversal helpers** (not breakouts) — bull reversals suppressed below VWAP, bear reversals suppressed above VWAP. Default OFF. Applied to `bullRev`/`bearRev` helper functions.
 
 ---
 
@@ -169,13 +154,15 @@ vwapVal = ta.vwap
 
 ---
 
-### 7. Retest Detection (MEDIUM impact) ✅ IMPLEMENTED v1.6, upgraded v1.8
+### 7. Retest Detection (MEDIUM impact) ✅ IMPLEMENTED v1.6, upgraded v1.8, overhauled v2.0
 
 **Problem:** Many traders prefer the retest entry over the initial break — better risk/reward. After a breakout, flag when price pulls back to the level and holds.
 
 **v1.6:** Integrated into the post-breakout confirmation system with single-tracker per direction.
 
 **v1.8 upgrade:** Per-level retest tracking (each broken level tracked independently), PA quality metrics on retest candle (volume + close position), smart label summarization with line breaks and superscript bar counts, retest-only toggle mode.
+
+**v2.0 overhaul:** Session-long retest tracking (Short/Extended/Session dropdown replaces fixed 10-bar window); chart-TF detection for wick precision (un-gated from newSigBar); configurable proximity (% of ATR); independent retest labels at the retest bar (◆ diamond symbol); alerts fire in all modes (not just retest-only). Resolves the TODO about alerts in normal mode.
 
 ---
 
@@ -185,11 +172,36 @@ vwapVal = ta.vwap
 
 **Implemented:** Shaded fill bands between wick and body-edge plots for all 8 levels (gated by Show Level Lines + Use Level Zones). Retest-Only Mode input suppresses breakout labels and alerts, fires own retest labels with PA quality. Label format upgraded to use line breaks.
 
+### 8.7. Reversal Window Toggle ✅ IMPLEMENTED v2.0
+
+**Problem:** Setup window 0930-1130 missed all afternoon reversals.
+
+**Implemented:** New `Limit Reversal Window` toggle (default OFF). When OFF, reversals fire during entire regular session. When ON, existing Setup Active Window controls the time range. Allows catching afternoon reversals (e.g., GOOGL PM Low bounce at 12:00+).
+
+### 8.8. Label Management ✅ IMPLEMENTED v2.0
+
+**Problem:** Label clustering at open (3-5 labels in 15 min), overlapping labels from different setup types.
+
+**Implemented:** Three improvements: (a) Same-bar merge — breakout + reversal in same direction → one combined label; (b) Cooldown dimming — rapid same-direction signals within N signal bars render dimmer/smaller (default 2 bars); (c) Vertical offset — adjacent same-direction labels shifted by ATR to prevent overlap.
+
 ### 8.5. Reversal + Reclaim Setups (HIGH impact) ✅ IMPLEMENTED v1.7
 
 **Problem:** Only detected breakouts (continuation). Missed reversal (rejection off level) and reclaim (false breakout + rejection) patterns from the PDH/PDL strategy.
 
 **Implemented:** Three setup types in one indicator: Continuation (existing breakout, refined), Reversal (wick enters zone, close rejects), Reclaim (reversal after invalidated breakout). Level zones (wick-to-body) for D/W, ATR-derived for PM/ORB. Configurable time window (default 9:30-11:30 ET). Per-level toggles. Blue/orange labels for reversals.
+
+---
+
+### 9. Retest as Fair Value Gap (FVG) — needs deep analysis
+
+**Idea:** Treat the retest zone as a Fair Value Gap. Instead of just checking "did price dip back to the level?", detect whether the pullback creates an FVG pattern — an imbalance gap between candles that institutional capital tends to fill. This could significantly improve retest quality filtering by distinguishing mechanical retests from true liquidity-driven pullbacks.
+
+**Open questions (think deeply before implementing):**
+- How to define the FVG zone relative to the broken key level
+- Does the FVG need to overlap with the key level zone, or is proximity enough?
+- Should FVG detection run on signal TF or a lower TF for finer granularity?
+- Integration with existing retest PA quality metrics (volume ratio, close position)
+- Risk of over-filtering: FVG retests are higher quality but much rarer
 
 ---
 
