@@ -1,6 +1,8 @@
 # Key Level Breakout — Single Symbol
 
-Visual indicator that plots breakout arrows directly on your chart when price closes through key levels.
+Overlay indicator for US equities (NYSE/NASDAQ) that detects four types of price action setups at key intraday levels: breakouts (continuation through a level), reversals (rejection off a level zone), reclaims (reversal after a failed breakout), and retests (pullback to a broken level that holds). Monitors Premarket High/Low, Yesterday High/Low, Last Week High/Low, and Opening Range Breakout High/Low — each toggleable independently.
+
+All signals evaluate on confirmed signal-timeframe candle closes (default 5m) to avoid noise, while the chart can run on any lower timeframe (e.g. 1m) for detail. Breakouts require above-average volume (directional 2-bar lookback) and ATR-buffered level clearance. Level zones use wick-to-body ranges from daily/weekly candle data (or ATR-derived width for PM/ORB), visualized as shaded bands when level lines are enabled. Per-level retest tracking monitors each broken level independently after a breakout, recording bar count and price action quality (volume multiple + close position %) on the retest candle. Labels use line breaks to separate level names, quality metrics, and retest lines for readability. A Retest-Only Mode suppresses breakout labels entirely, showing only retest entries — useful for traders who use the breakout as confirmation but trade the retest.
 
 ## Features
 
@@ -251,6 +253,7 @@ Edit the script in Pine Editor and click **Save** — all charts using the indic
 
 ## Changelog
 
+- **v1.8** — Zone Band Visualization + Per-Level Retest + Retest-Only Mode: shaded fill bands between wick and body-edge plots for all 8 levels (gated by Show Level Lines + Use Level Zones); per-level retest tracking with independent monitoring of each broken level, superscript bar count, and PA quality metrics on retest candle (volume + close position %); label format upgraded to line breaks (level names / quality / retest lines); Retest-Only Mode toggle suppresses breakout labels and alerts, fires own retest labels; breakout alert suppression in retest-only mode
 - **v1.7** — Reversal + Reclaim + Zones: wick-to-body zone detection for all levels (D/W from candle body, PM/ORB from ATR); reversal signals at level zones (~ prefix, blue/orange labels); reclaim signals when prior breakout invalidated (~~ prefix); configurable setup time window (default 9:30-11:30 ET); per-level reversal/reclaim toggles; 4 new alert conditions (Any Bullish/Bearish Reversal, Any Reversal, Any Setup)
 - **v1.6** — Directional volume + close position + post-breakout confirmation: volume borrowing now direction-aware (only borrows prior bar if same-direction momentum); ATR buffer uses wick for push, close for hold; close position % shows buying/selling pressure in labels; post-breakout monitoring on chart TF with follow-through (✓), retest (⟳✓), and failure (✗) markers plus confirmation alerts
 - **v1.5** — Fix cross-detection bug: 2-bar lookback prevents missed breakouts when a bearish candle crosses the level before a bullish confirmation (e.g., TSLA ORB High). Removed per-level alertcondition entries (duplicate alerts with "Any alert() function call")
