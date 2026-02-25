@@ -13,7 +13,7 @@ i_firstOnly = input.bool(true,  "Once Per Breakout", group="Signals")
 i_signalTF  = input.timeframe("5", "Signal Timeframe",        group="Signals")
 i_showLines = input.bool(false, "Show Level Lines",           group="Visuals")
 i_fadeOld   = input.bool(true,  "Fade Old Labels",            group="Visuals")
-i_fadeAge   = input.int(100,    "Fade After (bars)",           minval=10, group="Visuals")
+i_fadeAge   = input.int(100,    "Fade After (signal bars)",    minval=10, group="Visuals")
 
 // ─── Filter Inputs ──────────────────────────────────────
 i_volFilter  = input.bool(true,  "Require Above-Avg Volume",    group="Filters")
@@ -27,13 +27,18 @@ i_atrRearm   = input.float(3.0,  "Re-arm Buffer (% of ATR)",    minval=0, step=1
 i_closePos    = input.bool(true,  "Show Close Position %",           group="Quality")
 
 i_confirm     = input.bool(true,  "Post-Breakout Confirmation",     group="Confirmation")
-i_confirmBars = input.int(10,     "Confirmation Window (chart bars)", minval=3, maxval=30, group="Confirmation")
+i_retestWindow = input.string("Session", "Retest Window", options=["Short (50 min)", "Extended (2.5 hr)", "Session"], group="Confirmation")
+i_retestProx   = input.float(3.0, "Retest Proximity (% of ATR)", minval=0.5, step=0.5, group="Confirmation")
 i_retestOnly  = input.bool(false, "Retest-Only Mode",                group="Signals")
+i_cooldownBars = input.int(2, "Signal Cooldown (signal bars)", minval=0, maxval=10, group="Signals")
 
 // ─── Setup Inputs ──────────────────────────────────────
 i_showReversal = input.bool(true,   "Show Reversal Setups",            group="Setups")
+i_limitRevWin  = input.bool(false,  "Limit Reversal Window",           group="Setups")
 i_showReclaim  = input.bool(true,   "Show Reclaim Setups",             group="Setups")
 i_setupWindow  = input.string("0930-1130", "Setup Active Window (ET)", group="Setups")
+
+i_vwapFilter   = input.bool(false,  "VWAP Directional Filter (reversals)", tooltip="Suppress bear reversals above VWAP, bull reversals below VWAP", group="Filters")
 
 i_useZones     = input.bool(true,   "Use Level Zones (wick-to-body)",  group="Zones")
 i_zoneATRPct   = input.float(3.0,   "Zone Width for PM/ORB (% of ATR)", minval=0, step=0.5, group="Zones")
@@ -227,9 +232,17 @@ newSigBar = not na(_sigChg) and _sigChg != 0
 // 5m period on a 1m chart)
 shapeOff = -1
 
+// Signal-TF bar counter — ensures bar counts & monitoring are chart-TF independent
+var int sigBarIdx = 0
+if newSigBar
+    sigBarIdx += 1
+
 // ─── Filter Computations ────────────────────────────────
+vwapVal  = ta.vwap
 breakBuf = i_atrBuf and not na(dailyATR) ? dailyATR * i_atrPct / 100.0 : 0.0
 rearmBuf = i_atrBuf and not na(dailyATR) ? dailyATR * i_atrRearm / 100.0 : 0.0
+retestBuf      = not na(dailyATR) ? dailyATR * i_retestProx / 100.0 : rearmBuf
+retestMaxElapsed = i_retestWindow == "Short (50 min)" ? 10 : i_retestWindow == "Extended (2.5 hr)" ? 30 : 99999
 
 tfSecs      = timeframe.in_seconds(i_signalTF)
 barsPerDay  = tfSecs > 0 ? 23400.0 / tfSecs : 1.0
@@ -253,13 +266,6 @@ sigRng       = sigH - sigL
 bullClosePos = sigRng > 0 ? math.round((sigC - sigL) / sigRng * 100) : na
 bearClosePos = sigRng > 0 ? math.round((sigH - sigC) / sigRng * 100) : na
 
-// ─── Chart-Bar PA Metrics (for retest quality) ─────────────
-chartRng     = high - low
-chartBullPos = chartRng > 0 ? math.round((close - low) / chartRng * 100) : na
-chartBearPos = chartRng > 0 ? math.round((high - close) / chartRng * 100) : na
-chartVolAvg  = ta.sma(volume, 20)
-chartVolRat  = not na(chartVolAvg) and chartVolAvg > 0 ? volume / chartVolAvg : na
-
 // ─── Helper: integer to superscript string ──────────────
 toSup(int n) =>
     string s = str.tostring(n)
@@ -269,10 +275,11 @@ toSup(int n) =>
         r += c == "0" ? "⁰" : c == "1" ? "¹" : c == "2" ? "²" : c == "3" ? "³" : c == "4" ? "⁴" : c == "5" ? "⁵" : c == "6" ? "⁶" : c == "7" ? "⁷" : c == "8" ? "⁸" : "⁹"
     r
 
-// ─── Helper: chart-bar quality string ───────────────────
-chartQual(bool isBull) =>
-    string vol = not na(chartVolRat) ? str.tostring(chartVolRat, "#.#") + "x" : ""
-    int pos = isBull ? chartBullPos : chartBearPos
+// ─── Helper: signal-TF quality string (for retests) ─────
+sigQual(bool isBull) =>
+    float vr = isBull ? volRatioBull : volRatioBear
+    string vol = not na(vr) ? str.tostring(vr, "#.#") + "x" : ""
+    int pos = isBull ? bullClosePos : bearClosePos
     string pa = not na(pos) ? (isBull ? "^" : "v") + str.tostring(pos) : ""
     vol + (vol != "" and pa != "" ? " " : "") + pa
 
@@ -345,12 +352,16 @@ bearBreak(float level) =>
 // Bull reversal at LOW level: wick dips into zone, close rejects above body edge.
 // Bear reversal at HIGH level: wick pushes into zone, close rejects below body edge.
 bullRev(float wick, float body) =>
-    not na(wick) and not na(body) and isRegular and newSigBar and isSetupWindow
+    not na(wick) and not na(body) and isRegular and newSigBar
+     and (not i_limitRevWin or isSetupWindow)
      and sigC > sigO and sigL <= body and sigC > body and volPassBull
+     and (not i_vwapFilter or not na(vwapVal) and sigC > vwapVal)
 
 bearRev(float wick, float body) =>
-    not na(wick) and not na(body) and isRegular and newSigBar and isSetupWindow
+    not na(wick) and not na(body) and isRegular and newSigBar
+     and (not i_limitRevWin or isSetupWindow)
      and sigC < sigO and sigH >= body and sigC < body and volPassBear
+     and (not i_vwapFilter or not na(vwapVal) and sigC < vwapVal)
 
 // ─── Raw Signals ──────────────────────────────────────────
 rBullPMH = i_showPM   and bullBreak(pmHigh)
@@ -523,26 +534,93 @@ if sigRevBearOH
 revBullCount = (sigRevBullPML ? 1 : 0) + (sigRevBullYL ? 1 : 0) + (sigRevBullWL ? 1 : 0) + (sigRevBullOL ? 1 : 0)
 revBearCount = (sigRevBearPMH ? 1 : 0) + (sigRevBearYH ? 1 : 0) + (sigRevBearWH ? 1 : 0) + (sigRevBearOH ? 1 : 0)
 
-isOld = i_fadeOld and (last_bar_index - bar_index) > i_fadeAge
+var int lastBullSigBar = -999
+var int lastBearSigBar = -999
+var int lastBullLblBar = -999
+var int lastBearLblBar = -999
 
+// Scale fade threshold by TF ratio so "100 signal bars" means the same duration on any chart TF
+sigTFRatio = math.max(1, timeframe.in_seconds(i_signalTF) / timeframe.in_seconds(timeframe.period))
+isOld = i_fadeOld and (last_bar_index - bar_index) > i_fadeAge * sigTFRatio
+
+revBullAlpha = revBullHasReclaim ? math.max(0, bullVolAlpha - 10) : bullVolAlpha
+revBearAlpha = revBearHasReclaim ? math.max(0, bearVolAlpha - 10) : bearVolAlpha
+revBullColor = color.new(color.aqua, revBullAlpha)
+revBearColor = color.new(color.orange, revBearAlpha)
+
+// ─── Combined Bull Label ─────────────────────────────────
+string combinedBullText = ""
 if bullText != ""
-    string fullBullText = bullText + (bullQualLine != "" ? "\n" + bullQualLine : "")
-    if i_retestOnly and not isOld
-        // Retest-only: suppress breakout label, show small gray dot
+    combinedBullText := bullText
+if revBullText != ""
+    // Gray out prior reversal/reclaim labels at the same levels (superseded)
+    if not isOld
+        if sigRevBullPML and not na(revLblPML)
+            label.set_color(revLblPML, color.new(color.gray, 80))
+            label.set_textcolor(revLblPML, color.new(color.gray, 60))
+        if sigRevBullYL and not na(revLblYL)
+            label.set_color(revLblYL, color.new(color.gray, 80))
+            label.set_textcolor(revLblYL, color.new(color.gray, 60))
+        if sigRevBullWL and not na(revLblWL)
+            label.set_color(revLblWL, color.new(color.gray, 80))
+            label.set_textcolor(revLblWL, color.new(color.gray, 60))
+        if sigRevBullOL and not na(revLblOL)
+            label.set_color(revLblOL, color.new(color.gray, 80))
+            label.set_textcolor(revLblOL, color.new(color.gray, 60))
+    combinedBullText := combinedBullText + (combinedBullText != "" ? "\n" : "") + revBullText
+
+if combinedBullText != ""
+    combinedBullText += bullQualLine != "" ? "\n" + bullQualLine : ""
+    // Determine color: breakout color if breakout present, reversal color if reversal-only
+    color lblColor = bullText != "" ? bullColor : revBullColor
+    int totalCount = bullCount + revBullCount
+    // Cooldown dimming
+    bool isCooled = i_cooldownBars > 0 and (sigBarIdx - lastBullSigBar) <= i_cooldownBars
+    color finalColor = isCooled ? color.new(color.gray, 70) : (isOld ? color.new(color.gray, 90) : lblColor)
+    color finalText = isCooled ? color.new(color.gray, 50) : (isOld ? color.new(color.gray, 70) : color.black)
+    size finalSize = isCooled ? size.tiny : (totalCount > 1 ? size.normal : size.small)
+    // Vertical offset for adjacent labels
+    bool needsOffset = (bar_index + shapeOff - lastBullLblBar) <= 1 and lastBullLblBar >= 0
+
+    if i_retestOnly and bullText != "" and revBullText == "" and not isOld
+        // Retest-only: suppress breakout-only label, show small gray dot
         label.new(bar_index + shapeOff, na, "·",
              yloc=yloc.belowbar, style=label.style_label_up,
              color=color.new(color.gray, 80), textcolor=color.new(color.gray, 60),
              size=size.tiny)
     else
-        label lbl = label.new(bar_index + shapeOff, na, fullBullText,
-             yloc=yloc.belowbar, style=label.style_label_up,
-             color=isOld ? color.new(color.gray, 90) : bullColor,
-             textcolor=isOld ? color.new(color.gray, 70) : color.black,
-             size=bullCount > 1 ? size.normal : size.small)
-        if i_confirm and not isOld
+        label lbl = na
+        if needsOffset and not na(dailyATR)
+            lbl := label.new(bar_index + shapeOff, low - dailyATR * 0.15,
+                 combinedBullText, yloc=yloc.price, style=label.style_label_up,
+                 color=finalColor, textcolor=finalText, size=finalSize)
+        else
+            lbl := label.new(bar_index + shapeOff, na, combinedBullText,
+                 yloc=yloc.belowbar, style=label.style_label_up,
+                 color=finalColor, textcolor=finalText, size=finalSize)
+        // Track reversal label references on the combined label
+        if not isOld and revBullText != ""
+            if sigRevBullPML
+                revLblPML := lbl
+            if sigRevBullYL
+                revLblYL := lbl
+            if sigRevBullWL
+                revLblWL := lbl
+            if sigRevBullOL
+                revLblOL := lbl
+        // Capture for confirmation tracking
+        if i_confirm and not isOld and bullText != ""
             bRTLbl  := lbl
-            bRTBase := fullBullText
-    if i_confirm and not isOld
+            bRTBase := combinedBullText
+
+    // Update cooldown + offset trackers
+    if not isOld and not isCooled
+        lastBullSigBar := sigBarIdx
+    if not isOld
+        lastBullLblBar := bar_index + shapeOff
+
+    // Confirmation setup (breakout tracking)
+    if bullText != "" and i_confirm and not isOld
         // Auto-promote previous monitoring
         if bRTState == 1 and not i_retestOnly and not na(bRTLbl)
             label.set_text(bRTLbl, bRTBase + "\n✓")
@@ -565,85 +643,13 @@ if bullText != ""
         if sigBullOH
             lvl := na(lvl) ? orbHigh : math.min(lvl, orbHigh)
         bRTConsLvl := lvl
-        bRTStart   := bar_index
+        bRTStart   := sigBarIdx
         bRTState   := 1
 
+// ─── Combined Bear Label ─────────────────────────────────
+string combinedBearText = ""
 if bearText != ""
-    string fullBearText = bearText + (bearQualLine != "" ? "\n" + bearQualLine : "")
-    if i_retestOnly and not isOld
-        label.new(bar_index + shapeOff, na, "·",
-             yloc=yloc.abovebar, style=label.style_label_down,
-             color=color.new(color.gray, 80), textcolor=color.new(color.gray, 60),
-             size=size.tiny)
-    else
-        label lbl = label.new(bar_index + shapeOff, na, fullBearText,
-             yloc=yloc.abovebar, style=label.style_label_down,
-             color=isOld ? color.new(color.gray, 90) : bearColor,
-             textcolor=isOld ? color.new(color.gray, 70) : color.black,
-             size=bearCount > 1 ? size.normal : size.small)
-        if i_confirm and not isOld
-            sRTLbl  := lbl
-            sRTBase := fullBearText
-    if i_confirm and not isOld
-        if sRTState == 1 and not i_retestOnly and not na(sRTLbl)
-            label.set_text(sRTLbl, sRTBase + "\n✓")
-        for i = 0 to 3
-            array.set(sRT, i, false)
-            array.set(sRTInfo, i, "")
-        array.set(sRTLvl, 0, sigBearPML ? pmLow : na)
-        array.set(sRTLvl, 1, sigBearYL  ? yestLow : na)
-        array.set(sRTLvl, 2, sigBearWL  ? weekLow : na)
-        array.set(sRTLvl, 3, sigBearOL  ? orbLow : na)
-        float lvl = na
-        if sigBearPML
-            lvl := na(lvl) ? pmLow : math.max(lvl, pmLow)
-        if sigBearYL
-            lvl := na(lvl) ? yestLow : math.max(lvl, yestLow)
-        if sigBearWL
-            lvl := na(lvl) ? weekLow : math.max(lvl, weekLow)
-        if sigBearOL
-            lvl := na(lvl) ? orbLow : math.max(lvl, orbLow)
-        sRTConsLvl := lvl
-        sRTStart   := bar_index
-        sRTState   := 1
-
-// ─── Reversal/Reclaim Labels ────────────────────────────
-revBullAlpha = revBullHasReclaim ? math.max(0, bullVolAlpha - 10) : bullVolAlpha
-revBearAlpha = revBearHasReclaim ? math.max(0, bearVolAlpha - 10) : bearVolAlpha
-revBullColor = color.new(color.aqua, revBullAlpha)
-revBearColor = color.new(color.orange, revBearAlpha)
-
-if revBullText != ""
-    // Gray out prior reversal/reclaim labels at the same levels (superseded)
-    if not isOld
-        if sigRevBullPML and not na(revLblPML)
-            label.set_color(revLblPML, color.new(color.gray, 80))
-            label.set_textcolor(revLblPML, color.new(color.gray, 60))
-        if sigRevBullYL and not na(revLblYL)
-            label.set_color(revLblYL, color.new(color.gray, 80))
-            label.set_textcolor(revLblYL, color.new(color.gray, 60))
-        if sigRevBullWL and not na(revLblWL)
-            label.set_color(revLblWL, color.new(color.gray, 80))
-            label.set_textcolor(revLblWL, color.new(color.gray, 60))
-        if sigRevBullOL and not na(revLblOL)
-            label.set_color(revLblOL, color.new(color.gray, 80))
-            label.set_textcolor(revLblOL, color.new(color.gray, 60))
-    string fullRevBullText = revBullText + (bullQualLine != "" ? "\n" + bullQualLine : "")
-    label lbl = label.new(bar_index + shapeOff, na, fullRevBullText,
-         yloc=yloc.belowbar, style=label.style_label_up,
-         color=isOld ? color.new(color.gray, 90) : revBullColor,
-         textcolor=isOld ? color.new(color.gray, 70) : color.black,
-         size=revBullCount > 1 ? size.normal : size.small)
-    if not isOld
-        if sigRevBullPML
-            revLblPML := lbl
-        if sigRevBullYL
-            revLblYL := lbl
-        if sigRevBullWL
-            revLblWL := lbl
-        if sigRevBullOL
-            revLblOL := lbl
-
+    combinedBearText := bearText
 if revBearText != ""
     // Gray out prior reversal/reclaim labels at the same levels (superseded)
     if not isOld
@@ -659,42 +665,104 @@ if revBearText != ""
         if sigRevBearOH and not na(revLblOH)
             label.set_color(revLblOH, color.new(color.gray, 80))
             label.set_textcolor(revLblOH, color.new(color.gray, 60))
-    string fullRevBearText = revBearText + (bearQualLine != "" ? "\n" + bearQualLine : "")
-    label lbl = label.new(bar_index + shapeOff, na, fullRevBearText,
-         yloc=yloc.abovebar, style=label.style_label_down,
-         color=isOld ? color.new(color.gray, 90) : revBearColor,
-         textcolor=isOld ? color.new(color.gray, 70) : color.black,
-         size=revBearCount > 1 ? size.normal : size.small)
+    combinedBearText := combinedBearText + (combinedBearText != "" ? "\n" : "") + revBearText
+
+if combinedBearText != ""
+    combinedBearText += bearQualLine != "" ? "\n" + bearQualLine : ""
+    // Determine color: breakout color if breakout present, reversal color if reversal-only
+    color lblColor = bearText != "" ? bearColor : revBearColor
+    int totalCount = bearCount + revBearCount
+    // Cooldown dimming
+    bool isCooled = i_cooldownBars > 0 and (sigBarIdx - lastBearSigBar) <= i_cooldownBars
+    color finalColor = isCooled ? color.new(color.gray, 70) : (isOld ? color.new(color.gray, 90) : lblColor)
+    color finalText = isCooled ? color.new(color.gray, 50) : (isOld ? color.new(color.gray, 70) : color.black)
+    size finalSize = isCooled ? size.tiny : (totalCount > 1 ? size.normal : size.small)
+    // Vertical offset for adjacent labels
+    bool needsOffset = (bar_index + shapeOff - lastBearLblBar) <= 1 and lastBearLblBar >= 0
+
+    if i_retestOnly and bearText != "" and revBearText == "" and not isOld
+        // Retest-only: suppress breakout-only label, show small gray dot
+        label.new(bar_index + shapeOff, na, "·",
+             yloc=yloc.abovebar, style=label.style_label_down,
+             color=color.new(color.gray, 80), textcolor=color.new(color.gray, 60),
+             size=size.tiny)
+    else
+        label lbl = na
+        if needsOffset and not na(dailyATR)
+            lbl := label.new(bar_index + shapeOff, high + dailyATR * 0.15,
+                 combinedBearText, yloc=yloc.price, style=label.style_label_down,
+                 color=finalColor, textcolor=finalText, size=finalSize)
+        else
+            lbl := label.new(bar_index + shapeOff, na, combinedBearText,
+                 yloc=yloc.abovebar, style=label.style_label_down,
+                 color=finalColor, textcolor=finalText, size=finalSize)
+        // Track reversal label references on the combined label
+        if not isOld and revBearText != ""
+            if sigRevBearPMH
+                revLblPMH := lbl
+            if sigRevBearYH
+                revLblYH := lbl
+            if sigRevBearWH
+                revLblWH := lbl
+            if sigRevBearOH
+                revLblOH := lbl
+        // Capture for confirmation tracking
+        if i_confirm and not isOld and bearText != ""
+            sRTLbl  := lbl
+            sRTBase := combinedBearText
+
+    // Update cooldown + offset trackers
+    if not isOld and not isCooled
+        lastBearSigBar := sigBarIdx
     if not isOld
-        if sigRevBearPMH
-            revLblPMH := lbl
-        if sigRevBearYH
-            revLblYH := lbl
-        if sigRevBearWH
-            revLblWH := lbl
-        if sigRevBearOH
-            revLblOH := lbl
+        lastBearLblBar := bar_index + shapeOff
+
+    // Confirmation setup (breakout tracking)
+    if bearText != "" and i_confirm and not isOld
+        // Auto-promote previous monitoring
+        if sRTState == 1 and not i_retestOnly and not na(sRTLbl)
+            label.set_text(sRTLbl, sRTBase + "\n✓")
+        // Set up per-level tracking
+        for i = 0 to 3
+            array.set(sRT, i, false)
+            array.set(sRTInfo, i, "")
+        array.set(sRTLvl, 0, sigBearPML ? pmLow : na)
+        array.set(sRTLvl, 1, sigBearYL  ? yestLow : na)
+        array.set(sRTLvl, 2, sigBearWL  ? weekLow : na)
+        array.set(sRTLvl, 3, sigBearOL  ? orbLow : na)
+        // Most conservative level (highest for bear)
+        float lvl = na
+        if sigBearPML
+            lvl := na(lvl) ? pmLow : math.max(lvl, pmLow)
+        if sigBearYL
+            lvl := na(lvl) ? yestLow : math.max(lvl, yestLow)
+        if sigBearWL
+            lvl := na(lvl) ? weekLow : math.max(lvl, weekLow)
+        if sigBearOL
+            lvl := na(lvl) ? orbLow : math.max(lvl, orbLow)
+        sRTConsLvl := lvl
+        sRTStart   := sigBarIdx
+        sRTState   := 1
 
 // ─── Per-Level Retest Monitoring ─────────────────────────
-// Runs every chart bar for real-time feedback.
+// Runs every signal-TF bar for chart-TF independent monitoring.
 // Helper: build retest suffix lines from per-level arrays
 buildRetestSuffix(bool[] rt, int[] rtBar, string[] rtInfo, float[] rtLvl, string[] names, int startBar, bool isBull) =>
     string suffix = ""
     for i = 0 to 3
         if array.get(rt, i) and not na(array.get(rtLvl, i))
             int bars = array.get(rtBar, i) - startBar
-            string line = "⟳" + toSup(bars) + " " + array.get(names, i)
+            string line = "◆" + toSup(bars) + " " + array.get(names, i)
             string qi = array.get(rtInfo, i)
             if qi != ""
                 line += " " + qi
             suffix += "\n" + line
     suffix
 
-// Bull retest monitoring
-if i_confirm and bRTState == 1 and not na(bRTConsLvl)
-    int elapsed = bar_index - bRTStart
+// Bull retest monitoring (signal-TF gated for chart-TF independence)
+if i_confirm and bRTState == 1 and not na(bRTConsLvl) and isRegular
+    int elapsed = sigBarIdx - bRTStart
     if close < bRTConsLvl - rearmBuf
-        // Failed: price closed back through level
         bRTState := -1
         if not na(bRTLbl)
             label.set_text(bRTLbl, bRTBase + "\n✗")
@@ -705,28 +773,29 @@ if i_confirm and bRTState == 1 and not na(bRTConsLvl)
         for i = 0 to 3
             float lvl = array.get(bRTLvl, i)
             if not na(lvl) and not array.get(bRT, i) and elapsed >= 2
-                if low <= lvl + rearmBuf and close > lvl
+                if low <= lvl + retestBuf and close > lvl
                     array.set(bRT, i, true)
-                    array.set(bRTBar, i, bar_index)
-                    array.set(bRTInfo, i, chartQual(true))
+                    array.set(bRTBar, i, sigBarIdx)
+                    array.set(bRTInfo, i, sigQual(true))
                     anyNew := true
         if anyNew
             string suffix = buildRetestSuffix(bRT, bRTBar, bRTInfo, bRTLvl, bullLvlNames, bRTStart, true)
-            if i_retestOnly
-                // Create new label at retest bar
-                string rtText = str.substring(suffix, 1)  // skip leading \n
+            string rtText = str.substring(suffix, 1)  // skip leading \n
+            // Independent retest label + alert (always, unless old)
+            if not isOld
                 label.new(bar_index, na, rtText,
                      yloc=yloc.belowbar, style=label.style_label_up,
                      color=bullColor, textcolor=color.black, size=size.small)
                 alert("Retest: " + rtText, alert.freq_once_per_bar_close)
-            else if not na(bRTLbl)
+            // Also update original breakout label (unless retest-only mode)
+            if not i_retestOnly and not na(bRTLbl)
                 label.set_text(bRTLbl, bRTBase + suffix)
-        if elapsed >= i_confirmBars and bRTState == 1
-            bRTState := 0  // monitoring window expired, stop checking
+        if elapsed >= retestMaxElapsed and bRTState == 1
+            bRTState := 0
 
-// Bear retest monitoring
-if i_confirm and sRTState == 1 and not na(sRTConsLvl)
-    int elapsed = bar_index - sRTStart
+// Bear retest monitoring (signal-TF gated for chart-TF independence)
+if i_confirm and sRTState == 1 and not na(sRTConsLvl) and isRegular
+    int elapsed = sigBarIdx - sRTStart
     if close > sRTConsLvl + rearmBuf
         sRTState := -1
         if not na(sRTLbl)
@@ -738,22 +807,24 @@ if i_confirm and sRTState == 1 and not na(sRTConsLvl)
         for i = 0 to 3
             float lvl = array.get(sRTLvl, i)
             if not na(lvl) and not array.get(sRT, i) and elapsed >= 2
-                if high >= lvl - rearmBuf and close < lvl
+                if high >= lvl - retestBuf and close < lvl
                     array.set(sRT, i, true)
-                    array.set(sRTBar, i, bar_index)
-                    array.set(sRTInfo, i, chartQual(false))
+                    array.set(sRTBar, i, sigBarIdx)
+                    array.set(sRTInfo, i, sigQual(false))
                     anyNew := true
         if anyNew
             string suffix = buildRetestSuffix(sRT, sRTBar, sRTInfo, sRTLvl, bearLvlNames, sRTStart, false)
-            if i_retestOnly
-                string rtText = str.substring(suffix, 1)
+            string rtText = str.substring(suffix, 1)  // skip leading \n
+            // Independent retest label + alert (always, unless old)
+            if not isOld
                 label.new(bar_index, na, rtText,
                      yloc=yloc.abovebar, style=label.style_label_down,
                      color=bearColor, textcolor=color.black, size=size.small)
                 alert("Retest: " + rtText, alert.freq_once_per_bar_close)
-            else if not na(sRTLbl)
+            // Also update original breakout label (unless retest-only mode)
+            if not i_retestOnly and not na(sRTLbl)
                 label.set_text(sRTLbl, sRTBase + suffix)
-        if elapsed >= i_confirmBars and sRTState == 1
+        if elapsed >= retestMaxElapsed and sRTState == 1
             sRTState := 0
 
 // Retest state transition alerts
@@ -766,6 +837,7 @@ if i_confirm
         if sRTState == -1
             alert("Failed: " + sRTBase, alert.freq_once_per_bar_close)
         sRTPrev := sRTState
+
 
 // ─── Level Lines (optional, off by default) ───────────────
 pPMH  = plot(i_showLines and i_showPM   and isRegular ? pmHigh   : na, "PM High",   color.new(color.orange, 40), 1, plot.style_linebr)
