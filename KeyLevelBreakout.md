@@ -154,13 +154,44 @@ Four setup types, each with a clear directional rule:
 | **Reclaim `~~`** | Bearish rejection after failed bull break → SHORT | Bullish rejection after failed bear break → LONG | Fade the trapped side |
 | **Retest `⟳✓`** | Pullback to level, held above → confirms LONG | Bounce to level, held below → confirms SHORT | Confirms original break |
 
-**Breakout example (Yest H = $150):** Price closes above $150 on a green candle with volume → LONG. Green label: `Yest H 2.1x ^78`.
+**Breakout example (Yest H = $150):** Price closes above $150 on a green candle with volume → LONG.
+```
+Yest H
+2.1x ^78
+```
 
-**Reversal example (Yest H = $150):** Price wicks into $150 zone from below, closes back below on a red candle → SHORT. Orange label: `~ Yest H 1.8x v82`.
+**Reversal example (Yest H = $150):** Price wicks into $150 zone from below, closes back below on a red candle → SHORT.
+```
+~ Yest H
+1.8x v82
+```
 
-**Reclaim example (Yest H = $150):** Earlier bullish breakout above $150 failed (price fell back below). Price approaches $150 zone again, wicks in, closes back below → SHORT. Orange label (brighter): `~~ Yest H 2.3x v85`.
+**Reclaim example (Yest H = $150):** Earlier bullish breakout above $150 failed. Price approaches again, wicks in, closes back below → SHORT.
+```
+~~ Yest H
+2.3x v85
+```
 
-**Retest example (Yest H = $150):** After bullish breakout, price dips back to $150 and holds above → original breakout label updated with `⟳✓`. If price falls back through → `✗` and label grays out.
+**Retest example (Yest H + ORB H = $150):** Confluent bullish breakout. 3 bars later, ORB H retested and held. 7 bars later, Yest H retested and held.
+```
+ORB H + Yest H
+1.8x ^82
+⟳³ ORB H 2.1x ^85
+⟳⁷ Yest H 1.4x ^71
+```
+
+**Failed example:** Price closed back through the level → label grayed out.
+```
+Yest H
+1.8x ^82
+✗
+```
+
+**Retest-Only Mode:** Breakout becomes gray `·` dot. Retest fires its own label:
+```
+⟳³ ORB H
+2.1x ^85
+```
 
 ### Visual Reference
 
@@ -171,24 +202,44 @@ Four setup types, each with a clear directional rule:
   BREAKOUT                               BREAKOUT
   Price breaks ABOVE                     Price breaks BELOW
   ▲ LONG (green label)                   ▼ SHORT (red label)
-  "Yest H 2.1x ^78"                     "Yest L 1.8x v72"
+  ┌────────────┐                         ┌────────────┐
+  │ Yest H     │                         │ Yest L     │
+  │ 2.1x ^78   │                         │ 1.8x v72   │
+  └────────────┘                         └────────────┘
 
   REVERSAL ~                             REVERSAL ~
-  Wick enters zone from below,           Wick enters zone from above,
-  close rejects BELOW                    close rejects ABOVE
+  Wick enters zone, close rejects        Wick enters zone, close rejects
   ▼ SHORT (orange label)                 ▲ LONG (blue label)
-  "~ Yest H 1.8x v82"                   "~ Yest L 2.0x ^75"
+  ┌────────────┐                         ┌────────────┐
+  │ ~ Yest H   │                         │ ~ Yest L   │
+  │ 1.8x v82   │                         │ 2.0x ^75   │
+  └────────────┘                         └────────────┘
 
   RECLAIM ~~                             RECLAIM ~~
-  Prior bull break FAILED,               Prior bear break FAILED,
-  now rejecting DOWN                     now rejecting UP
+  Prior break FAILED, now rejecting      Prior break FAILED, now rejecting
   ▼ SHORT (orange, brighter)             ▲ LONG (blue, brighter)
-  "~~ Yest H 2.3x v85"                  "~~ Yest L 2.5x ^80"
+  ┌────────────┐                         ┌────────────┐
+  │ ~~ Yest H  │                         │ ~~ Yest L  │
+  │ 2.3x v85   │                         │ 2.5x ^80   │
+  └────────────┘                         └────────────┘
 
-  RETEST ⟳✓                             RETEST ⟳✓
-  Pullback to level,                     Bounce to level,
-  held ABOVE → confirmed                 held BELOW → confirmed
+  RETEST ⟳                              RETEST ⟳
+  Pullback to level, held                Bounce to level, held
   ▲ confirms LONG                        ▼ confirms SHORT
+  ┌──────────────────────┐               ┌──────────────────────┐
+  │ Yest H               │               │ Yest L               │
+  │ 2.1x ^78             │               │ 1.8x v72             │
+  │ ⟳³ Yest H 1.9x ^80  │               │ ⟳³ Yest L 1.7x v78  │
+  └──────────────────────┘               └──────────────────────┘
+
+  FAILED ✗                               FAILED ✗
+  Closed back through level              Closed back through level
+  Label grayed out                       Label grayed out
+  ┌────────────┐                         ┌────────────┐
+  │ Yest H     │                         │ Yest L     │
+  │ 2.1x ^78   │                         │ 1.8x v72   │
+  │ ✗          │                         │ ✗          │
+  └────────────┘                         └────────────┘
 ```
 
 ### Flow at a HIGH Level
@@ -196,11 +247,12 @@ Four setup types, each with a clear directional rule:
 ```
   Price at HIGH level (e.g. Yest H):
 
-       breaks above ──→ BREAKOUT (LONG) ──→ holds? ──→ ✓ confirmed
+       breaks above ──→ BREAKOUT (LONG) ──→ holds? ──→ ✓ auto-promoted
             │                                    │
-            │                               pulls back
+            │                               pulls back to level
             │                                    │
-            │                              ⟳✓ retest OK
+            │                              ⟳³ retest (per level)
+            │                              with PA quality
             │                                 or
             │                              ✗ failed ──→ hadBrk = true
             │                                                │
@@ -218,7 +270,8 @@ Both happen after a breakout — the difference is whether it held or failed:
   Breakout fires (e.g. bull break above Yest H)
        │
        ├── price pulls back to level, holds ABOVE
-       │   → ⟳✓ RETEST — confirms original direction (LONG)
+       │   → ⟳³ RETEST — confirms original direction (LONG)
+       │   per-level tracking with PA quality
        │   "broken resistance is now support"
        │
        └── price closes back BELOW level (invalidation)
@@ -229,21 +282,24 @@ Both happen after a breakout — the difference is whether it held or failed:
                     "breakout was a trap, fade it"
 ```
 
-|  | Retest `⟳✓` | Reclaim `~~` |
+|  | Retest `⟳` | Reclaim `~~` |
 |---|---|---|
 | Breakout outcome | Held (successful) | Failed (invalidated) |
 | Direction | Same as breakout | Opposite to breakout |
 | What it means | Level flipped role (resistance → support) | Trapped participants, fade them |
-| Visually | Updates original breakout label | Creates a new label |
+| Tracking | Per-level with bar count + PA quality | New label at reclaim bar |
+| Visually | Appended as lines on breakout label | Creates a new label |
 
 These are **mutually exclusive** — at the same level, you either get a retest (breakout worked) or eventually a reclaim (breakout failed). Never both.
 
 ## Alert Messages
 
 When using `Any alert() function call`, messages are merged per direction per bar:
-- `Bullish breakout: PM H` — single level
-- `Bearish breakout: Yest L` — single level
-- `Bullish breakout: PM H + Yest H` — confluent (multiple levels on same bar)
+- `Bullish breakout: PM H 1.8x ^82` — single level (suppressed in Retest-Only Mode)
+- `Bearish breakout: Yest L 1.5x v78` — single level (suppressed in Retest-Only Mode)
+- `Bullish breakout: PM H + Yest H 2.1x ^82` — confluent (multiple levels on same bar)
+- `Retest: ⟳³ ORB H 2.1x ^85` — retest detected (fires in both modes)
+- `Failed: ORB H + Yest H` — price closed back through level
 
 For directional filtering, use `alertcondition()` entries from the dropdown — "Any Bullish Breakout", "Any Bearish Breakout", or "Any Breakout".
 
