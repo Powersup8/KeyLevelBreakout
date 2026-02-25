@@ -243,8 +243,8 @@ volPassBull  = not i_volFilter or na(volThreshold) or sigVolBull > volThreshold
 volPassBear  = not i_volFilter or na(volThreshold) or sigVolBear > volThreshold
 volRatioBull = not na(volBase) and volBase > 0 ? sigVolBull / volBase : na
 volRatioBear = not na(volBase) and volBase > 0 ? sigVolBear / volBase : na
-bullVolAlpha = i_volFilter and not na(volRatioBull) ? math.max(0, math.round(60 - volRatioBull * 20)) : 0
-bearVolAlpha = i_volFilter and not na(volRatioBear) ? math.max(0, math.round(60 - volRatioBear * 20)) : 0
+bullVolAlpha = i_volFilter and not na(volRatioBull) ? math.max(0, math.round(35 - volRatioBull * 10)) : 0
+bearVolAlpha = i_volFilter and not na(volRatioBear) ? math.max(0, math.round(35 - volRatioBear * 10)) : 0
 bullColor    = color.new(color.green, bullVolAlpha)
 bearColor    = color.new(color.red, bearVolAlpha)
 
@@ -537,7 +537,7 @@ if bullText != ""
         label lbl = label.new(bar_index + shapeOff, na, fullBullText,
              yloc=yloc.belowbar, style=label.style_label_up,
              color=isOld ? color.new(color.gray, 90) : bullColor,
-             textcolor=isOld ? color.new(color.gray, 70) : color.white,
+             textcolor=isOld ? color.new(color.gray, 70) : color.black,
              size=bullCount > 1 ? size.normal : size.small)
         if i_confirm and not isOld
             bRTLbl  := lbl
@@ -579,7 +579,7 @@ if bearText != ""
         label lbl = label.new(bar_index + shapeOff, na, fullBearText,
              yloc=yloc.abovebar, style=label.style_label_down,
              color=isOld ? color.new(color.gray, 90) : bearColor,
-             textcolor=isOld ? color.new(color.gray, 70) : color.white,
+             textcolor=isOld ? color.new(color.gray, 70) : color.black,
              size=bearCount > 1 ? size.normal : size.small)
         if i_confirm and not isOld
             sRTLbl  := lbl
@@ -610,7 +610,7 @@ if bearText != ""
 // ─── Reversal/Reclaim Labels ────────────────────────────
 revBullAlpha = revBullHasReclaim ? math.max(0, bullVolAlpha - 10) : bullVolAlpha
 revBearAlpha = revBearHasReclaim ? math.max(0, bearVolAlpha - 10) : bearVolAlpha
-revBullColor = color.new(color.blue, revBullAlpha)
+revBullColor = color.new(color.aqua, revBullAlpha)
 revBearColor = color.new(color.orange, revBearAlpha)
 
 if revBullText != ""
@@ -632,7 +632,7 @@ if revBullText != ""
     label lbl = label.new(bar_index + shapeOff, na, fullRevBullText,
          yloc=yloc.belowbar, style=label.style_label_up,
          color=isOld ? color.new(color.gray, 90) : revBullColor,
-         textcolor=isOld ? color.new(color.gray, 70) : color.white,
+         textcolor=isOld ? color.new(color.gray, 70) : color.black,
          size=revBullCount > 1 ? size.normal : size.small)
     if not isOld
         if sigRevBullPML
@@ -663,7 +663,7 @@ if revBearText != ""
     label lbl = label.new(bar_index + shapeOff, na, fullRevBearText,
          yloc=yloc.abovebar, style=label.style_label_down,
          color=isOld ? color.new(color.gray, 90) : revBearColor,
-         textcolor=isOld ? color.new(color.gray, 70) : color.white,
+         textcolor=isOld ? color.new(color.gray, 70) : color.black,
          size=revBearCount > 1 ? size.normal : size.small)
     if not isOld
         if sigRevBearPMH
@@ -717,7 +717,7 @@ if i_confirm and bRTState == 1 and not na(bRTConsLvl)
                 string rtText = str.substring(suffix, 1)  // skip leading \n
                 label.new(bar_index, na, rtText,
                      yloc=yloc.belowbar, style=label.style_label_up,
-                     color=bullColor, textcolor=color.white, size=size.small)
+                     color=bullColor, textcolor=color.black, size=size.small)
                 alert("Retest: " + rtText, alert.freq_once_per_bar_close)
             else if not na(bRTLbl)
                 label.set_text(bRTLbl, bRTBase + suffix)
@@ -749,7 +749,7 @@ if i_confirm and sRTState == 1 and not na(sRTConsLvl)
                 string rtText = str.substring(suffix, 1)
                 label.new(bar_index, na, rtText,
                      yloc=yloc.abovebar, style=label.style_label_down,
-                     color=bearColor, textcolor=color.white, size=size.small)
+                     color=bearColor, textcolor=color.black, size=size.small)
                 alert("Retest: " + rtText, alert.freq_once_per_bar_close)
             else if not na(sRTLbl)
                 label.set_text(sRTLbl, sRTBase + suffix)
