@@ -28,6 +28,7 @@ i_closePos    = input.bool(true,  "Show Close Position %",           group="Qual
 
 i_confirm     = input.bool(true,  "Post-Breakout Confirmation",     group="Confirmation")
 i_confirmBars = input.int(10,     "Confirmation Window (chart bars)", minval=3, maxval=30, group="Confirmation")
+i_retestOnly  = input.bool(false, "Retest-Only Mode",                group="Signals")
 
 // ─── Setup Inputs ──────────────────────────────────────
 i_showReversal = input.bool(true,   "Show Reversal Setups",            group="Setups")
@@ -140,19 +141,28 @@ var label revLblWH  = na
 var label revLblOH  = na
 
 // ─── Post-Breakout Confirmation State ───────────────────
-var label  lastBullLbl       = na
-var string lastBullText      = ""
-var float  lastBullLvl       = na
-var int    lastBullStart     = 0
-var int    lastBullState     = 0  // 0=none, 1=monitoring, 2=retest-confirmed, 3=time-confirmed, -1=failed
-var int    prevBullConfState = 0
+// Per-level retest tracking: 4 bull levels (PMH,YH,WH,OH), 4 bear (PML,YL,WL,OL)
+var bool[]   bRT     = array.new_bool(4, false)   // retested?
+var int[]    bRTBar  = array.new_int(4, 0)        // bar of retest
+var string[] bRTInfo = array.new_string(4, "")    // quality string at retest
+var float[]  bRTLvl  = array.new_float(4, na)     // level value being tracked
+var label    bRTLbl  = na                          // breakout label ref
+var string   bRTBase = ""                          // base label text
+var int      bRTStart = 0                          // bar_index of breakout
+var float    bRTConsLvl = na                       // most conservative level (lowest for bull)
+var int      bRTState = 0                          // 0=none, 1=monitoring, -1=failed
+var int      bRTPrev  = 0                          // previous state (for alert transitions)
 
-var label  lastBearLbl       = na
-var string lastBearText      = ""
-var float  lastBearLvl       = na
-var int    lastBearStart     = 0
-var int    lastBearState     = 0
-var int    prevBearConfState = 0
+var bool[]   sRT     = array.new_bool(4, false)
+var int[]    sRTBar  = array.new_int(4, 0)
+var string[] sRTInfo = array.new_string(4, "")
+var float[]  sRTLvl  = array.new_float(4, na)
+var label    sRTLbl  = na
+var string   sRTBase = ""
+var int      sRTStart = 0
+var float    sRTConsLvl = na
+var int      sRTState = 0
+var int      sRTPrev  = 0
 
 if newRegular
     xPMH := false
@@ -190,12 +200,17 @@ if newRegular
     revLblYH  := na
     revLblWH  := na
     revLblOH  := na
-    // Reset confirmation state at session open
+    // Reset per-level retest state at session open
     if i_confirm
-        lastBullState     := 0
-        lastBearState     := 0
-        prevBullConfState := 0
-        prevBearConfState := 0
+        for i = 0 to 3
+            array.set(bRT, i, false)
+            array.set(bRTLvl, i, na)
+            array.set(sRT, i, false)
+            array.set(sRTLvl, i, na)
+        bRTState := 0
+        bRTPrev  := 0
+        sRTState := 0
+        sRTPrev  := 0
 
 // ─── Signal Timeframe Data (confirmed bar only) ──────────
 // Previous completed signal-TF bar's OHLC — non-repainting
@@ -228,8 +243,6 @@ volPassBull  = not i_volFilter or na(volThreshold) or sigVolBull > volThreshold
 volPassBear  = not i_volFilter or na(volThreshold) or sigVolBear > volThreshold
 volRatioBull = not na(volBase) and volBase > 0 ? sigVolBull / volBase : na
 volRatioBear = not na(volBase) and volBase > 0 ? sigVolBear / volBase : na
-bullVolStr   = i_volFilter and not na(volRatioBull) ? " " + str.tostring(volRatioBull, "#.#") + "x" : ""
-bearVolStr   = i_volFilter and not na(volRatioBear) ? " " + str.tostring(volRatioBear, "#.#") + "x" : ""
 bullVolAlpha = i_volFilter and not na(volRatioBull) ? math.max(0, math.round(60 - volRatioBull * 20)) : 0
 bearVolAlpha = i_volFilter and not na(volRatioBear) ? math.max(0, math.round(60 - volRatioBear * 20)) : 0
 bullColor    = color.new(color.green, bullVolAlpha)
@@ -239,6 +252,33 @@ bearColor    = color.new(color.red, bearVolAlpha)
 sigRng       = sigH - sigL
 bullClosePos = sigRng > 0 ? math.round((sigC - sigL) / sigRng * 100) : na
 bearClosePos = sigRng > 0 ? math.round((sigH - sigC) / sigRng * 100) : na
+
+// ─── Chart-Bar PA Metrics (for retest quality) ─────────────
+chartRng     = high - low
+chartBullPos = chartRng > 0 ? math.round((close - low) / chartRng * 100) : na
+chartBearPos = chartRng > 0 ? math.round((high - close) / chartRng * 100) : na
+chartVolAvg  = ta.sma(volume, 20)
+chartVolRat  = not na(chartVolAvg) and chartVolAvg > 0 ? volume / chartVolAvg : na
+
+// ─── Helper: integer to superscript string ──────────────
+toSup(int n) =>
+    string s = str.tostring(n)
+    string r = ""
+    for i = 0 to str.length(s) - 1
+        string c = str.substring(s, i, i + 1)
+        r += c == "0" ? "⁰" : c == "1" ? "¹" : c == "2" ? "²" : c == "3" ? "³" : c == "4" ? "⁴" : c == "5" ? "⁵" : c == "6" ? "⁶" : c == "7" ? "⁷" : c == "8" ? "⁸" : "⁹"
+    r
+
+// ─── Helper: chart-bar quality string ───────────────────
+chartQual(bool isBull) =>
+    string vol = not na(chartVolRat) ? str.tostring(chartVolRat, "#.#") + "x" : ""
+    int pos = isBull ? chartBullPos : chartBearPos
+    string pa = not na(pos) ? (isBull ? "^" : "v") + str.tostring(pos) : ""
+    vol + (vol != "" and pa != "" ? " " : "") + pa
+
+// Level name arrays for retest label building
+bullLvlNames = array.from("PM H", "Yest H", "Week H", "ORB H")
+bearLvlNames = array.from("PM L", "Yest L", "Week L", "ORB L")
 
 // ─── Invalidation: re-arm when price closes back through level ──
 if i_firstOnly and newSigBar
@@ -421,9 +461,14 @@ if sigBearWL
 if sigBearOL
     bearText := bearText + (bearText != "" ? " + " : "") + "ORB L"
 
-// Close position suffix: "^78" = close at 78% toward the high
-bullPosStr = i_closePos and not na(bullClosePos) ? " ^" + str.tostring(bullClosePos) : ""
-bearPosStr = i_closePos and not na(bearClosePos) ? " v" + str.tostring(bearClosePos) : ""
+// Quality line: volume + close position on separate line
+bullVolTrim = i_volFilter and not na(volRatioBull) ? str.tostring(volRatioBull, "#.#") + "x" : ""
+bullPosTrim = i_closePos and not na(bullClosePos) ? "^" + str.tostring(bullClosePos) : ""
+bullQualLine = bullVolTrim + (bullVolTrim != "" and bullPosTrim != "" ? " " : "") + bullPosTrim
+
+bearVolTrim = i_volFilter and not na(volRatioBear) ? str.tostring(volRatioBear, "#.#") + "x" : ""
+bearPosTrim = i_closePos and not na(bearClosePos) ? "v" + str.tostring(bearClosePos) : ""
+bearQualLine = bearVolTrim + (bearVolTrim != "" and bearPosTrim != "" ? " " : "") + bearPosTrim
 
 bullCount = (sigBullPMH ? 1 : 0) + (sigBullYH ? 1 : 0) + (sigBullWH ? 1 : 0) + (sigBullOH ? 1 : 0)
 bearCount = (sigBearPML ? 1 : 0) + (sigBearYL ? 1 : 0) + (sigBearWL ? 1 : 0) + (sigBearOL ? 1 : 0)
@@ -481,18 +526,35 @@ revBearCount = (sigRevBearPMH ? 1 : 0) + (sigRevBearYH ? 1 : 0) + (sigRevBearWH 
 isOld = i_fadeOld and (last_bar_index - bar_index) > i_fadeAge
 
 if bullText != ""
-    string fullBullText = bullText + bullVolStr + bullPosStr
-    label lbl = label.new(bar_index + shapeOff, na, fullBullText,
-         yloc=yloc.belowbar, style=label.style_label_up,
-         color=isOld ? color.new(color.gray, 90) : bullColor,
-         textcolor=isOld ? color.new(color.gray, 70) : color.white,
-         size=bullCount > 1 ? size.normal : size.small)
+    string fullBullText = bullText + (bullQualLine != "" ? "\n" + bullQualLine : "")
+    if i_retestOnly and not isOld
+        // Retest-only: suppress breakout label, show small gray dot
+        label.new(bar_index + shapeOff, na, "·",
+             yloc=yloc.belowbar, style=label.style_label_up,
+             color=color.new(color.gray, 80), textcolor=color.new(color.gray, 60),
+             size=size.tiny)
+    else
+        label lbl = label.new(bar_index + shapeOff, na, fullBullText,
+             yloc=yloc.belowbar, style=label.style_label_up,
+             color=isOld ? color.new(color.gray, 90) : bullColor,
+             textcolor=isOld ? color.new(color.gray, 70) : color.white,
+             size=bullCount > 1 ? size.normal : size.small)
+        if i_confirm and not isOld
+            bRTLbl  := lbl
+            bRTBase := fullBullText
     if i_confirm and not isOld
-        // Auto-promote previous monitoring to confirmed (survived until next signal)
-        if lastBullState == 1
-            lastBullState := 3
-            label.set_text(lastBullLbl, lastBullText + " ✓")
-        // Track most conservative level (lowest for bull = hardest to hold)
+        // Auto-promote previous monitoring
+        if bRTState == 1 and not i_retestOnly and not na(bRTLbl)
+            label.set_text(bRTLbl, bRTBase + "\n✓")
+        // Set up per-level tracking
+        for i = 0 to 3
+            array.set(bRT, i, false)
+            array.set(bRTInfo, i, "")
+        array.set(bRTLvl, 0, sigBullPMH ? pmHigh : na)
+        array.set(bRTLvl, 1, sigBullYH  ? yestHigh : na)
+        array.set(bRTLvl, 2, sigBullWH  ? weekHigh : na)
+        array.set(bRTLvl, 3, sigBullOH  ? orbHigh : na)
+        // Most conservative level (lowest for bull)
         float lvl = na
         if sigBullPMH
             lvl := na(lvl) ? pmHigh : math.min(lvl, pmHigh)
@@ -502,23 +564,36 @@ if bullText != ""
             lvl := na(lvl) ? weekHigh : math.min(lvl, weekHigh)
         if sigBullOH
             lvl := na(lvl) ? orbHigh : math.min(lvl, orbHigh)
-        lastBullLbl   := lbl
-        lastBullText  := fullBullText
-        lastBullLvl   := lvl
-        lastBullStart := bar_index
-        lastBullState := 1
+        bRTConsLvl := lvl
+        bRTStart   := bar_index
+        bRTState   := 1
 
 if bearText != ""
-    string fullBearText = bearText + bearVolStr + bearPosStr
-    label lbl = label.new(bar_index + shapeOff, na, fullBearText,
-         yloc=yloc.abovebar, style=label.style_label_down,
-         color=isOld ? color.new(color.gray, 90) : bearColor,
-         textcolor=isOld ? color.new(color.gray, 70) : color.white,
-         size=bearCount > 1 ? size.normal : size.small)
+    string fullBearText = bearText + (bearQualLine != "" ? "\n" + bearQualLine : "")
+    if i_retestOnly and not isOld
+        label.new(bar_index + shapeOff, na, "·",
+             yloc=yloc.abovebar, style=label.style_label_down,
+             color=color.new(color.gray, 80), textcolor=color.new(color.gray, 60),
+             size=size.tiny)
+    else
+        label lbl = label.new(bar_index + shapeOff, na, fullBearText,
+             yloc=yloc.abovebar, style=label.style_label_down,
+             color=isOld ? color.new(color.gray, 90) : bearColor,
+             textcolor=isOld ? color.new(color.gray, 70) : color.white,
+             size=bearCount > 1 ? size.normal : size.small)
+        if i_confirm and not isOld
+            sRTLbl  := lbl
+            sRTBase := fullBearText
     if i_confirm and not isOld
-        if lastBearState == 1
-            lastBearState := 3
-            label.set_text(lastBearLbl, lastBearText + " ✓")
+        if sRTState == 1 and not i_retestOnly and not na(sRTLbl)
+            label.set_text(sRTLbl, sRTBase + "\n✓")
+        for i = 0 to 3
+            array.set(sRT, i, false)
+            array.set(sRTInfo, i, "")
+        array.set(sRTLvl, 0, sigBearPML ? pmLow : na)
+        array.set(sRTLvl, 1, sigBearYL  ? yestLow : na)
+        array.set(sRTLvl, 2, sigBearWL  ? weekLow : na)
+        array.set(sRTLvl, 3, sigBearOL  ? orbLow : na)
         float lvl = na
         if sigBearPML
             lvl := na(lvl) ? pmLow : math.max(lvl, pmLow)
@@ -528,11 +603,9 @@ if bearText != ""
             lvl := na(lvl) ? weekLow : math.max(lvl, weekLow)
         if sigBearOL
             lvl := na(lvl) ? orbLow : math.max(lvl, orbLow)
-        lastBearLbl   := lbl
-        lastBearText  := fullBearText
-        lastBearLvl   := lvl
-        lastBearStart := bar_index
-        lastBearState := 1
+        sRTConsLvl := lvl
+        sRTStart   := bar_index
+        sRTState   := 1
 
 // ─── Reversal/Reclaim Labels ────────────────────────────
 revBullAlpha = revBullHasReclaim ? math.max(0, bullVolAlpha - 10) : bullVolAlpha
@@ -555,7 +628,7 @@ if revBullText != ""
         if sigRevBullOL and not na(revLblOL)
             label.set_color(revLblOL, color.new(color.gray, 80))
             label.set_textcolor(revLblOL, color.new(color.gray, 60))
-    string fullRevBullText = revBullText + bullVolStr + bullPosStr
+    string fullRevBullText = revBullText + (bullQualLine != "" ? "\n" + bullQualLine : "")
     label lbl = label.new(bar_index + shapeOff, na, fullRevBullText,
          yloc=yloc.belowbar, style=label.style_label_up,
          color=isOld ? color.new(color.gray, 90) : revBullColor,
@@ -586,7 +659,7 @@ if revBearText != ""
         if sigRevBearOH and not na(revLblOH)
             label.set_color(revLblOH, color.new(color.gray, 80))
             label.set_textcolor(revLblOH, color.new(color.gray, 60))
-    string fullRevBearText = revBearText + bearVolStr + bearPosStr
+    string fullRevBearText = revBearText + (bearQualLine != "" ? "\n" + bearQualLine : "")
     label lbl = label.new(bar_index + shapeOff, na, fullRevBearText,
          yloc=yloc.abovebar, style=label.style_label_down,
          color=isOld ? color.new(color.gray, 90) : revBearColor,
@@ -602,70 +675,139 @@ if revBearText != ""
         if sigRevBearOH
             revLblOH := lbl
 
-// ─── Post-Breakout Confirmation Monitoring ────────────────
-// Runs every chart bar (not gated by newSigBar) for real-time feedback.
-if i_confirm and lastBullState == 1 and not na(lastBullLvl)
-    int elapsed = bar_index - lastBullStart
-    if close < lastBullLvl - rearmBuf
-        lastBullState := -1
-        label.set_text(lastBullLbl, lastBullText + " ✗")
-        label.set_color(lastBullLbl, color.new(color.gray, 60))
-        label.set_textcolor(lastBullLbl, color.new(color.gray, 40))
-    else if elapsed >= 2 and low <= lastBullLvl + rearmBuf and close > lastBullLvl
-        lastBullState := 2
-        label.set_text(lastBullLbl, lastBullText + " ⟳✓")
-    else if elapsed >= i_confirmBars
-        lastBullState := 3
-        label.set_text(lastBullLbl, lastBullText + " ✓")
+// ─── Per-Level Retest Monitoring ─────────────────────────
+// Runs every chart bar for real-time feedback.
+// Helper: build retest suffix lines from per-level arrays
+buildRetestSuffix(bool[] rt, int[] rtBar, string[] rtInfo, float[] rtLvl, string[] names, int startBar, bool isBull) =>
+    string suffix = ""
+    for i = 0 to 3
+        if array.get(rt, i) and not na(array.get(rtLvl, i))
+            int bars = array.get(rtBar, i) - startBar
+            string line = "⟳" + toSup(bars) + " " + array.get(names, i)
+            string qi = array.get(rtInfo, i)
+            if qi != ""
+                line += " " + qi
+            suffix += "\n" + line
+    suffix
 
-if i_confirm and lastBearState == 1 and not na(lastBearLvl)
-    int elapsed = bar_index - lastBearStart
-    if close > lastBearLvl + rearmBuf
-        lastBearState := -1
-        label.set_text(lastBearLbl, lastBearText + " ✗")
-        label.set_color(lastBearLbl, color.new(color.gray, 60))
-        label.set_textcolor(lastBearLbl, color.new(color.gray, 40))
-    else if elapsed >= 2 and high >= lastBearLvl - rearmBuf and close < lastBearLvl
-        lastBearState := 2
-        label.set_text(lastBearLbl, lastBearText + " ⟳✓")
-    else if elapsed >= i_confirmBars
-        lastBearState := 3
-        label.set_text(lastBearLbl, lastBearText + " ✓")
+// Bull retest monitoring
+if i_confirm and bRTState == 1 and not na(bRTConsLvl)
+    int elapsed = bar_index - bRTStart
+    if close < bRTConsLvl - rearmBuf
+        // Failed: price closed back through level
+        bRTState := -1
+        if not na(bRTLbl)
+            label.set_text(bRTLbl, bRTBase + "\n✗")
+            label.set_color(bRTLbl, color.new(color.gray, 60))
+            label.set_textcolor(bRTLbl, color.new(color.gray, 40))
+    else
+        bool anyNew = false
+        for i = 0 to 3
+            float lvl = array.get(bRTLvl, i)
+            if not na(lvl) and not array.get(bRT, i) and elapsed >= 2
+                if low <= lvl + rearmBuf and close > lvl
+                    array.set(bRT, i, true)
+                    array.set(bRTBar, i, bar_index)
+                    array.set(bRTInfo, i, chartQual(true))
+                    anyNew := true
+        if anyNew
+            string suffix = buildRetestSuffix(bRT, bRTBar, bRTInfo, bRTLvl, bullLvlNames, bRTStart, true)
+            if i_retestOnly
+                // Create new label at retest bar
+                string rtText = str.substring(suffix, 1)  // skip leading \n
+                label.new(bar_index, na, rtText,
+                     yloc=yloc.belowbar, style=label.style_label_up,
+                     color=bullColor, textcolor=color.white, size=size.small)
+                alert("Retest: " + rtText, alert.freq_once_per_bar_close)
+            else if not na(bRTLbl)
+                label.set_text(bRTLbl, bRTBase + suffix)
+        if elapsed >= i_confirmBars and bRTState == 1
+            bRTState := 0  // monitoring window expired, stop checking
 
-// Confirmation alerts (fire once per state transition)
+// Bear retest monitoring
+if i_confirm and sRTState == 1 and not na(sRTConsLvl)
+    int elapsed = bar_index - sRTStart
+    if close > sRTConsLvl + rearmBuf
+        sRTState := -1
+        if not na(sRTLbl)
+            label.set_text(sRTLbl, sRTBase + "\n✗")
+            label.set_color(sRTLbl, color.new(color.gray, 60))
+            label.set_textcolor(sRTLbl, color.new(color.gray, 40))
+    else
+        bool anyNew = false
+        for i = 0 to 3
+            float lvl = array.get(sRTLvl, i)
+            if not na(lvl) and not array.get(sRT, i) and elapsed >= 2
+                if high >= lvl - rearmBuf and close < lvl
+                    array.set(sRT, i, true)
+                    array.set(sRTBar, i, bar_index)
+                    array.set(sRTInfo, i, chartQual(false))
+                    anyNew := true
+        if anyNew
+            string suffix = buildRetestSuffix(sRT, sRTBar, sRTInfo, sRTLvl, bearLvlNames, sRTStart, false)
+            if i_retestOnly
+                string rtText = str.substring(suffix, 1)
+                label.new(bar_index, na, rtText,
+                     yloc=yloc.abovebar, style=label.style_label_down,
+                     color=bearColor, textcolor=color.white, size=size.small)
+                alert("Retest: " + rtText, alert.freq_once_per_bar_close)
+            else if not na(sRTLbl)
+                label.set_text(sRTLbl, sRTBase + suffix)
+        if elapsed >= i_confirmBars and sRTState == 1
+            sRTState := 0
+
+// Retest state transition alerts
 if i_confirm
-    if lastBullState != prevBullConfState
-        if lastBullState == 2 or lastBullState == 3
-            alert("Confirmed: " + lastBullText, alert.freq_once_per_bar_close)
-        if lastBullState == -1
-            alert("Failed: " + lastBullText, alert.freq_once_per_bar_close)
-        prevBullConfState := lastBullState
-    if lastBearState != prevBearConfState
-        if lastBearState == 2 or lastBearState == 3
-            alert("Confirmed: " + lastBearText, alert.freq_once_per_bar_close)
-        if lastBearState == -1
-            alert("Failed: " + lastBearText, alert.freq_once_per_bar_close)
-        prevBearConfState := lastBearState
+    if bRTState != bRTPrev
+        if bRTState == -1
+            alert("Failed: " + bRTBase, alert.freq_once_per_bar_close)
+        bRTPrev := bRTState
+    if sRTState != sRTPrev
+        if sRTState == -1
+            alert("Failed: " + sRTBase, alert.freq_once_per_bar_close)
+        sRTPrev := sRTState
 
 // ─── Level Lines (optional, off by default) ───────────────
-plot(i_showLines and i_showPM   and isRegular ? pmHigh   : na, "PM High",   color.new(color.orange, 40), 1, plot.style_linebr)
-plot(i_showLines and i_showPM   and isRegular ? pmLow    : na, "PM Low",    color.new(color.orange, 40), 1, plot.style_linebr)
-plot(i_showLines and i_showYest and isRegular ? yestHigh : na, "Yest High", color.new(color.blue, 40),   1, plot.style_linebr)
-plot(i_showLines and i_showYest and isRegular ? yestLow  : na, "Yest Low",  color.new(color.blue, 40),   1, plot.style_linebr)
-plot(i_showLines and i_showWeek and isRegular ? weekHigh : na, "Week High", color.new(color.purple, 40), 1, plot.style_linebr)
-plot(i_showLines and i_showWeek and isRegular ? weekLow  : na, "Week Low",  color.new(color.purple, 40), 1, plot.style_linebr)
-plot(i_showLines and i_showORB  and isRegular ? orbHigh  : na, "ORB High",  color.new(color.teal, 40),   1, plot.style_linebr)
-plot(i_showLines and i_showORB  and isRegular ? orbLow   : na, "ORB Low",   color.new(color.teal, 40),   1, plot.style_linebr)
+pPMH  = plot(i_showLines and i_showPM   and isRegular ? pmHigh   : na, "PM High",   color.new(color.orange, 40), 1, plot.style_linebr)
+pPML  = plot(i_showLines and i_showPM   and isRegular ? pmLow    : na, "PM Low",    color.new(color.orange, 40), 1, plot.style_linebr)
+pYH   = plot(i_showLines and i_showYest and isRegular ? yestHigh : na, "Yest High", color.new(color.blue, 40),   1, plot.style_linebr)
+pYL   = plot(i_showLines and i_showYest and isRegular ? yestLow  : na, "Yest Low",  color.new(color.blue, 40),   1, plot.style_linebr)
+pWH   = plot(i_showLines and i_showWeek and isRegular ? weekHigh : na, "Week High", color.new(color.purple, 40), 1, plot.style_linebr)
+pWL   = plot(i_showLines and i_showWeek and isRegular ? weekLow  : na, "Week Low",  color.new(color.purple, 40), 1, plot.style_linebr)
+pOH   = plot(i_showLines and i_showORB  and isRegular ? orbHigh  : na, "ORB High",  color.new(color.teal, 40),   1, plot.style_linebr)
+pOL   = plot(i_showLines and i_showORB  and isRegular ? orbLow   : na, "ORB Low",   color.new(color.teal, 40),   1, plot.style_linebr)
+
+// ─── Zone Band Visualization ──────────────────────────────
+// Body-edge plots (hidden lines used as fill boundary)
+showZones = i_showLines and i_useZones
+pPMHb = plot(showZones and i_showPM   and isRegular ? pmHBody   : na, "PM High Body",   color.new(color.orange, 100), 1, plot.style_linebr, display=display.none)
+pPMLb = plot(showZones and i_showPM   and isRegular ? pmLBody   : na, "PM Low Body",    color.new(color.orange, 100), 1, plot.style_linebr, display=display.none)
+pYHb  = plot(showZones and i_showYest and isRegular ? yestHBody : na, "Yest High Body", color.new(color.blue, 100),   1, plot.style_linebr, display=display.none)
+pYLb  = plot(showZones and i_showYest and isRegular ? yestLBody : na, "Yest Low Body",  color.new(color.blue, 100),   1, plot.style_linebr, display=display.none)
+pWHb  = plot(showZones and i_showWeek and isRegular ? weekHBody : na, "Week High Body", color.new(color.purple, 100), 1, plot.style_linebr, display=display.none)
+pWLb  = plot(showZones and i_showWeek and isRegular ? weekLBody : na, "Week Low Body",  color.new(color.purple, 100), 1, plot.style_linebr, display=display.none)
+pOHb  = plot(showZones and i_showORB  and isRegular ? orbHBody  : na, "ORB High Body",  color.new(color.teal, 100),   1, plot.style_linebr, display=display.none)
+pOLb  = plot(showZones and i_showORB  and isRegular ? orbLBody  : na, "ORB Low Body",   color.new(color.teal, 100),   1, plot.style_linebr, display=display.none)
+
+// Zone fills between wick line and body-edge line
+fill(pPMH, pPMHb, color=color.new(color.orange, 85), title="PM High Zone")
+fill(pPML, pPMLb, color=color.new(color.orange, 85), title="PM Low Zone")
+fill(pYH,  pYHb,  color=color.new(color.blue, 85),   title="Yest High Zone")
+fill(pYL,  pYLb,  color=color.new(color.blue, 85),   title="Yest Low Zone")
+fill(pWH,  pWHb,  color=color.new(color.purple, 85), title="Week High Zone")
+fill(pWL,  pWLb,  color=color.new(color.purple, 85), title="Week Low Zone")
+fill(pOH,  pOHb,  color=color.new(color.teal, 85),   title="ORB High Zone")
+fill(pOL,  pOLb,  color=color.new(color.teal, 85),   title="ORB Low Zone")
 
 // ─── Programmatic Alerts (merged like labels) ───────────
-if bullText != ""
-    alert("Bullish breakout: " + bullText + bullVolStr + bullPosStr, alert.freq_once_per_bar_close)
-if bearText != ""
-    alert("Bearish breakout: " + bearText + bearVolStr + bearPosStr, alert.freq_once_per_bar_close)
+if bullText != "" and not i_retestOnly
+    alert("Bullish breakout: " + bullText + " " + bullQualLine, alert.freq_once_per_bar_close)
+if bearText != "" and not i_retestOnly
+    alert("Bearish breakout: " + bearText + " " + bearQualLine, alert.freq_once_per_bar_close)
 if revBullText != ""
-    alert("Bullish reversal: " + revBullText + bullVolStr + bullPosStr, alert.freq_once_per_bar_close)
+    alert("Bullish reversal: " + revBullText + " " + bullQualLine, alert.freq_once_per_bar_close)
 if revBearText != ""
-    alert("Bearish reversal: " + revBearText + bearVolStr + bearPosStr, alert.freq_once_per_bar_close)
+    alert("Bearish reversal: " + revBearText + " " + bearQualLine, alert.freq_once_per_bar_close)
 
 // ─── Alert Conditions ───────────────────────────────────────
 // Note: per-level alertconditions removed — "Any alert() function call"

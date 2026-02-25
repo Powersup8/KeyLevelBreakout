@@ -15,6 +15,9 @@ Visual indicator that plots breakout arrows directly on your chart when price cl
 - **Reclaim setups** — context-enriched reversal when a prior breakout was invalidated (false breakout → rejection); labeled with `~~` prefix
 - **Level zones** — wick-to-body zones for daily/weekly levels (candle body data), ATR-derived for PM/ORB (toggleable)
 - **Setup time window** — configurable active window for reversal/reclaim signals (default 9:30-11:30 ET)
+- **Zone band visualization** — Shaded bands between wick and body edge for each level when level lines are on; wide band = strong rejection zone
+- **Per-level retest tracking** — Each broken level is tracked independently for retests with bar count and PA quality (e.g. `⟳³ ORB H 2.1x ^85`)
+- **Retest-Only Mode** — Suppress breakout labels (small gray dot); only retest signals fire their own labels and alerts
 - **Optional level lines** — Horizontal lines for all active levels (off by default to reduce clutter)
 - **Once Per Breakout** — One signal per level, re-arms after invalidation (on by default); turn off for backtesting
 - **`alert()` calls** — One merged alert per direction per bar (e.g. "Bullish breakout: PM H + Yest H")
@@ -52,6 +55,7 @@ Visual indicator that plots breakout arrows directly on your chart when price cl
 | Show Close Position % | On | Quality | Display where the close landed within the bar's range (0-100%) |
 | Post-Breakout Confirmation | On | Confirmation | Monitor chart-TF bars after breakout for follow-through or failure |
 | Confirmation Window | 10 | Confirmation | How many chart bars to monitor (e.g. 10 bars = 10 min on 1m chart) |
+| Retest-Only Mode | Off | Signals | Suppress breakout labels; only fire retest labels and alerts |
 | Show Reversal Setups | On | Setups | Enable reversal signal detection at level zones |
 | Show Reclaim Setups | On | Setups | Enable reclaim labeling (reversal after failed breakout) |
 | Setup Active Window (ET) | 0930-1130 | Setups | Time window for reversal/reclaim signals (ET format) |
@@ -82,17 +86,34 @@ The **Signal Timeframe** input (default: 5m) controls which candle closes are ev
 
 Level tracking (premarket, ORB) still uses chart-native data for maximum granularity.
 
-## Post-Breakout Confirmation
+## Post-Breakout Confirmation & Retest Tracking
 
-When enabled (default), the indicator monitors chart-timeframe bars after a breakout fires. The breakout label is updated with a confirmation marker:
+When enabled (default), the indicator tracks retests **per level** after a breakout. Each broken level (e.g. PM H, Yest H) is monitored independently.
 
-- **✓** (follow-through) — price stayed above the broken level for the entire confirmation window (default: 10 chart bars)
-- **⟳✓** (retest confirmed) — price pulled back to the level, then closed back on the breakout side (classic "broken resistance becomes support")
-- **✗** (failed) — price closed back through the level beyond the re-arm buffer (label turns gray)
+**Retest detection:** After a breakout, if price dips back to within the re-arm buffer of a specific broken level and closes on the breakout side, that level's retest is recorded. Each retest line shows:
+- `⟳` + superscript bar count (bars since breakout)
+- Level name
+- Volume multiple and close position % of the retest candle
 
-Retest detection requires at least 2 chart bars after the breakout (prevents false instant confirmation). If a new breakout fires while the previous one is still being monitored, the previous one is auto-promoted to confirmed (it survived long enough for another level to break).
+**Label format with line breaks:**
+```
+ORB H + Yest H
+1.8x ^82
+⟳³ ORB H 2.1x ^85
+⟳⁷ Yest H 1.4x ^71
+```
 
-Confirmation also fires separate `alert()` calls: `"Confirmed: ORB H 2.1x ^78"` or `"Failed: ORB H 2.1x ^78"`.
+**Failure:** If price closes back through the most conservative level beyond the re-arm buffer, the label is updated with `✗` and grayed out.
+
+**Auto-promotion:** If a new breakout fires while a previous one is being monitored, the previous one gets a `✓` line (it survived).
+
+**Monitoring window:** Retest tracking runs for the configured number of chart bars (default: 10), then stops.
+
+**Retest-Only Mode:** When `i_retestOnly` is ON:
+- Breakout labels are suppressed (replaced by small gray dots)
+- Retest signals create their own labels at the retest bar
+- Only retest alerts fire; breakout alerts are suppressed
+- Reversal/reclaim labels are unchanged
 
 ## Reversal & Reclaim Setups
 
@@ -110,6 +131,15 @@ When enabled, the indicator detects two additional setup types at level zones:
 Reversal/reclaim signals respect all existing filters (volume, Once Per Breakout) and only fire within the Setup Active Window (default 9:30-11:30 ET). Breakout signals continue to fire all session regardless of this window.
 
 When a new reversal/reclaim fires at a level that already had a prior reversal/reclaim signal, the prior label is grayed out (superseded by the newer signal with more context).
+
+## Zone Band Visualization
+
+When **Show Level Lines** and **Use Level Zones** are both ON, shaded bands are drawn between the wick line and the body edge for each level. The band width carries information:
+
+- **Daily/Weekly levels:** Band width varies based on actual candle body-to-wick distance — a wide band means a long wick (strong rejection)
+- **PM/ORB levels:** Uniform width derived from ATR (no single candle to reference)
+
+Colors match the level type: orange (PM), blue (Yesterday), purple (Weekly), teal (ORB) at 85% transparency.
 
 ## Setup Direction Reference
 

@@ -169,13 +169,21 @@ vwapVal = ta.vwap
 
 ---
 
-### 7. Retest Detection (MEDIUM impact) ✅ IMPLEMENTED v1.6 (as part of Post-Breakout Confirmation)
+### 7. Retest Detection (MEDIUM impact) ✅ IMPLEMENTED v1.6, upgraded v1.8
 
 **Problem:** Many traders prefer the retest entry over the initial break — better risk/reward. After a breakout, flag when price pulls back to the level and holds.
 
-**Implemented:** Integrated into the post-breakout confirmation system. After breakout fires, monitors chart-TF bars. When price dips back to within `rearmBuf` of the level and closes on the breakout side, label is updated with `⟳✓` (retest confirmed). Also detects follow-through (`✓`) and failure (`✗`).
+**v1.6:** Integrated into the post-breakout confirmation system with single-tracker per direction.
+
+**v1.8 upgrade:** Per-level retest tracking (each broken level tracked independently), PA quality metrics on retest candle (volume + close position), smart label summarization with line breaks and superscript bar counts, retest-only toggle mode.
 
 ---
+
+### 8.6. Zone Band Visualization + Retest-Only Mode (MEDIUM-HIGH impact) ✅ IMPLEMENTED v1.8
+
+**Problem:** Level zones were computed but not visually displayed. Retest entry wasn't a first-class signal.
+
+**Implemented:** Shaded fill bands between wick and body-edge plots for all 8 levels (gated by Show Level Lines + Use Level Zones). Retest-Only Mode input suppresses breakout labels and alerts, fires own retest labels with PA quality. Label format upgraded to use line breaks.
 
 ### 8.5. Reversal + Reclaim Setups (HIGH impact) ✅ IMPLEMENTED v1.7
 
