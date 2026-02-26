@@ -29,22 +29,26 @@ Video: ["Der PERFEKTE Frühindikator"](https://www.youtube.com/watch?v=ut9eUdP6-
 
 ---
 
-## Current State of KeyLevelBreakout.pine
+## Current State of KeyLevelBreakout.pine (v2.2)
 
-`KeyLevelBreakout.pine` (209 lines) detects bullish/bearish candle closes through 4 key level types on a configurable signal timeframe:
+`KeyLevelBreakout.pine` (~1100 lines) detects four setup types at key intraday levels on a configurable signal timeframe:
 
-- **Premarket High/Low** — tracked live during 04:00–09:30 ET
-- **Yesterday High/Low** — via `request.security("D", high[1]/low[1])`
-- **Last Week High/Low** — via `request.security("W", high[1]/low[1])`
-- **ORB High/Low** — first 5-min bar of regular session
+- **Breakout** — closes through a level with volume + ATR buffer confirmation
+- **Reversal (`~`)** — wick enters level zone, close rejects back (blue/orange labels)
+- **Reclaim (`~~`)** — reversal after a prior breakout was invalidated (false breakout trap)
+- **Retest (`◆`)** — per-level pullback tracking after breakout, with PA quality metrics
 
-**Breakout conditions** (line 110–114):
-- Bull: `close > open AND close > level AND prev_close <= level`
-- Bear: `close < open AND close < level AND prev_close >= level`
+**4 level types:** Premarket H/L (live 04:00–09:30 ET), Yesterday H/L, Last Week H/L, ORB H/L.
 
-**"Once Per Breakout"** mode (default on): flags prevent repeat signals. Flags re-arm when price closes back through the level (lines 91–107).
+**Filters:** Volume confirmation (directional 2-bar lookback), ATR buffer zone (wick push + close hold), VWAP directional filter (reversals only), Once Per Breakout with invalidation re-arm.
 
-**Companion file:** `KeyLevelScanner.pine` (187 lines) — multi-symbol version monitoring up to 8 tickers with a status table. Uses the same breakout logic via `scan()` / `chk()` / `inv()` functions. **Any changes to breakout logic must be mirrored in both files.**
+**Quality metrics:** Close position % (`^78`/`v85`), volume ratio (`2.1x`), conviction coloring, label management (merge, cooldown dimming, vertical offset).
+
+**Retest system:** Session-long per-level tracking, chart-TF wick precision, configurable proximity, independent labels (`◆³ ORB H 2.1x ^85`), Retest-Only Mode.
+
+**Debug system (v2.1, fixed v2.2):** Chart overlay table (8 columns, color-coded) + Pine Logs (`log.info()` with `[KLB]` prefix, extended data, `barstate.isconfirmed` guard). Both togglable independently.
+
+**Companion file:** `KeyLevelScanner.pine` (~187 lines) — multi-symbol version (v1.2) monitoring up to 8 tickers with a status table. Uses breakout-only logic; does not yet include volume, ATR buffer, reversals, retests, or debug features.
 
 ---
 
@@ -233,6 +237,18 @@ bearBreak(float level) =>
 - What's the max rows in a Pine table before it becomes unreadable?
 - Should the table show ALL signals or just the last N?
 - Could we combine this with the backtest strategy version for automated analysis?
+
+---
+
+### 14. Fix: Retest timing + log.info() spam ✅ FIXED v2.2
+
+**Problem 1:** Retest had multi-bar timing delays (`chartElapsed >= 2`, then `elapsed >= 1`) that blocked legitimate early retests. Early retests (1-2 bars after breakout) are actually stronger signals.
+
+**Fix:** Minimal self-retest guard (`bar_index > bRTBar0`) — only the breakout bar itself is excluded. `bRTBar0 := bar_index - 1` aligns with `shapeOff = -1` so the visual breakout bar is blocked, but the very next chart bar is eligible. Proximity (retestPct, configurable) does the filtering.
+
+**Problem 2:** `log.info()` is permanent in Pine Script — not rolled back on real-time ticks like `var` variables. Every `log.info()` call fired 50-100+ times per signal on real-time bars (one per tick).
+
+**Fix:** Added `barstate.isconfirmed` guard to all 7 `log.info()` calls (1 in `dbAppend()`, 6 CONF state transition logs). Now logs fire once per confirmed bar.
 
 ---
 

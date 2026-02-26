@@ -165,6 +165,7 @@ var int      bRTStart = 0                          // bar_index of breakout
 var float    bRTConsLvl = na                       // most conservative level (lowest for bull)
 var int      bRTState = 0                          // 0=none, 1=monitoring, -1=failed
 var int      bRTPrev  = 0                          // previous state (for alert transitions)
+var int      bRTBar0  = 0                          // chart-TF bar_index of breakout (skip self-retest)
 
 var bool[]   sRT     = array.new_bool(4, false)
 var int[]    sRTBar  = array.new_int(4, 0)
@@ -176,6 +177,7 @@ var int      sRTStart = 0
 var float    sRTConsLvl = na
 var int      sRTState = 0
 var int      sRTPrev  = 0
+var int      sRTBar0  = 0                          // chart-TF bar_index of breakout (skip self-retest)
 
 // ─── Debug Signal Log Arrays ─────────────────────────
 var array<int>    dbTime       = array.new<int>()
@@ -321,11 +323,20 @@ toSup(int n) =>
         r += c == "0" ? "⁰" : c == "1" ? "¹" : c == "2" ? "²" : c == "3" ? "³" : c == "4" ? "⁴" : c == "5" ? "⁵" : c == "6" ? "⁶" : c == "7" ? "⁷" : c == "8" ? "⁸" : "⁹"
     r
 
-// ─── Helper: signal-TF quality string (for retests) ─────
+// ─── Helper: signal-TF quality string (for breakout labels) ─────
 sigQual(bool isBull) =>
     float vr = isBull ? volRatioBull : volRatioBear
     string vol = not na(vr) ? str.tostring(vr, "#.#") + "x" : ""
     int pos = isBull ? bullClosePos : bearClosePos
+    string pa = not na(pos) ? (isBull ? "^" : "v") + str.tostring(pos) : ""
+    vol + (vol != "" and pa != "" ? " " : "") + pa
+
+// ─── Helper: chart-TF quality string (for retests) ─────
+chartQual(bool isBull) =>
+    float rng = high - low
+    float vr = not na(volBase) and volBase > 0 ? volume / volBase : na
+    string vol = not na(vr) ? str.tostring(vr, "#.#") + "x" : ""
+    int pos = rng > 0 ? math.round((isBull ? (close - low) : (high - close)) / rng * 100) : na
     string pa = not na(pos) ? (isBull ? "^" : "v") + str.tostring(pos) : ""
     vol + (vol != "" and pa != "" ? " " : "") + pa
 
@@ -352,7 +363,7 @@ dbAppend(string dir, string typ, string levels, float vol, int clsPos, string co
         array.push(dbVolSMA, nz(volBase))
         array.push(dbBuffer, breakBuf)
         array.push(dbLvlPrices, lvlPrices)
-        if i_debugLog
+        if i_debugLog and barstate.isconfirmed
             string posStr = na(clsPos) ? "" : (dir == "▲" ? "^" : "v") + str.tostring(clsPos)
             string volStr = na(vol) ? "" : str.tostring(vol, "#.#") + "x"
             string msg = "[KLB] " + fmtTime(time) + " " + dir + " " + typ + " " + levels + " vol=" + volStr + " pos=" + posStr + " " + ohlc + " ATR=" + str.tostring(nz(dailyATR), "#.##") + " rawVol=" + str.tostring(nz(sigVol), "#") + " volSMA=" + str.tostring(nz(volBase), "#") + " buf=" + str.tostring(breakBuf, "#.###") + " prices=" + lvlPrices
@@ -735,7 +746,7 @@ if combinedBullText != ""
             label.set_text(bRTLbl, bRTBase + "\n✓")
             if dbConfBullIdx >= 0 and dbConfBullIdx < array.size(dbConf)
                 array.set(dbConf, dbConfBullIdx, "✓")
-                if i_debugLog
+                if i_debugLog and barstate.isconfirmed
                     log.info("[KLB] CONF {0} ▲ BRK → ✓ (auto-promote)", fmtTime(time))
         // Set up per-level tracking
         for i = 0 to 3
@@ -757,6 +768,7 @@ if combinedBullText != ""
             lvl := na(lvl) ? orbHigh : math.min(lvl, orbHigh)
         bRTConsLvl := lvl
         bRTStart   := sigBarIdx
+        bRTBar0    := bar_index - 1
         bRTState   := 1
 
 // ─── Combined Bear Label ─────────────────────────────────
@@ -849,7 +861,7 @@ if combinedBearText != ""
             label.set_text(sRTLbl, sRTBase + "\n✓")
             if dbConfBearIdx >= 0 and dbConfBearIdx < array.size(dbConf)
                 array.set(dbConf, dbConfBearIdx, "✓")
-                if i_debugLog
+                if i_debugLog and barstate.isconfirmed
                     log.info("[KLB] CONF {0} ▼ BRK → ✓ (auto-promote)", fmtTime(time))
         // Set up per-level tracking
         for i = 0 to 3
@@ -871,6 +883,7 @@ if combinedBearText != ""
             lvl := na(lvl) ? orbLow : math.max(lvl, orbLow)
         sRTConsLvl := lvl
         sRTStart   := sigBarIdx
+        sRTBar0    := bar_index - 1
         sRTState   := 1
 
 // ─── Per-Level Retest Monitoring ─────────────────────────
@@ -888,7 +901,7 @@ buildRetestSuffix(bool[] rt, int[] rtBar, string[] rtInfo, float[] rtLvl, string
             suffix += "\n" + line
     suffix
 
-// Bull retest monitoring (signal-TF gated for chart-TF independence)
+// Bull retest monitoring (chart-TF precision)
 if i_confirm and bRTState == 1 and not na(bRTConsLvl) and isRegular
     int elapsed = sigBarIdx - bRTStart
     if close < bRTConsLvl - rearmBuf
@@ -899,17 +912,17 @@ if i_confirm and bRTState == 1 and not na(bRTConsLvl) and isRegular
             label.set_textcolor(bRTLbl, color.new(color.gray, 40))
         if dbConfBullIdx >= 0 and dbConfBullIdx < array.size(dbConf)
             array.set(dbConf, dbConfBullIdx, "✗")
-            if i_debugLog
+            if i_debugLog and barstate.isconfirmed
                 log.info("[KLB] CONF {0} ▲ BRK → ✗ (failed)", fmtTime(time))
     else
         bool anyNew = false
         for i = 0 to 3
             float lvl = array.get(bRTLvl, i)
-            if not na(lvl) and not array.get(bRT, i) and elapsed >= 2
-                if low <= lvl + retestBuf and close > lvl
+            if not na(lvl) and not array.get(bRT, i) and bar_index > bRTBar0
+                if low <= lvl + retestBuf and close > lvl - rearmBuf
                     array.set(bRT, i, true)
                     array.set(bRTBar, i, sigBarIdx)
-                    array.set(bRTInfo, i, sigQual(true))
+                    array.set(bRTInfo, i, chartQual(true))
                     anyNew := true
         if anyNew
             string suffix = buildRetestSuffix(bRT, bRTBar, bRTInfo, bRTLvl, bullLvlNames, bRTStart, true)
@@ -929,11 +942,11 @@ if i_confirm and bRTState == 1 and not na(bRTConsLvl) and isRegular
         if elapsed >= retestMaxElapsed and bRTState == 1
             if dbConfBullIdx >= 0 and dbConfBullIdx < array.size(dbConf) and array.get(dbConf, dbConfBullIdx) == "…"
                 array.set(dbConf, dbConfBullIdx, "✓")
-                if i_debugLog
+                if i_debugLog and barstate.isconfirmed
                     log.info("[KLB] CONF {0} ▲ BRK → ✓ (window)", fmtTime(time))
             bRTState := 0
 
-// Bear retest monitoring (signal-TF gated for chart-TF independence)
+// Bear retest monitoring (chart-TF precision)
 if i_confirm and sRTState == 1 and not na(sRTConsLvl) and isRegular
     int elapsed = sigBarIdx - sRTStart
     if close > sRTConsLvl + rearmBuf
@@ -944,17 +957,17 @@ if i_confirm and sRTState == 1 and not na(sRTConsLvl) and isRegular
             label.set_textcolor(sRTLbl, color.new(color.gray, 40))
         if dbConfBearIdx >= 0 and dbConfBearIdx < array.size(dbConf)
             array.set(dbConf, dbConfBearIdx, "✗")
-            if i_debugLog
+            if i_debugLog and barstate.isconfirmed
                 log.info("[KLB] CONF {0} ▼ BRK → ✗ (failed)", fmtTime(time))
     else
         bool anyNew = false
         for i = 0 to 3
             float lvl = array.get(sRTLvl, i)
-            if not na(lvl) and not array.get(sRT, i) and elapsed >= 2
-                if high >= lvl - retestBuf and close < lvl
+            if not na(lvl) and not array.get(sRT, i) and bar_index > sRTBar0
+                if high >= lvl - retestBuf and close < lvl + rearmBuf
                     array.set(sRT, i, true)
                     array.set(sRTBar, i, sigBarIdx)
-                    array.set(sRTInfo, i, sigQual(false))
+                    array.set(sRTInfo, i, chartQual(false))
                     anyNew := true
         if anyNew
             string suffix = buildRetestSuffix(sRT, sRTBar, sRTInfo, sRTLvl, bearLvlNames, sRTStart, false)
@@ -974,7 +987,7 @@ if i_confirm and sRTState == 1 and not na(sRTConsLvl) and isRegular
         if elapsed >= retestMaxElapsed and sRTState == 1
             if dbConfBearIdx >= 0 and dbConfBearIdx < array.size(dbConf) and array.get(dbConf, dbConfBearIdx) == "…"
                 array.set(dbConf, dbConfBearIdx, "✓")
-                if i_debugLog
+                if i_debugLog and barstate.isconfirmed
                     log.info("[KLB] CONF {0} ▼ BRK → ✓ (window)", fmtTime(time))
             sRTState := 0
 

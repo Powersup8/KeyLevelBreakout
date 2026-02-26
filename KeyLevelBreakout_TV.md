@@ -10,7 +10,7 @@ Detects breakouts, reversals, reclaims, and retests at key intraday levels on co
 
 **Reclaim (~~)** — reversal after a prior breakout was invalidated. "False breakout then rejection" pattern. Same colors, brighter.
 
-**Retest (◆)** — per-level tracking after breakout. Price dips back to broken level (within configurable proximity) and holds on breakout side. Independent label at retest bar + updates original breakout label. Configurable window: Short (50 min), Extended (2.5 hr), or Session (until invalidated). Format: `◆³ ORB H 2.1x ^85`.
+**Retest (◆)** — per-level tracking after breakout, eligible from the very next chart bar. Price dips back to broken level (within configurable proximity) and holds on breakout side. Early retests (1-2 bars) are stronger signals. Independent label at retest bar + updates original breakout label. Configurable window: Short (50 min), Extended (2.5 hr), or Session (until invalidated). Format: `◆³ ORB H 2.1x ^85`.
 
 **Level Zones:** Wick-to-body range for D/W (actual candle data), ATR-derived for PM/ORB. Toggleable. When Show Level Lines is on, shaded bands visualize zone width — wide band = strong rejection.
 
@@ -44,6 +44,10 @@ Line 1: level names (merged for confluence). Line 2: volume ratio + close positi
 - Failure alerts: "Failed: ORB H + Yest H"
 - Reversal alerts: "Bullish reversal: ~ PM L 1.9x ^75"
 - 7 `alertcondition()` entries for granular filtering
+
+**Debug (togglable, off by default):**
+- **Signal Table** — chart overlay with Time, Dir, Type, Levels, Vol, Pos, Conf, OHLC columns; color-coded by setup type; configurable position and max rows
+- **Pine Logs** — `log.info()` with `[KLB]` prefix; full signal data + extended fields (ATR, raw volume, SMA, buffer, level prices) + confirmation state changes; one entry per confirmed bar (no real-time tick spam)
 
 **Setup:**
 1. Add to chart (any TF <= Signal Timeframe)

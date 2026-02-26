@@ -27,7 +27,7 @@ All signals evaluate on confirmed signal-timeframe candle closes (default 5m) to
 - **`alert()` calls** — One merged alert per direction per bar (e.g. "Bullish breakout: PM H + Yest H")
 - **7 `alertcondition()` entries** — "Any Bullish/Bearish Breakout", "Any Breakout", "Any Bullish/Bearish Reversal", "Any Reversal", "Any Setup" for filtering in TradingView's alert dropdown
 - **Debug Signal Table** — togglable chart overlay table listing all session signals with Time, Dir, Type, Levels, Vol, Pos, Conf, OHLC columns; configurable position and max rows; color-coded by setup type
-- **Debug Pine Logs** — togglable `log.info()` output with full signal data (`[KLB]` prefix) plus confirmation state change entries (`[KLB] CONF`); includes extended data (ATR, raw volume, volume SMA, buffer, level prices)
+- **Debug Pine Logs** — togglable `log.info()` output with full signal data (`[KLB]` prefix) plus confirmation state change entries (`[KLB] CONF`); includes extended data (ATR, raw volume, volume SMA, buffer, level prices); all log calls gated by `barstate.isconfirmed` to prevent duplicate entries on real-time ticks
 
 ## Setup
 
@@ -104,7 +104,7 @@ Level tracking (premarket, ORB) still uses chart-native data for maximum granula
 
 When enabled (default), the indicator tracks retests **per level** after a breakout. Each broken level (e.g. PM H, Yest H) is monitored independently on every chart bar for maximum precision.
 
-**Retest detection:** After a breakout, if a candle's wick comes within the Retest Proximity (default 3% of ATR) of a broken level and the close holds on the breakout side, that level's retest is recorded. Detection uses chart-TF data (e.g. 1m bars on a 1m chart) for precise wick detection, while timeout uses signal-TF bar counts for chart-independent consistency. Each retest creates an **independent label** at the retest bar showing:
+**Retest detection:** After a breakout, retest monitoring begins on the very next chart bar (e.g. the first 1m candle after the breakout's 5m period). If a candle's wick comes within the Retest Proximity (default 3% of ATR) of a broken level and the close holds on the breakout side, that level's retest is recorded. Early retests (1-2 bars after breakout) are stronger signals. Detection uses chart-TF data (e.g. 1m bars on a 1m chart) for precise wick detection, while timeout uses signal-TF bar counts for chart-independent consistency. Each retest creates an **independent label** at the retest bar showing:
 - `◆` + superscript bar count (signal bars since breakout)
 - Level name
 - Volume multiple and close position % of the retest candle
@@ -334,6 +334,7 @@ Edit the script in Pine Editor and click **Save** — all charts using the indic
 
 ## Changelog
 
+- **v2.2** — Retest timing fix: retest eligible from first chart bar after breakout (no multi-bar delay); self-retest guard aligned with label placement (`shapeOff`); early retests (1-2 bars) are stronger signals. Pine Logs fix: all 7 `log.info()` calls gated with `barstate.isconfirmed` to emit one entry per confirmed bar instead of 50-100+ duplicates on real-time ticks
 - **v2.1** — Debug Signal Table: togglable chart overlay table (8 columns: Time, Dir, Type, Levels, Vol, Pos, Conf, OHLC) with color-coded rows by setup type, configurable position and max rows; togglable Pine Logs output with full signal data (`[KLB]` prefix, extended fields: ATR, raw volume, volume SMA, buffer, level prices) plus confirmation state change entries (`[KLB] CONF`); both outputs independent, zero overhead when OFF
 - **v2.0** — Signal Quality: VWAP directional filter for reversals (suppress counter-trend signals); reversal time window now optional (default full session, toggle to limit); retest system overhaul with session-long tracking (Short/Extended/Session dropdown), chart-TF precision detection, configurable proximity (% of ATR), independent retest labels at the retest bar, ◆ diamond symbol, and alerts in all modes; label management with same-bar merge (breakout + reversal → one label), cooldown dimming for rapid signals, and vertical offset to prevent overlap
 - **v1.9** — Chart-TF independence: retest monitoring, failure detection, bar counts, and PA quality all evaluate on signal-TF data now (previously used chart-TF bars, causing different labels on 1m vs 5m charts); `sigQual()` replaces `chartQual()` for consistent retest metrics; `sigBarIdx` counter ensures bar counts are signal-TF bars regardless of chart timeframe; retest-only mode labels use consistent `shapeOff` placement; confirmation window input now in signal bars

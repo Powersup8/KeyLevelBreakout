@@ -19,12 +19,12 @@ Each label has up to 3 parts, separated by line breaks:
 ```
 Yest H              ← WHAT: which level (Yesterday High)
 2.1x ^78            ← HOW STRONG: 2.1x average volume, close at 78% of candle range
-⟳³ Yest H 1.9x ^80 ← RETEST: came back 3 bars later, held with good quality
+◆³ Yest H 1.9x ^80 ← RETEST: came back 3 bars later, held with good quality
 ```
 
 - **Volume ratio** (`2.1x`): How much more volume than normal. Higher = more conviction.
 - **Close position** (`^78`): Where the candle closed within its range. `^78` means 78% toward the high — buyers dominated. `v85` means 85% toward the low — sellers dominated.
-- **Retest bar count** (`⟳³`): The small number shows how many bars after the breakout the retest happened.
+- **Retest bar count** (`◆³`): The small number shows how many bars after the breakout the retest happened.
 
 ## Label Format
 
@@ -33,8 +33,8 @@ Yest H              ← WHAT: which level (Yesterday High)
 ```
 PM H + Yest H        ← Line 1: which level(s) broke (merged if confluent)
 1.8x ^82             ← Line 2: volume ratio + close position %
-⟳³ PM H 2.1x ^85    ← Line 3+: retests (appended as they come in)
-⟳⁷ Yest H 1.4x ^71  ← one line per level retested
+◆³ PM H 2.1x ^85    ← Line 3+: retests (appended as they come in)
+◆⁷ Yest H 1.4x ^71  ← one line per level retested
 ```
 
 ## Breakout Label (failed)
@@ -64,7 +64,7 @@ PM H + Yest H
 Breakout becomes a tiny gray `·` dot. Retest fires its own label:
 
 ```
-⟳³ ORB H              ← superscript = bars since breakout
+◆³ ORB H              ← superscript = bars since breakout
 2.1x ^85
 ```
 
@@ -73,7 +73,7 @@ Breakout becomes a tiny gray `·` dot. Retest fires its own label:
 | Setup | Scenario | Label | Color |
 |---|---|---|---|
 | **Breakout** | Price closes above $150 on green candle with volume → LONG | `Yest H`<br>`2.1x ^78` | Green |
-| **Retest** `⟳` | 3 bars later, price dips back to $150, holds above → confirms LONG | `Yest H`<br>`2.1x ^78`<br>`⟳³ Yest H 1.9x ^80` | Green (appended) |
+| **Retest** `◆` | 3 bars later, price dips back to $150, holds above → confirms LONG | `Yest H`<br>`2.1x ^78`<br>`◆³ Yest H 1.9x ^80` | Green (appended) |
 | **Failed** `✗` | Price closes back below $150 → breakout dead | `Yest H`<br>`2.1x ^78`<br>`✗` | Gray |
 | **Reversal** `~` | Wick enters $150 zone from below, close rejects below → SHORT | `~ Yest H`<br>`1.8x v82` | Orange |
 | **Reclaim** `~~` | After failed breakout above $150, price approaches again, rejected below → SHORT | `~~ Yest H`<br>`2.3x v85` | Orange (brighter) |
@@ -93,7 +93,7 @@ Bar 4:  Price dips to $150, holds      → Retest detected
                                           ┌──────────────────────┐
                                           │ Yest H               │ green
                                           │ 2.1x ^78             │
-                                          │ ⟳³ Yest H 1.9x ^80  │
+                                          │ ◆³ Yest H 1.9x ^80  │
                                           └──────────────────────┘
 
                     ── OR ──
@@ -125,15 +125,15 @@ Bar 4:  ORB H retested                 → First retest appended
                                           ┌──────────────────────────┐
                                           │ ORB H + Yest H           │
                                           │ 1.8x ^82                 │
-                                          │ ⟳³ ORB H 2.1x ^85       │
+                                          │ ◆³ ORB H 2.1x ^85       │
                                           └──────────────────────────┘
 
 Bar 8:  Yest H retested                → Second retest appended
                                           ┌──────────────────────────┐
                                           │ ORB H + Yest H           │
                                           │ 1.8x ^82                 │
-                                          │ ⟳³ ORB H 2.1x ^85       │
-                                          │ ⟳⁷ Yest H 1.4x ^71      │
+                                          │ ◆³ ORB H 2.1x ^85       │
+                                          │ ◆⁷ Yest H 1.4x ^71      │
                                           └──────────────────────────┘
 ```
 
@@ -162,7 +162,7 @@ $149.6 ┤      │ ← L                       ·
        │  ┌────────────┐              ┌──────────────────────┐
        │  │ Yest H     │              │ Yest H               │
        │  │ 2.1x ^78   │    becomes → │ 2.1x ^78             │
-       │  └────────────┘              │ ⟳³ Yest H 1.9x ^90  │
+       │  └────────────┘              │ ◆³ Yest H 1.9x ^90  │
        │                              └──────────────────────┘
 ```
 
@@ -282,8 +282,8 @@ $149.5 ┤└──┐ ← O              │     │ ← L:149.70
        │  ┌──────────────────────────┐
        │  │ ORB H + Yest H           │
        │  │ 1.8x ^82                 │
-       │  │ ⟳³ ORB H 2.1x ^57       │
-       │  │ ⟳⁷ Yest H 1.4x ^89      │
+       │  │ ◆³ ORB H 2.1x ^57       │
+       │  │ ◆⁷ Yest H 1.4x ^89      │
        │  └──────────────────────────┘
 ```
 
@@ -304,7 +304,7 @@ After a bullish breakout above Yest H = $150, price comes back. The retest candl
 $150.8 ┤   │ ← H
 $150.7 ┤┌──┘ ← C                ^90: (150.70−149.80)/(150.80−149.80) = 90%
        ││                       → close near the high, buyers in control
-  $150 ┤│──── level ────────    ⟳³ Yest H 1.9x ^90
+  $150 ┤│──── level ────────    ◆³ Yest H 1.9x ^90
        │└──┐ ← O:150.10
 $149.8 ┤   │ ← L
 ```
@@ -317,7 +317,7 @@ Wick tested $150, buyers pushed it right back up. Best quality retest.
 $150.8 ┤   │ ← H
 $150.7 ┤┌──┘ ← O                ^40: (150.20−149.80)/(150.80−149.80) = 40%
        ││   body                → sellers pushed down, but level held
-$150.2 ┤└──┐ ← C:150.20         ⟳³ Yest H 1.5x ^40
+$150.2 ┤└──┐ ← C:150.20         ◆³ Yest H 1.5x ^40
   $150 ┤───│── level ────────   close above $150 → level held
 $149.8 ┤   │ ← L                red candle, but retest valid
 ```
@@ -332,7 +332,7 @@ $150.7 ┤┌──┘ ← O                ^12: (150.05−149.95)/(150.80−149
        ││   body                → sellers dominated, close barely above level
        ││
        ││
-$150.05┤└──┐ ← C:150.05         ⟳³ Yest H 1.2x ^12
+$150.05┤└──┐ ← C:150.05         ◆³ Yest H 1.2x ^12
   $150 ┤───│── level ────────   close just $0.05 above level!
 $149.95┤   │ ← L                warning: level is very weak
 ```
@@ -395,7 +395,7 @@ Label?              New label         Appended to        New label          New 
 | `1.8x` | Volume ratio vs baseline | 1.8x average volume |
 | `^82` | Bull close position (82% toward high) | Strong buying |
 | `v85` | Bear close position (85% toward low) | Strong selling |
-| `⟳³` | Retest detected 3 bars after breakout | |
+| `◆³` | Retest detected 3 bars after breakout | |
 | `✓` | Auto-promoted (survived until next breakout) | |
 | `✗` | Failed (closed back through level) | |
 | `~` | Reversal (rejection) | |
