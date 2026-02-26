@@ -1097,13 +1097,13 @@ fill(pOL,  pOLb,  color=color.new(color.teal, 85),   title="ORB Low Zone")
 
 // ─── Programmatic Alerts (merged like labels) ───────────
 if bullText != "" and not i_retestOnly
-    alert("Bullish breakout: " + bullText + " " + bullQualLine, alert.freq_once_per_bar_close)
+    alert("Bullish breakout: " + bullText + " " + bullQualLine, alert.freq_once_per_bar)
 if bearText != "" and not i_retestOnly
-    alert("Bearish breakout: " + bearText + " " + bearQualLine, alert.freq_once_per_bar_close)
+    alert("Bearish breakout: " + bearText + " " + bearQualLine, alert.freq_once_per_bar)
 if revBullText != ""
-    alert("Bullish reversal: " + revBullText + " " + bullQualLine, alert.freq_once_per_bar_close)
+    alert("Bullish reversal: " + revBullText + " " + bullQualLine, alert.freq_once_per_bar)
 if revBearText != ""
-    alert("Bearish reversal: " + revBearText + " " + bearQualLine, alert.freq_once_per_bar_close)
+    alert("Bearish reversal: " + revBearText + " " + bearQualLine, alert.freq_once_per_bar)
 
 // ─── Alert Conditions ───────────────────────────────────────
 // Note: per-level alertconditions removed — "Any alert() function call"
