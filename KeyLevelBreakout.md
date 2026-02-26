@@ -26,6 +26,8 @@ All signals evaluate on confirmed signal-timeframe candle closes (default 5m) to
 - **Once Per Breakout** — One signal per level, re-arms after invalidation (on by default); turn off for backtesting
 - **`alert()` calls** — One merged alert per direction per bar (e.g. "Bullish breakout: PM H + Yest H")
 - **7 `alertcondition()` entries** — "Any Bullish/Bearish Breakout", "Any Breakout", "Any Bullish/Bearish Reversal", "Any Reversal", "Any Setup" for filtering in TradingView's alert dropdown
+- **Debug Signal Table** — togglable chart overlay table listing all session signals with Time, Dir, Type, Levels, Vol, Pos, Conf, OHLC columns; configurable position and max rows; color-coded by setup type
+- **Debug Pine Logs** — togglable `log.info()` output with full signal data (`[KLB]` prefix) plus confirmation state change entries (`[KLB] CONF`); includes extended data (ATR, raw volume, volume SMA, buffer, level prices)
 
 ## Setup
 
@@ -73,6 +75,10 @@ All signals evaluate on confirmed signal-timeframe candle closes (default 5m) to
 | Yest H/L Reversal/Reclaim | On | Rev/Recl Toggles | Enable reversal/reclaim at yesterday levels |
 | Week H/L Reversal/Reclaim | On | Rev/Recl Toggles | Enable reversal/reclaim at weekly levels |
 | ORB H/L Reversal/Reclaim | On | Rev/Recl Toggles | Enable reversal/reclaim at opening range levels |
+| Show Signal Table | Off | Debug | Display a summary table of all session signals on the chart |
+| Log Signals (Pine Logs) | Off | Debug | Output full signal data to Pine Logs panel with `[KLB]` prefix |
+| Table Position | bottom_right | Debug | Chart corner for the debug table (6 positions) |
+| Max Table Rows | 20 | Debug | Maximum number of signals shown in the table (5-50) |
 
 ## Once Per Breakout (Invalidation Logic)
 
@@ -328,6 +334,7 @@ Edit the script in Pine Editor and click **Save** — all charts using the indic
 
 ## Changelog
 
+- **v2.1** — Debug Signal Table: togglable chart overlay table (8 columns: Time, Dir, Type, Levels, Vol, Pos, Conf, OHLC) with color-coded rows by setup type, configurable position and max rows; togglable Pine Logs output with full signal data (`[KLB]` prefix, extended fields: ATR, raw volume, volume SMA, buffer, level prices) plus confirmation state change entries (`[KLB] CONF`); both outputs independent, zero overhead when OFF
 - **v2.0** — Signal Quality: VWAP directional filter for reversals (suppress counter-trend signals); reversal time window now optional (default full session, toggle to limit); retest system overhaul with session-long tracking (Short/Extended/Session dropdown), chart-TF precision detection, configurable proximity (% of ATR), independent retest labels at the retest bar, ◆ diamond symbol, and alerts in all modes; label management with same-bar merge (breakout + reversal → one label), cooldown dimming for rapid signals, and vertical offset to prevent overlap
 - **v1.9** — Chart-TF independence: retest monitoring, failure detection, bar counts, and PA quality all evaluate on signal-TF data now (previously used chart-TF bars, causing different labels on 1m vs 5m charts); `sigQual()` replaces `chartQual()` for consistent retest metrics; `sigBarIdx` counter ensures bar counts are signal-TF bars regardless of chart timeframe; retest-only mode labels use consistent `shapeOff` placement; confirmation window input now in signal bars
 - **v1.8** — Zone Band Visualization + Per-Level Retest + Retest-Only Mode: shaded fill bands between wick and body-edge plots for all 8 levels (gated by Show Level Lines + Use Level Zones); per-level retest tracking with independent monitoring of each broken level, superscript bar count, and PA quality metrics on retest candle (volume + close position %); label format upgraded to line breaks (level names / quality / retest lines); Retest-Only Mode toggle suppresses breakout labels and alerts, fires own retest labels; breakout alert suppression in retest-only mode

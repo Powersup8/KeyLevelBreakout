@@ -48,6 +48,14 @@ i_revYest = input.bool(true, "Yest H/L Reversal/Reclaim", group="Reversal/Reclai
 i_revWeek = input.bool(true, "Week H/L Reversal/Reclaim", group="Reversal/Reclaim Toggles")
 i_revORB  = input.bool(true, "ORB H/L Reversal/Reclaim",  group="Reversal/Reclaim Toggles")
 
+// ─── Debug Inputs ─────────────────────────────────────
+i_debugTable = input.bool(false, "Show Signal Table",        group="Debug")
+i_debugLog   = input.bool(false, "Log Signals (Pine Logs)",  group="Debug")
+i_debugPos   = input.string("bottom_right", "Table Position",
+    options=["top_left","top_center","top_right",
+             "bottom_left","bottom_center","bottom_right"], group="Debug")
+i_debugRows  = input.int(20, "Max Table Rows", minval=5, maxval=50, group="Debug")
+
 // ─── Session Detection (US Eastern) ───────────────────────
 TZ           = "America/New_York"
 isPremarket  = not na(time(timeframe.period, "0400-0930:23456", TZ))
@@ -169,6 +177,27 @@ var float    sRTConsLvl = na
 var int      sRTState = 0
 var int      sRTPrev  = 0
 
+// ─── Debug Signal Log Arrays ─────────────────────────
+var array<int>    dbTime       = array.new<int>()
+var array<string> dbDir        = array.new<string>()
+var array<string> dbType       = array.new<string>()
+var array<string> dbLevels     = array.new<string>()
+var array<float>  dbVol        = array.new<float>()
+var array<int>    dbClsPos     = array.new<int>()
+var array<string> dbConf       = array.new<string>()
+var array<string> dbOHLC       = array.new<string>()
+// Log-only extended data
+var array<float>  dbATR        = array.new<float>()
+var array<float>  dbVolRaw     = array.new<float>()
+var array<float>  dbVolSMA     = array.new<float>()
+var array<float>  dbBuffer     = array.new<float>()
+var array<string> dbLvlPrices  = array.new<string>()
+// Confirmation tracking indices
+var int dbConfBullIdx = -1
+var int dbConfBearIdx = -1
+// Table object (persists across ticks, deleted+recreated on last bar)
+var table dbTbl = na
+
 if newRegular
     xPMH := false
     xPML := false
@@ -216,6 +245,23 @@ if newRegular
         bRTPrev  := 0
         sRTState := 0
         sRTPrev  := 0
+    // Reset debug arrays at session open
+    if i_debugTable or i_debugLog
+        array.clear(dbTime)
+        array.clear(dbDir)
+        array.clear(dbType)
+        array.clear(dbLevels)
+        array.clear(dbVol)
+        array.clear(dbClsPos)
+        array.clear(dbConf)
+        array.clear(dbOHLC)
+        array.clear(dbATR)
+        array.clear(dbVolRaw)
+        array.clear(dbVolSMA)
+        array.clear(dbBuffer)
+        array.clear(dbLvlPrices)
+        dbConfBullIdx := -1
+        dbConfBearIdx := -1
 
 // ─── Signal Timeframe Data (confirmed bar only) ──────────
 // Previous completed signal-TF bar's OHLC — non-repainting
@@ -282,6 +328,57 @@ sigQual(bool isBull) =>
     int pos = isBull ? bullClosePos : bearClosePos
     string pa = not na(pos) ? (isBull ? "^" : "v") + str.tostring(pos) : ""
     vol + (vol != "" and pa != "" ? " " : "") + pa
+
+// ─── Debug: format time as HH:MM ET ─────────────────
+fmtTime(int t) =>
+    int h = hour(t, "America/New_York")
+    int m = minute(t, "America/New_York")
+    str.tostring(h) + ":" + (m < 10 ? "0" : "") + str.tostring(m)
+
+// ─── Debug: append signal to arrays + optional log ───
+dbAppend(string dir, string typ, string levels, float vol, int clsPos, string conf, string lvlPrices) =>
+    if i_debugTable or i_debugLog
+        array.push(dbTime, time)
+        array.push(dbDir, dir)
+        array.push(dbType, typ)
+        array.push(dbLevels, levels)
+        array.push(dbVol, vol)
+        array.push(dbClsPos, clsPos)
+        array.push(dbConf, conf)
+        string ohlc = "O" + str.tostring(sigO, "#.##") + " H" + str.tostring(sigH, "#.##") + " L" + str.tostring(sigL, "#.##") + " C" + str.tostring(sigC, "#.##")
+        array.push(dbOHLC, ohlc)
+        array.push(dbATR, nz(dailyATR))
+        array.push(dbVolRaw, nz(sigVol))
+        array.push(dbVolSMA, nz(volBase))
+        array.push(dbBuffer, breakBuf)
+        array.push(dbLvlPrices, lvlPrices)
+        if i_debugLog
+            string posStr = na(clsPos) ? "" : (dir == "▲" ? "^" : "v") + str.tostring(clsPos)
+            string volStr = na(vol) ? "" : str.tostring(vol, "#.#") + "x"
+            string msg = "[KLB] " + fmtTime(time) + " " + dir + " " + typ + " " + levels + " vol=" + volStr + " pos=" + posStr + " " + ohlc + " ATR=" + str.tostring(nz(dailyATR), "#.##") + " rawVol=" + str.tostring(nz(sigVol), "#") + " volSMA=" + str.tostring(nz(volBase), "#") + " buf=" + str.tostring(breakBuf, "#.###") + " prices=" + lvlPrices
+            log.info(msg)
+    array.size(dbTime) - 1
+
+// ─── Debug: build level prices string for a signal ───
+dbLvlPriceStr(bool isPMH, bool isPML, bool isYH, bool isYL, bool isWH, bool isWL, bool isOH, bool isOL) =>
+    string s = ""
+    if isPMH and not na(pmHigh)
+        s += (s != "" ? "/" : "") + str.tostring(pmHigh, "#.##")
+    if isPML and not na(pmLow)
+        s += (s != "" ? "/" : "") + str.tostring(pmLow, "#.##")
+    if isYH and not na(yestHigh)
+        s += (s != "" ? "/" : "") + str.tostring(yestHigh, "#.##")
+    if isYL and not na(yestLow)
+        s += (s != "" ? "/" : "") + str.tostring(yestLow, "#.##")
+    if isWH and not na(weekHigh)
+        s += (s != "" ? "/" : "") + str.tostring(weekHigh, "#.##")
+    if isWL and not na(weekLow)
+        s += (s != "" ? "/" : "") + str.tostring(weekLow, "#.##")
+    if isOH and not na(orbHigh)
+        s += (s != "" ? "/" : "") + str.tostring(orbHigh, "#.##")
+    if isOL and not na(orbLow)
+        s += (s != "" ? "/" : "") + str.tostring(orbLow, "#.##")
+    s
 
 // Level name arrays for retest label building
 bullLvlNames = array.from("PM H", "Yest H", "Week H", "ORB H")
@@ -578,7 +675,7 @@ if combinedBullText != ""
     bool isCooled = i_cooldownBars > 0 and (sigBarIdx - lastBullSigBar) <= i_cooldownBars
     color finalColor = isCooled ? color.new(color.gray, 70) : (isOld ? color.new(color.gray, 90) : lblColor)
     color finalText = isCooled ? color.new(color.gray, 50) : (isOld ? color.new(color.gray, 70) : color.black)
-    size finalSize = isCooled ? size.tiny : (totalCount > 1 ? size.normal : size.small)
+    string finalSize = isCooled ? size.tiny : (totalCount > 1 ? size.normal : size.small)
     // Vertical offset for adjacent labels
     bool needsOffset = (bar_index + shapeOff - lastBullLblBar) <= 1 and lastBullLblBar >= 0
 
@@ -619,11 +716,27 @@ if combinedBullText != ""
     if not isOld
         lastBullLblBar := bar_index + shapeOff
 
+    // Debug append — bull breakout and/or reversal
+    if (i_debugTable or i_debugLog) and not isOld
+        if bullText != ""
+            string prices = dbLvlPriceStr(sigBullPMH, false, sigBullYH, false, sigBullWH, false, sigBullOH, false)
+            int idx = dbAppend("▲", "BRK", bullText, volRatioBull, bullClosePos, "…", prices)
+            if i_confirm
+                dbConfBullIdx := idx
+        if revBullText != ""
+            string revType = revBullHasReclaim ? "~~" : "~"
+            string prices = dbLvlPriceStr(false, sigRevBullPML, false, sigRevBullYL, false, sigRevBullWL, false, sigRevBullOL)
+            dbAppend("▲", revType, revBullText, volRatioBull, bullClosePos, "—", prices)
+
     // Confirmation setup (breakout tracking)
     if bullText != "" and i_confirm and not isOld
         // Auto-promote previous monitoring
         if bRTState == 1 and not i_retestOnly and not na(bRTLbl)
             label.set_text(bRTLbl, bRTBase + "\n✓")
+            if dbConfBullIdx >= 0 and dbConfBullIdx < array.size(dbConf)
+                array.set(dbConf, dbConfBullIdx, "✓")
+                if i_debugLog
+                    log.info("[KLB] CONF {0} ▲ BRK → ✓ (auto-promote)", fmtTime(time))
         // Set up per-level tracking
         for i = 0 to 3
             array.set(bRT, i, false)
@@ -676,7 +789,7 @@ if combinedBearText != ""
     bool isCooled = i_cooldownBars > 0 and (sigBarIdx - lastBearSigBar) <= i_cooldownBars
     color finalColor = isCooled ? color.new(color.gray, 70) : (isOld ? color.new(color.gray, 90) : lblColor)
     color finalText = isCooled ? color.new(color.gray, 50) : (isOld ? color.new(color.gray, 70) : color.black)
-    size finalSize = isCooled ? size.tiny : (totalCount > 1 ? size.normal : size.small)
+    string finalSize = isCooled ? size.tiny : (totalCount > 1 ? size.normal : size.small)
     // Vertical offset for adjacent labels
     bool needsOffset = (bar_index + shapeOff - lastBearLblBar) <= 1 and lastBearLblBar >= 0
 
@@ -717,11 +830,27 @@ if combinedBearText != ""
     if not isOld
         lastBearLblBar := bar_index + shapeOff
 
+    // Debug append — bear breakout and/or reversal
+    if (i_debugTable or i_debugLog) and not isOld
+        if bearText != ""
+            string prices = dbLvlPriceStr(false, sigBearPML, false, sigBearYL, false, sigBearWL, false, sigBearOL)
+            int idx = dbAppend("▼", "BRK", bearText, volRatioBear, bearClosePos, "…", prices)
+            if i_confirm
+                dbConfBearIdx := idx
+        if revBearText != ""
+            string revType = revBearHasReclaim ? "~~" : "~"
+            string prices = dbLvlPriceStr(sigRevBearPMH, false, sigRevBearYH, false, sigRevBearWH, false, sigRevBearOH, false)
+            dbAppend("▼", revType, revBearText, volRatioBear, bearClosePos, "—", prices)
+
     // Confirmation setup (breakout tracking)
     if bearText != "" and i_confirm and not isOld
         // Auto-promote previous monitoring
         if sRTState == 1 and not i_retestOnly and not na(sRTLbl)
             label.set_text(sRTLbl, sRTBase + "\n✓")
+            if dbConfBearIdx >= 0 and dbConfBearIdx < array.size(dbConf)
+                array.set(dbConf, dbConfBearIdx, "✓")
+                if i_debugLog
+                    log.info("[KLB] CONF {0} ▼ BRK → ✓ (auto-promote)", fmtTime(time))
         // Set up per-level tracking
         for i = 0 to 3
             array.set(sRT, i, false)
@@ -768,6 +897,10 @@ if i_confirm and bRTState == 1 and not na(bRTConsLvl) and isRegular
             label.set_text(bRTLbl, bRTBase + "\n✗")
             label.set_color(bRTLbl, color.new(color.gray, 60))
             label.set_textcolor(bRTLbl, color.new(color.gray, 40))
+        if dbConfBullIdx >= 0 and dbConfBullIdx < array.size(dbConf)
+            array.set(dbConf, dbConfBullIdx, "✗")
+            if i_debugLog
+                log.info("[KLB] CONF {0} ▲ BRK → ✗ (failed)", fmtTime(time))
     else
         bool anyNew = false
         for i = 0 to 3
@@ -787,10 +920,17 @@ if i_confirm and bRTState == 1 and not na(bRTConsLvl) and isRegular
                      yloc=yloc.belowbar, style=label.style_label_up,
                      color=bullColor, textcolor=color.black, size=size.small)
                 alert("Retest: " + rtText, alert.freq_once_per_bar_close)
+                // Debug: log retest
+                if i_debugTable or i_debugLog
+                    dbAppend("▲", "◆", rtText, na, na, "—", "")
             // Also update original breakout label (unless retest-only mode)
             if not i_retestOnly and not na(bRTLbl)
                 label.set_text(bRTLbl, bRTBase + suffix)
         if elapsed >= retestMaxElapsed and bRTState == 1
+            if dbConfBullIdx >= 0 and dbConfBullIdx < array.size(dbConf) and array.get(dbConf, dbConfBullIdx) == "…"
+                array.set(dbConf, dbConfBullIdx, "✓")
+                if i_debugLog
+                    log.info("[KLB] CONF {0} ▲ BRK → ✓ (window)", fmtTime(time))
             bRTState := 0
 
 // Bear retest monitoring (signal-TF gated for chart-TF independence)
@@ -802,6 +942,10 @@ if i_confirm and sRTState == 1 and not na(sRTConsLvl) and isRegular
             label.set_text(sRTLbl, sRTBase + "\n✗")
             label.set_color(sRTLbl, color.new(color.gray, 60))
             label.set_textcolor(sRTLbl, color.new(color.gray, 40))
+        if dbConfBearIdx >= 0 and dbConfBearIdx < array.size(dbConf)
+            array.set(dbConf, dbConfBearIdx, "✗")
+            if i_debugLog
+                log.info("[KLB] CONF {0} ▼ BRK → ✗ (failed)", fmtTime(time))
     else
         bool anyNew = false
         for i = 0 to 3
@@ -821,10 +965,17 @@ if i_confirm and sRTState == 1 and not na(sRTConsLvl) and isRegular
                      yloc=yloc.abovebar, style=label.style_label_down,
                      color=bearColor, textcolor=color.black, size=size.small)
                 alert("Retest: " + rtText, alert.freq_once_per_bar_close)
+                // Debug: log retest
+                if i_debugTable or i_debugLog
+                    dbAppend("▼", "◆", rtText, na, na, "—", "")
             // Also update original breakout label (unless retest-only mode)
             if not i_retestOnly and not na(sRTLbl)
                 label.set_text(sRTLbl, sRTBase + suffix)
         if elapsed >= retestMaxElapsed and sRTState == 1
+            if dbConfBearIdx >= 0 and dbConfBearIdx < array.size(dbConf) and array.get(dbConf, dbConfBearIdx) == "…"
+                array.set(dbConf, dbConfBearIdx, "✓")
+                if i_debugLog
+                    log.info("[KLB] CONF {0} ▼ BRK → ✓ (window)", fmtTime(time))
             sRTState := 0
 
 // Retest state transition alerts
@@ -838,6 +989,66 @@ if i_confirm
             alert("Failed: " + sRTBase, alert.freq_once_per_bar_close)
         sRTPrev := sRTState
 
+// ─── Debug Signal Table ──────────────────────────────
+if i_debugTable and barstate.islast
+    posMap = i_debugPos == "top_left" ? position.top_left :
+             i_debugPos == "top_center" ? position.top_center :
+             i_debugPos == "top_right" ? position.top_right :
+             i_debugPos == "bottom_left" ? position.bottom_left :
+             i_debugPos == "bottom_center" ? position.bottom_center :
+             position.bottom_right
+
+    if not na(dbTbl)
+        table.delete(dbTbl)
+
+    int totalRows = array.size(dbTime)
+    int startIdx  = math.max(0, totalRows - i_debugRows)
+    int showRows  = totalRows - startIdx
+
+    dbTbl := table.new(posMap, 8, showRows + 1,
+         bgcolor=color.new(color.black, 80), border_width=1,
+         border_color=color.new(color.gray, 60))
+
+    // Header row
+    table.cell(dbTbl, 0, 0, "Time",  text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.gray, 30))
+    table.cell(dbTbl, 1, 0, "Dir",   text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.gray, 30))
+    table.cell(dbTbl, 2, 0, "Type",  text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.gray, 30))
+    table.cell(dbTbl, 3, 0, "Levels",text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.gray, 30))
+    table.cell(dbTbl, 4, 0, "Vol",   text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.gray, 30))
+    table.cell(dbTbl, 5, 0, "Pos",   text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.gray, 30))
+    table.cell(dbTbl, 6, 0, "Conf",  text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.gray, 30))
+    table.cell(dbTbl, 7, 0, "OHLC",  text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.gray, 30))
+
+    // Data rows
+    for i = startIdx to totalRows - 1
+        int row = i - startIdx + 1
+        string dir  = array.get(dbDir, i)
+        string typ  = array.get(dbType, i)
+        string conf = array.get(dbConf, i)
+        bool isBull = dir == "▲"
+        bool isFailed = conf == "✗"
+
+        // Row background color
+        color rowBg = isFailed ? color.new(color.gray, 85) :
+             typ == "BRK" ? (isBull ? color.new(color.green, 88) : color.new(color.red, 88)) :
+             typ == "~" or typ == "~~" ? (isBull ? color.new(color.aqua, 88) : color.new(color.orange, 88)) :
+             color.new(color.black, 88)
+        color rowTxt = isFailed ? color.new(color.gray, 40) : color.white
+
+        string timeStr = fmtTime(array.get(dbTime, i))
+        float vol = array.get(dbVol, i)
+        string volStr = not na(vol) ? str.tostring(vol, "#.#") + "x" : "—"
+        int pos = array.get(dbClsPos, i)
+        string posStr = na(pos) ? "—" : (isBull ? "^" : "v") + str.tostring(pos)
+
+        table.cell(dbTbl, 0, row, timeStr,                    text_color=rowTxt, text_size=size.tiny, bgcolor=rowBg)
+        table.cell(dbTbl, 1, row, dir,                         text_color=isBull ? color.green : color.red, text_size=size.tiny, bgcolor=rowBg)
+        table.cell(dbTbl, 2, row, typ,                         text_color=rowTxt, text_size=size.tiny, bgcolor=rowBg)
+        table.cell(dbTbl, 3, row, array.get(dbLevels, i),     text_color=rowTxt, text_size=size.tiny, bgcolor=rowBg, text_halign=text.align_left)
+        table.cell(dbTbl, 4, row, volStr,                      text_color=rowTxt, text_size=size.tiny, bgcolor=rowBg)
+        table.cell(dbTbl, 5, row, posStr,                      text_color=rowTxt, text_size=size.tiny, bgcolor=rowBg)
+        table.cell(dbTbl, 6, row, conf,                        text_color=conf == "✓" ? color.lime : conf == "✗" ? color.red : color.gray, text_size=size.tiny, bgcolor=rowBg)
+        table.cell(dbTbl, 7, row, array.get(dbOHLC, i),       text_color=rowTxt, text_size=size.tiny, bgcolor=rowBg, text_halign=text.align_left)
 
 // ─── Level Lines (optional, off by default) ───────────────
 pPMH  = plot(i_showLines and i_showPM   and isRegular ? pmHigh   : na, "PM High",   color.new(color.orange, 40), 1, plot.style_linebr)

@@ -205,6 +205,56 @@ bearBreak(float level) =>
 
 ---
 
+### 10. Weekly Level Naming + Current Week H/L — think later
+
+**Ideas:**
+- **Rename "Week H/L" to "Last Week H/L"** in labels and inputs for clarity (currently says "Week H" which is ambiguous)
+- **Consider adding Current Week H/L** as a new level type — this week's developing high/low as intraday reference. Only qualifies if the current week's range is established (e.g., after Monday's session). Could provide tighter, more relevant weekly levels compared to last week's range on stocks that have moved significantly.
+
+**Open questions:**
+- When does "this week's H/L" qualify? After first full session? After N sessions?
+- Does it need special handling on Mondays (range too narrow)?
+- Would this conflict with or duplicate PM/Yesterday levels in some cases?
+- `request.security("W", high/low)` gives current week's developing range — but needs `lookahead` handling to avoid repainting
+
+---
+
+### 11. Debug Signal Table (MEDIUM impact) ✅ IMPLEMENTED v2.1
+
+**Problem:** Reading label text from the chart is tedious and error-prone (small text, overlapping labels, hard to screenshot). Need a way to export/inspect all fired signals with exact data for debugging and signal quality analysis.
+
+**Ideas:**
+- **Pine table** (like the debug table from v1.9): Show last N signals in a `table.new()` with columns: Time, Type (breakout/reversal/reclaim/retest), Levels, Volume, Close Position, Direction
+- **CSV export via `log.info()`** or Pine Logs: Pine v6 supports `log.info()` which outputs to TradingView's Pine Logs panel — could log each signal as a structured line for copy-paste
+- **`label.get_text()` loop**: Iterate over recent labels and dump their text into a table
+- **Dedicated debug mode input**: `i_debugTable = input.bool(false, "Show Signal Table")` — when ON, renders a summary table in a corner of the chart
+
+**Open questions:**
+- What's the max rows in a Pine table before it becomes unreadable?
+- Should the table show ALL signals or just the last N?
+- Could we combine this with the backtest strategy version for automated analysis?
+
+---
+
+### 12. Fix: ORB L/H reversal on first bar — trivially true
+
+**Problem:** The first 5m bar defines ORB H/L, then the reversal helper checks if the bar's wick enters the ORB zone and closes on the other side. Since the bar's own high/low ARE ORB H/L, `sigL <= orbLBody` and `sigH >= orbHBody` are trivially true. A ~ ORB L bull reversal fires on virtually every opening bar — it's noise, not a real rejection signal.
+
+**Fix:** Skip ORB reversal evaluation on the bar that defines the ORB (`na(orbHigh[1])` or similar guard).
+
+---
+
+### 13. Fix: Chart-TF retest can contradict 5m reclaim — think later
+
+**Problem:** A 1m retest can confirm at 10:00 (◆ ORB H — wick touches level, close holds), but then the full 5m bar (10:00-10:04) closes below the level and fires a reclaim (~~ ORB H). The retest was premature — it confirmed on a single 1m candle that didn't hold through the 5m bar.
+
+**Ideas:**
+- Only allow retests on signal-TF bar boundaries (when `newSigBar` fires)?
+- Require the retest to survive until the next signal-TF close before confirming?
+- Retroactively remove/gray the retest label if the same 5m bar invalidates?
+
+---
+
 ### 8. Backtest Strategy Version (LOW-MEDIUM impact)
 
 **Problem:** No way to validate if breakout signals actually produce profitable trades.
