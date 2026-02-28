@@ -38,7 +38,7 @@ i_limitRevWin  = input.bool(false,  "Limit Reversal Window",           group="Se
 i_showReclaim  = input.bool(true,   "Show Reclaim Setups",             group="Setups")
 i_setupWindow  = input.string("0930-1130", "Setup Active Window (ET)", group="Setups")
 
-i_vwapFilter   = input.bool(false,  "VWAP Directional Filter (reversals)", tooltip="Suppress bear reversals above VWAP, bull reversals below VWAP", group="Filters")
+i_vwapFilter   = input.bool(true,   "VWAP Directional Filter (reversals)", tooltip="Suppress bear reversals above VWAP, bull reversals below VWAP", group="Filters")
 
 i_useZones     = input.bool(true,   "Use Level Zones (wick-to-body)",  group="Zones")
 i_zoneATRPct   = input.float(3.0,   "Zone Width for PM/ORB (% of ATR)", minval=0, step=0.5, group="Zones")
@@ -593,50 +593,53 @@ bullCount = (sigBullPMH ? 1 : 0) + (sigBullYH ? 1 : 0) + (sigBullWH ? 1 : 0) + (
 bearCount = (sigBearPML ? 1 : 0) + (sigBearYL ? 1 : 0) + (sigBearWL ? 1 : 0) + (sigBearOL ? 1 : 0)
 
 // ─── Reversal/Reclaim Label Text ──────────────────────
+// Reclaim requires CONF failure on the original breakout (when CONF enabled)
+bool rclBullOK = not i_confirm or sRTState == -1  // bear BRK failed → bull reclaim valid
+bool rclBearOK = not i_confirm or bRTState == -1  // bull BRK failed → bear reclaim valid
 revBullText = ""
 revBullHasReclaim = false
 if sigRevBullPML
-    string pfx = i_showReclaim and hadBrkPML ? "~~ " : "~ "
+    string pfx = i_showReclaim and hadBrkPML and rclBullOK ? "~~ " : "~ "
     revBullText := revBullText + (revBullText != "" ? " + " : "") + pfx + "PM L"
-    if i_showReclaim and hadBrkPML
+    if i_showReclaim and hadBrkPML and rclBullOK
         revBullHasReclaim := true
 if sigRevBullYL
-    string pfx = i_showReclaim and hadBrkYL ? "~~ " : "~ "
+    string pfx = i_showReclaim and hadBrkYL and rclBullOK ? "~~ " : "~ "
     revBullText := revBullText + (revBullText != "" ? " + " : "") + pfx + "Yest L"
-    if i_showReclaim and hadBrkYL
+    if i_showReclaim and hadBrkYL and rclBullOK
         revBullHasReclaim := true
 if sigRevBullWL
-    string pfx = i_showReclaim and hadBrkWL ? "~~ " : "~ "
+    string pfx = i_showReclaim and hadBrkWL and rclBullOK ? "~~ " : "~ "
     revBullText := revBullText + (revBullText != "" ? " + " : "") + pfx + "Week L"
-    if i_showReclaim and hadBrkWL
+    if i_showReclaim and hadBrkWL and rclBullOK
         revBullHasReclaim := true
 if sigRevBullOL
-    string pfx = i_showReclaim and hadBrkOL ? "~~ " : "~ "
+    string pfx = i_showReclaim and hadBrkOL and rclBullOK ? "~~ " : "~ "
     revBullText := revBullText + (revBullText != "" ? " + " : "") + pfx + "ORB L"
-    if i_showReclaim and hadBrkOL
+    if i_showReclaim and hadBrkOL and rclBullOK
         revBullHasReclaim := true
 
 revBearText = ""
 revBearHasReclaim = false
 if sigRevBearPMH
-    string pfx = i_showReclaim and hadBrkPMH ? "~~ " : "~ "
+    string pfx = i_showReclaim and hadBrkPMH and rclBearOK ? "~~ " : "~ "
     revBearText := revBearText + (revBearText != "" ? " + " : "") + pfx + "PM H"
-    if i_showReclaim and hadBrkPMH
+    if i_showReclaim and hadBrkPMH and rclBearOK
         revBearHasReclaim := true
 if sigRevBearYH
-    string pfx = i_showReclaim and hadBrkYH ? "~~ " : "~ "
+    string pfx = i_showReclaim and hadBrkYH and rclBearOK ? "~~ " : "~ "
     revBearText := revBearText + (revBearText != "" ? " + " : "") + pfx + "Yest H"
-    if i_showReclaim and hadBrkYH
+    if i_showReclaim and hadBrkYH and rclBearOK
         revBearHasReclaim := true
 if sigRevBearWH
-    string pfx = i_showReclaim and hadBrkWH ? "~~ " : "~ "
+    string pfx = i_showReclaim and hadBrkWH and rclBearOK ? "~~ " : "~ "
     revBearText := revBearText + (revBearText != "" ? " + " : "") + pfx + "Week H"
-    if i_showReclaim and hadBrkWH
+    if i_showReclaim and hadBrkWH and rclBearOK
         revBearHasReclaim := true
 if sigRevBearOH
-    string pfx = i_showReclaim and hadBrkOH ? "~~ " : "~ "
+    string pfx = i_showReclaim and hadBrkOH and rclBearOK ? "~~ " : "~ "
     revBearText := revBearText + (revBearText != "" ? " + " : "") + pfx + "ORB H"
-    if i_showReclaim and hadBrkOH
+    if i_showReclaim and hadBrkOH and rclBearOK
         revBearHasReclaim := true
 
 revBullCount = (sigRevBullPML ? 1 : 0) + (sigRevBullYL ? 1 : 0) + (sigRevBullWL ? 1 : 0) + (sigRevBullOL ? 1 : 0)
@@ -904,7 +907,7 @@ buildRetestSuffix(bool[] rt, int[] rtBar, string[] rtInfo, float[] rtLvl, string
 // Bull retest monitoring (chart-TF precision)
 if i_confirm and bRTState == 1 and not na(bRTConsLvl) and isRegular
     int elapsed = sigBarIdx - bRTStart
-    if close < bRTConsLvl - rearmBuf
+    if elapsed > 0 and close < bRTConsLvl - rearmBuf
         bRTState := -1
         if not na(bRTLbl)
             label.set_text(bRTLbl, bRTBase + "\n✗")
@@ -921,11 +924,11 @@ if i_confirm and bRTState == 1 and not na(bRTConsLvl) and isRegular
             if not na(lvl) and not array.get(bRT, i) and bar_index > bRTBar0
                 if low <= lvl + retestBuf and close > lvl - rearmBuf
                     array.set(bRT, i, true)
-                    array.set(bRTBar, i, sigBarIdx)
+                    array.set(bRTBar, i, bar_index)
                     array.set(bRTInfo, i, chartQual(true))
                     anyNew := true
         if anyNew
-            string suffix = buildRetestSuffix(bRT, bRTBar, bRTInfo, bRTLvl, bullLvlNames, bRTStart, true)
+            string suffix = buildRetestSuffix(bRT, bRTBar, bRTInfo, bRTLvl, bullLvlNames, bRTBar0, true)
             string rtText = str.substring(suffix, 1)  // skip leading \n
             // Independent retest label + alert (always, unless old)
             if not isOld
@@ -949,7 +952,7 @@ if i_confirm and bRTState == 1 and not na(bRTConsLvl) and isRegular
 // Bear retest monitoring (chart-TF precision)
 if i_confirm and sRTState == 1 and not na(sRTConsLvl) and isRegular
     int elapsed = sigBarIdx - sRTStart
-    if close > sRTConsLvl + rearmBuf
+    if elapsed > 0 and close > sRTConsLvl + rearmBuf
         sRTState := -1
         if not na(sRTLbl)
             label.set_text(sRTLbl, sRTBase + "\n✗")
@@ -966,11 +969,11 @@ if i_confirm and sRTState == 1 and not na(sRTConsLvl) and isRegular
             if not na(lvl) and not array.get(sRT, i) and bar_index > sRTBar0
                 if high >= lvl - retestBuf and close < lvl + rearmBuf
                     array.set(sRT, i, true)
-                    array.set(sRTBar, i, sigBarIdx)
+                    array.set(sRTBar, i, bar_index)
                     array.set(sRTInfo, i, chartQual(false))
                     anyNew := true
         if anyNew
-            string suffix = buildRetestSuffix(sRT, sRTBar, sRTInfo, sRTLvl, bearLvlNames, sRTStart, false)
+            string suffix = buildRetestSuffix(sRT, sRTBar, sRTInfo, sRTLvl, bearLvlNames, sRTBar0, false)
             string rtText = str.substring(suffix, 1)  // skip leading \n
             // Independent retest label + alert (always, unless old)
             if not isOld
