@@ -14,6 +14,7 @@ i_signalTF  = input.timeframe("5", "Signal Timeframe",        group="Signals")
 i_showLines = input.bool(false, "Show Level Lines",           group="Visuals")
 i_fadeOld   = input.bool(true,  "Fade Old Labels",            group="Visuals")
 i_fadeAge   = input.int(100,    "Fade After (signal bars)",    minval=10, group="Visuals")
+i_dimAfternoon = input.bool(true, "Dim Afternoon Signals (after 11:00)", group="Visuals")
 
 // ─── Filter Inputs ──────────────────────────────────────
 i_volFilter  = input.bool(true,  "Require Above-Avg Volume",    group="Filters")
@@ -31,6 +32,7 @@ i_retestWindow = input.string("Session", "Retest Window", options=["Short (50 mi
 i_retestProx   = input.float(3.0, "Retest Proximity (% of ATR)", minval=0.5, step=0.5, group="Confirmation")
 i_retestOnly  = input.bool(false, "Retest-Only Mode",                group="Signals")
 i_cooldownBars = input.int(2, "Signal Cooldown (signal bars)", minval=0, maxval=10, group="Signals")
+i_chopWarn     = input.bool(true, "Chop Day Warning (3+ CONF fails)", group="Signals")
 
 // ─── Setup Inputs ──────────────────────────────────────
 i_showReversal = input.bool(true,   "Show Reversal Setups",            group="Setups")
@@ -64,6 +66,13 @@ isORBwin     = not na(time(timeframe.period, "0930-0935:23456", TZ))
 newPremarket = isPremarket and not isPremarket[1]
 newRegular   = isRegular   and not isRegular[1]
 isSetupWindow = not na(time(timeframe.period, i_setupWindow + ":23456", TZ))
+isAfternoon   = isRegular and hour(time, TZ) >= 11
+
+// Reset chop warning at session start
+if newRegular
+    confFailStreak := 0
+    confPassCount  := 0
+    chopWarned     := false
 
 // ─── Level Calculation ────────────────────────────────────
 
@@ -166,6 +175,8 @@ var float    bRTConsLvl = na                       // most conservative level (l
 var int      bRTState = 0                          // 0=none, 1=monitoring, -1=failed
 var int      bRTPrev  = 0                          // previous state (for alert transitions)
 var int      bRTBar0  = 0                          // chart-TF bar_index of breakout (skip self-retest)
+var float    bRTVolRatio = na                      // stored vol ratio for CONF visual tier
+var int      bRTClosePos = na                      // stored close position for CONF visual tier
 
 var bool[]   sRT     = array.new_bool(4, false)
 var int[]    sRTBar  = array.new_int(4, 0)
@@ -178,6 +189,13 @@ var float    sRTConsLvl = na
 var int      sRTState = 0
 var int      sRTPrev  = 0
 var int      sRTBar0  = 0                          // chart-TF bar_index of breakout (skip self-retest)
+var float    sRTVolRatio = na                      // stored vol ratio for CONF visual tier
+var int      sRTClosePos = na                      // stored close position for CONF visual tier
+
+// ─── Chop Day Warning State ─────────────────────────
+var int  confFailStreak = 0
+var int  confPassCount  = 0
+var bool chopWarned     = false
 
 // ─── Debug Signal Log Arrays ─────────────────────────
 var array<int>    dbTime       = array.new<int>()
@@ -304,8 +322,8 @@ volPassBull  = not i_volFilter or na(volThreshold) or sigVolBull > volThreshold
 volPassBear  = not i_volFilter or na(volThreshold) or sigVolBear > volThreshold
 volRatioBull = not na(volBase) and volBase > 0 ? sigVolBull / volBase : na
 volRatioBear = not na(volBase) and volBase > 0 ? sigVolBear / volBase : na
-bullVolAlpha = i_volFilter and not na(volRatioBull) ? math.max(0, math.round(35 - volRatioBull * 10)) : 0
-bearVolAlpha = i_volFilter and not na(volRatioBear) ? math.max(0, math.round(35 - volRatioBear * 10)) : 0
+bullVolAlpha = i_volFilter and not na(volRatioBull) ? math.max(0, math.round(60 - volRatioBull * 10)) : 0
+bearVolAlpha = i_volFilter and not na(volRatioBear) ? math.max(0, math.round(60 - volRatioBear * 10)) : 0
 bullColor    = color.new(color.green, bullVolAlpha)
 bearColor    = color.new(color.red, bearVolAlpha)
 
@@ -366,7 +384,8 @@ dbAppend(string dir, string typ, string levels, float vol, int clsPos, string co
         if i_debugLog and barstate.isconfirmed
             string posStr = na(clsPos) ? "" : (dir == "▲" ? "^" : "v") + str.tostring(clsPos)
             string volStr = na(vol) ? "" : str.tostring(vol, "#.#") + "x"
-            string msg = "[KLB] " + fmtTime(time) + " " + dir + " " + typ + " " + levels + " vol=" + volStr + " pos=" + posStr + " " + ohlc + " ATR=" + str.tostring(nz(dailyATR), "#.##") + " rawVol=" + str.tostring(nz(sigVol), "#") + " volSMA=" + str.tostring(nz(volBase), "#") + " buf=" + str.tostring(breakBuf, "#.###") + " prices=" + lvlPrices
+            string vwapStr = not na(vwapVal) ? (sigC > vwapVal ? "above" : "below") : "na"
+            string msg = "[KLB] " + fmtTime(time) + " " + dir + " " + typ + " " + levels + " vol=" + volStr + " pos=" + posStr + " vwap=" + vwapStr + " " + ohlc + " ATR=" + str.tostring(nz(dailyATR), "#.##") + " rawVol=" + str.tostring(nz(sigVol), "#") + " volSMA=" + str.tostring(nz(volBase), "#") + " buf=" + str.tostring(breakBuf, "#.###") + " prices=" + lvlPrices
             log.info(msg)
     array.size(dbTime) - 1
 
@@ -685,11 +704,12 @@ if combinedBullText != ""
     // Determine color: breakout color if breakout present, reversal color if reversal-only
     color lblColor = bullText != "" ? bullColor : revBullColor
     int totalCount = bullCount + revBullCount
-    // Cooldown dimming
+    // Cooldown + afternoon dimming
     bool isCooled = i_cooldownBars > 0 and (sigBarIdx - lastBullSigBar) <= i_cooldownBars
-    color finalColor = isCooled ? color.new(color.gray, 70) : (isOld ? color.new(color.gray, 90) : lblColor)
-    color finalText = isCooled ? color.new(color.gray, 50) : (isOld ? color.new(color.gray, 70) : color.black)
-    string finalSize = isCooled ? size.tiny : (totalCount > 1 ? size.normal : size.small)
+    bool isAftn   = i_dimAfternoon and isAfternoon and not isOld and not isCooled
+    color finalColor = isCooled ? color.new(color.gray, 70) : isAftn ? color.new(lblColor, 60) : (isOld ? color.new(color.gray, 90) : lblColor)
+    color finalText  = isCooled ? color.new(color.gray, 50) : isAftn ? color.new(color.gray, 30) : (isOld ? color.new(color.gray, 70) : color.black)
+    string finalSize = isCooled ? size.tiny : isAftn ? size.tiny : (totalCount > 1 ? size.normal : size.small)
     // Vertical offset for adjacent labels
     bool needsOffset = (bar_index + shapeOff - lastBullLblBar) <= 1 and lastBullLblBar >= 0
 
@@ -746,11 +766,20 @@ if combinedBullText != ""
     if bullText != "" and i_confirm and not isOld
         // Auto-promote previous monitoring
         if bRTState == 1 and not i_retestOnly and not na(bRTLbl)
-            label.set_text(bRTLbl, bRTBase + "\n✓")
+            bool highConv = not na(bRTVolRatio) and bRTVolRatio >= 5.0 and not na(bRTClosePos) and bRTClosePos >= 80
+            if highConv
+                label.set_text(bRTLbl, bRTBase + "\n✓★")
+                label.set_color(bRTLbl, color.new(#FFD700, 0))
+                label.set_size(bRTLbl, size.normal)
+            else
+                label.set_text(bRTLbl, bRTBase + "\n✓")
+                label.set_color(bRTLbl, color.new(#32CD32, 0))
+            confPassCount  += 1
+            confFailStreak := 0
             if dbConfBullIdx >= 0 and dbConfBullIdx < array.size(dbConf)
-                array.set(dbConf, dbConfBullIdx, "✓")
+                array.set(dbConf, dbConfBullIdx, highConv ? "✓★" : "✓")
                 if i_debugLog and barstate.isconfirmed
-                    log.info("[KLB] CONF {0} ▲ BRK → ✓ (auto-promote)", fmtTime(time))
+                    log.info("[KLB] CONF {0} ▲ BRK → {1} (auto-promote)", fmtTime(time), highConv ? "✓★" : "✓")
         // Set up per-level tracking
         for i = 0 to 3
             array.set(bRT, i, false)
@@ -769,10 +798,12 @@ if combinedBullText != ""
             lvl := na(lvl) ? weekHigh : math.min(lvl, weekHigh)
         if sigBullOH
             lvl := na(lvl) ? orbHigh : math.min(lvl, orbHigh)
-        bRTConsLvl := lvl
-        bRTStart   := sigBarIdx
-        bRTBar0    := bar_index - 1
-        bRTState   := 1
+        bRTConsLvl    := lvl
+        bRTStart      := sigBarIdx
+        bRTBar0       := bar_index - 1
+        bRTState      := 1
+        bRTVolRatio   := volRatioBull
+        bRTClosePos   := bullClosePos
 
 // ─── Combined Bear Label ─────────────────────────────────
 string combinedBearText = ""
@@ -800,11 +831,12 @@ if combinedBearText != ""
     // Determine color: breakout color if breakout present, reversal color if reversal-only
     color lblColor = bearText != "" ? bearColor : revBearColor
     int totalCount = bearCount + revBearCount
-    // Cooldown dimming
+    // Cooldown + afternoon dimming
     bool isCooled = i_cooldownBars > 0 and (sigBarIdx - lastBearSigBar) <= i_cooldownBars
-    color finalColor = isCooled ? color.new(color.gray, 70) : (isOld ? color.new(color.gray, 90) : lblColor)
-    color finalText = isCooled ? color.new(color.gray, 50) : (isOld ? color.new(color.gray, 70) : color.black)
-    string finalSize = isCooled ? size.tiny : (totalCount > 1 ? size.normal : size.small)
+    bool isAftn   = i_dimAfternoon and isAfternoon and not isOld and not isCooled
+    color finalColor = isCooled ? color.new(color.gray, 70) : isAftn ? color.new(lblColor, 60) : (isOld ? color.new(color.gray, 90) : lblColor)
+    color finalText  = isCooled ? color.new(color.gray, 50) : isAftn ? color.new(color.gray, 30) : (isOld ? color.new(color.gray, 70) : color.black)
+    string finalSize = isCooled ? size.tiny : isAftn ? size.tiny : (totalCount > 1 ? size.normal : size.small)
     // Vertical offset for adjacent labels
     bool needsOffset = (bar_index + shapeOff - lastBearLblBar) <= 1 and lastBearLblBar >= 0
 
@@ -861,11 +893,20 @@ if combinedBearText != ""
     if bearText != "" and i_confirm and not isOld
         // Auto-promote previous monitoring
         if sRTState == 1 and not i_retestOnly and not na(sRTLbl)
-            label.set_text(sRTLbl, sRTBase + "\n✓")
+            bool highConv = not na(sRTVolRatio) and sRTVolRatio >= 5.0 and not na(sRTClosePos) and sRTClosePos >= 80
+            if highConv
+                label.set_text(sRTLbl, sRTBase + "\n✓★")
+                label.set_color(sRTLbl, color.new(#FFD700, 0))
+                label.set_size(sRTLbl, size.normal)
+            else
+                label.set_text(sRTLbl, sRTBase + "\n✓")
+                label.set_color(sRTLbl, color.new(#32CD32, 0))
+            confPassCount  += 1
+            confFailStreak := 0
             if dbConfBearIdx >= 0 and dbConfBearIdx < array.size(dbConf)
-                array.set(dbConf, dbConfBearIdx, "✓")
+                array.set(dbConf, dbConfBearIdx, highConv ? "✓★" : "✓")
                 if i_debugLog and barstate.isconfirmed
-                    log.info("[KLB] CONF {0} ▼ BRK → ✓ (auto-promote)", fmtTime(time))
+                    log.info("[KLB] CONF {0} ▼ BRK → {1} (auto-promote)", fmtTime(time), highConv ? "✓★" : "✓")
         // Set up per-level tracking
         for i = 0 to 3
             array.set(sRT, i, false)
@@ -884,10 +925,12 @@ if combinedBearText != ""
             lvl := na(lvl) ? weekLow : math.max(lvl, weekLow)
         if sigBearOL
             lvl := na(lvl) ? orbLow : math.max(lvl, orbLow)
-        sRTConsLvl := lvl
-        sRTStart   := sigBarIdx
-        sRTBar0    := bar_index - 1
-        sRTState   := 1
+        sRTConsLvl    := lvl
+        sRTStart      := sigBarIdx
+        sRTBar0       := bar_index - 1
+        sRTState      := 1
+        sRTVolRatio   := volRatioBear
+        sRTClosePos   := bearClosePos
 
 // ─── Per-Level Retest Monitoring ─────────────────────────
 // Runs every signal-TF bar for chart-TF independent monitoring.
@@ -909,6 +952,7 @@ if i_confirm and bRTState == 1 and not na(bRTConsLvl) and isRegular
     int elapsed = sigBarIdx - bRTStart
     if elapsed > 0 and close < bRTConsLvl - rearmBuf
         bRTState := -1
+        confFailStreak += 1
         if not na(bRTLbl)
             label.set_text(bRTLbl, bRTBase + "\n✗")
             label.set_color(bRTLbl, color.new(color.gray, 60))
@@ -917,6 +961,12 @@ if i_confirm and bRTState == 1 and not na(bRTConsLvl) and isRegular
             array.set(dbConf, dbConfBullIdx, "✗")
             if i_debugLog and barstate.isconfirmed
                 log.info("[KLB] CONF {0} ▲ BRK → ✗ (failed)", fmtTime(time))
+        // Chop day warning
+        if i_chopWarn and confFailStreak >= 3 and confPassCount == 0 and not chopWarned and not isOld
+            label.new(bar_index, high + nz(dailyATR) * 0.3, "CHOP?",
+                 yloc=yloc.price, style=label.style_label_down,
+                 color=color.new(color.orange, 20), textcolor=color.black, size=size.small)
+            chopWarned := true
     else
         bool anyNew = false
         for i = 0 to 3
@@ -942,18 +992,13 @@ if i_confirm and bRTState == 1 and not na(bRTConsLvl) and isRegular
             // Also update original breakout label (unless retest-only mode)
             if not i_retestOnly and not na(bRTLbl)
                 label.set_text(bRTLbl, bRTBase + suffix)
-        if elapsed >= retestMaxElapsed and bRTState == 1
-            if dbConfBullIdx >= 0 and dbConfBullIdx < array.size(dbConf) and array.get(dbConf, dbConfBullIdx) == "…"
-                array.set(dbConf, dbConfBullIdx, "✓")
-                if i_debugLog and barstate.isconfirmed
-                    log.info("[KLB] CONF {0} ▲ BRK → ✓ (window)", fmtTime(time))
-            bRTState := 0
 
 // Bear retest monitoring (chart-TF precision)
 if i_confirm and sRTState == 1 and not na(sRTConsLvl) and isRegular
     int elapsed = sigBarIdx - sRTStart
     if elapsed > 0 and close > sRTConsLvl + rearmBuf
         sRTState := -1
+        confFailStreak += 1
         if not na(sRTLbl)
             label.set_text(sRTLbl, sRTBase + "\n✗")
             label.set_color(sRTLbl, color.new(color.gray, 60))
@@ -962,6 +1007,12 @@ if i_confirm and sRTState == 1 and not na(sRTConsLvl) and isRegular
             array.set(dbConf, dbConfBearIdx, "✗")
             if i_debugLog and barstate.isconfirmed
                 log.info("[KLB] CONF {0} ▼ BRK → ✗ (failed)", fmtTime(time))
+        // Chop day warning
+        if i_chopWarn and confFailStreak >= 3 and confPassCount == 0 and not chopWarned and not isOld
+            label.new(bar_index, high + nz(dailyATR) * 0.3, "CHOP?",
+                 yloc=yloc.price, style=label.style_label_down,
+                 color=color.new(color.orange, 20), textcolor=color.black, size=size.small)
+            chopWarned := true
     else
         bool anyNew = false
         for i = 0 to 3
@@ -987,12 +1038,6 @@ if i_confirm and sRTState == 1 and not na(sRTConsLvl) and isRegular
             // Also update original breakout label (unless retest-only mode)
             if not i_retestOnly and not na(sRTLbl)
                 label.set_text(sRTLbl, sRTBase + suffix)
-        if elapsed >= retestMaxElapsed and sRTState == 1
-            if dbConfBearIdx >= 0 and dbConfBearIdx < array.size(dbConf) and array.get(dbConf, dbConfBearIdx) == "…"
-                array.set(dbConf, dbConfBearIdx, "✓")
-                if i_debugLog and barstate.isconfirmed
-                    log.info("[KLB] CONF {0} ▼ BRK → ✓ (window)", fmtTime(time))
-            sRTState := 0
 
 // Retest state transition alerts
 if i_confirm

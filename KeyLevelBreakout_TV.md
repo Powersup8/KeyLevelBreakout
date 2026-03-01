@@ -17,7 +17,7 @@ Detects breakouts, reversals, reclaims, and retests at key intraday levels on co
 **Filters (toggleable):**
 - **Volume** — above-average required (default 1.5x SMA). Directional 2-bar lookback.
 - **ATR Buffer** — wick must push past level ± X% ATR(14), close holds beyond raw level.
-- **VWAP Directional Filter** — suppress counter-trend reversals (bear above VWAP, bull below VWAP). Off by default.
+- **VWAP Directional Filter** — suppress counter-trend reversals (bear above VWAP, bull below VWAP). On by default.
 - **Once Per Breakout** — one signal per level, re-arms on invalidation. Resets each session.
 
 **Label management:**
@@ -36,7 +36,14 @@ Line 1: level names (merged for confluence). Line 2: volume ratio + close positi
 
 **Retest-Only Mode:** Suppress breakout labels (gray dot). Only retest signals fire their own labels and alerts. Reversals/reclaims unchanged.
 
-**Post-Breakout Monitoring:** Breakout signals evaluated on signal-TF bars — labels are identical on 1m and 5m charts. Each broken level tracked independently. Retest detection runs on chart-TF bars for precision. Failure (✗) = close back through most conservative level. Auto-promotion (✓) when next breakout fires.
+**Post-Breakout Monitoring:** Breakout signals evaluated on signal-TF bars — labels are identical on 1m and 5m charts. Each broken level tracked independently. Retest detection runs on chart-TF bars for precision. Failure (✗) = close back through most conservative level, label grayed out. Auto-promotion (✓) when next breakout fires — label turns lime green. High-conviction (✓★, ≥5x vol + ≥80% close pos) turns gold.
+
+**Visual Quality Tiers:**
+- **CONF ✓** (lime green) — confirmed breakout, strong follow-through signal
+- **CONF ✓★** (gold) — high-conviction confirmation (54% win, 0% loss in 6-week analysis)
+- **CONF ✗** (gray) — failed confirmation
+- **Afternoon signals** — dimmed after 11:00 ET (near-zero follow-through)
+- **CHOP?** (orange) — warning after 3+ consecutive CONF failures at session start
 
 **Alerts:**
 - Merged `alert()` per direction per bar (breakouts + reversals)

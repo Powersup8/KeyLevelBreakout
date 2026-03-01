@@ -11,8 +11,11 @@ All signals evaluate on confirmed signal-timeframe candle closes (default 5m) to
 - **ATR Buffer Zone** — require wick beyond level ± X% of daily ATR and close beyond raw level (toggleable, on by default)
 - **Close Position %** — shows where the close landed within the bar's range (e.g. `^78` = 78% toward the high = strong buying pressure)
 - **Post-Breakout Confirmation** — monitors after breakout for retest-and-hold (◆), or failure (✗); retests fire independent labels and alerts
-- **Conviction coloring** — label opacity scales with volume ratio (faded = barely passed, bright = strong conviction)
-- **VWAP Directional Filter** — suppress counter-trend reversals (bear reversals above VWAP, bull reversals below VWAP); off by default
+- **Conviction coloring** — label opacity scales with volume ratio (transparent = low conviction, opaque = strong conviction); wider alpha range makes differences more visible
+- **CONF ✓ visual boost** — confirmed breakouts (auto-promoted) change to lime green; high-conviction (✓ + ≥5x volume + ≥80% close position) turn gold with ✓★ marker
+- **Afternoon dimming** — signals after 11:00 ET render smaller and more transparent (toggleable, on by default); follow-through drops to near zero in the afternoon based on 6-week analysis
+- **Chop day warning** — after 3+ consecutive CONF failures with zero passes at session start, an orange "CHOP?" label appears (toggleable, on by default)
+- **VWAP Directional Filter** — suppress counter-trend reversals (bear reversals above VWAP, bull reversals below VWAP); on by default
 - **Confluence merging** — when multiple levels break on the same bar, labels and alerts merge (e.g. "PM H + Yest H 2.1x") with a larger label size
 - **Reversal setups** — detects rejection off level zones (wick enters zone, close rejects); bullish at LOW levels (blue), bearish at HIGH levels (orange)
 - **Reclaim setups** — context-enriched reversal when a prior breakout was invalidated (false breakout → rejection); labeled with `~~` prefix
@@ -51,6 +54,7 @@ All signals evaluate on confirmed signal-timeframe candle closes (default 5m) to
 | Show Level Lines | Off | Visuals | Plot horizontal lines for active levels |
 | Fade Old Labels | On | Visuals | Gray out labels older than N bars from chart edge — toggle off for historical analysis |
 | Fade After (signal bars) | 100 | Visuals | Age threshold for fading in signal-TF bars (100 × 5m = ~8 hours, well beyond one session) |
+| Dim Afternoon Signals | On | Visuals | Reduce size and opacity for signals after 11:00 ET (follow-through drops to near zero) |
 | Require Above-Avg Volume | On | Filters | Gate breakouts on above-average volume (directional 2-bar lookback: borrows prior bar volume only if same direction) |
 | Volume Baseline | Signal TF SMA | Filters | Compare against signal-TF SMA (granular) or daily average (stable) |
 | Volume Multiplier | 1.5 | Filters | How many times above average volume is required (e.g. 1.5 = 150%) |
@@ -64,11 +68,12 @@ All signals evaluate on confirmed signal-timeframe candle closes (default 5m) to
 | Retest Proximity (% of ATR) | 3.0 | Confirmation | How close a wick must come to the broken level to count as a retest |
 | Retest-Only Mode | Off | Signals | Suppress breakout labels; only fire retest labels and alerts |
 | Signal Cooldown (signal bars) | 2 | Signals | Dim same-direction signals within N signal bars of the previous signal (0 = off) |
+| Chop Day Warning | On | Signals | Show "CHOP?" label after 3+ consecutive CONF failures with zero passes at session start |
 | Show Reversal Setups | On | Setups | Enable reversal signal detection at level zones |
 | Limit Reversal Window | Off | Setups | When ON, reversals only fire within Setup Active Window; when OFF (default), reversals fire all session |
 | Show Reclaim Setups | On | Setups | Enable reclaim labeling (reversal after failed breakout) |
 | Setup Active Window (ET) | 0930-1130 | Setups | Time window for reversal/reclaim signals when Limit Reversal Window is ON |
-| VWAP Directional Filter | Off | Filters | Suppress counter-trend reversals: bear reversals above VWAP, bull reversals below VWAP |
+| VWAP Directional Filter | On | Filters | Suppress counter-trend reversals: bear reversals above VWAP, bull reversals below VWAP |
 | Use Level Zones | On | Zones | Use wick-to-body zones instead of single-price levels |
 | Zone Width for PM/ORB | 3.0 | Zones | ATR% zone width for levels without candle body data |
 | PM H/L Reversal/Reclaim | On | Rev/Recl Toggles | Enable reversal/reclaim at premarket levels |
@@ -130,7 +135,7 @@ ORB H + Yest H
 
 **Failure:** If price closes back through the most conservative level beyond the re-arm buffer, the label is updated with `✗` and grayed out.
 
-**Auto-promotion:** If a new breakout fires while a previous one is being monitored, the previous one gets a `✓` line (it survived).
+**Auto-promotion:** If a new breakout fires while a previous one is being monitored, the previous one gets promoted to ✓ (it survived). The label turns **lime green** for regular confirmations, or **gold with ✓★** for high-conviction signals (≥5x volume AND ≥80% close position). High-conviction signals have a 54% win rate with 0% loss rate based on 6-week analysis. This is the only confirmation mechanism — 100% of CONF passes are auto-promotes.
 
 **Alerts:** Retest alerts fire in all modes (not just Retest-Only): `"Retest: ◆³ ORB H 2.1x ^85"`.
 
@@ -334,6 +339,8 @@ Edit the script in Pine Editor and click **Save** — all charts using the indic
 
 ## Changelog
 
+- **v2.4** — Visual quality tiers: CONF ✓ labels turn lime green (regular) or gold with ✓★ (high-conviction: ≥5x volume + ≥80% close position); afternoon dimming reduces size/opacity for signals after 11:00 ET (toggleable); chop day warning shows orange "CHOP?" label after 3+ consecutive CONF failures at session start (toggleable); volume alpha range widened (35→60) for better visual differentiation of low vs high volume signals; VWAP position added to Pine Log output (`vwap=above/below`); dead code cleanup: removed window expiry promotion path (never fired in 6-week analysis — all CONF passes are auto-promotes)
+- **v2.3** — Signal quality fixes based on 3-day analysis (229 signals, 12 symbols): retest diamond bar count uses `bar_index` (1m accuracy) instead of `sigBarIdx` (display fix); reclaim (`~~`) gated behind CONF ✗ (only fires when preceding breakout's confirmation failed); VWAP directional filter default changed to ON (counter-trend reversals scored ~10% win rate); CONF race condition fix: `elapsed > 0` guard prevents immediate ✗ on same bar as CONF setup
 - **v2.2** — Retest timing fix: retest eligible from first chart bar after breakout (no multi-bar delay); self-retest guard aligned with label placement (`shapeOff`); early retests (1-2 bars) are stronger signals. Alert timing fix: breakout/reversal alerts now use `freq_once_per_bar` for immediate firing (data is from completed previous bar); retest/failure alerts stay `freq_once_per_bar_close` (current-bar data). Pine Logs fix: all 7 `log.info()` calls gated with `barstate.isconfirmed` to emit one entry per confirmed bar instead of 50-100+ duplicates on real-time ticks
 - **v2.1** — Debug Signal Table: togglable chart overlay table (8 columns: Time, Dir, Type, Levels, Vol, Pos, Conf, OHLC) with color-coded rows by setup type, configurable position and max rows; togglable Pine Logs output with full signal data (`[KLB]` prefix, extended fields: ATR, raw volume, volume SMA, buffer, level prices) plus confirmation state change entries (`[KLB] CONF`); both outputs independent, zero overhead when OFF
 - **v2.0** — Signal Quality: VWAP directional filter for reversals (suppress counter-trend signals); reversal time window now optional (default full session, toggle to limit); retest system overhaul with session-long tracking (Short/Extended/Session dropdown), chart-TF precision detection, configurable proximity (% of ATR), independent retest labels at the retest bar, ◆ diamond symbol, and alerts in all modes; label management with same-bar merge (breakout + reversal → one label), cooldown dimming for rapid signals, and vertical offset to prevent overlap
