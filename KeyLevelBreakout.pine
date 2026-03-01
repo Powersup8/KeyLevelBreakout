@@ -41,6 +41,11 @@ i_showReclaim  = input.bool(true,   "Show Reclaim Setups",             group="Se
 i_setupWindow  = input.string("0930-1130", "Setup Active Window (ET)", group="Setups")
 
 i_vwapFilter   = input.bool(true,   "VWAP Directional Filter (reversals)", tooltip="Suppress bear reversals above VWAP, bull reversals below VWAP", group="Filters")
+i_fEMA    = input.bool(true, "5m EMA Alignment Filter",     tooltip="Suppress signals against the 5m EMA(20)/EMA(50) trend", group="Filters")
+i_fRS     = input.bool(true, "RS vs SPY Filter",            tooltip="Suppress long signals underperforming SPY (and vice versa)", group="Filters")
+i_fADX    = input.bool(true, "ADX Trend Strength Filter",   tooltip="Suppress signals when 5m ADX < 20 (chop/no trend)", group="Filters")
+i_fCandle = input.bool(true, "Candle Body Quality Filter",  tooltip="Suppress wick-heavy breakout candles (body < 50% or close in wrong zone)", group="Filters")
+i_fMode   = input.string("Suppress", "Filter Mode", options=["Suppress", "Dim"], tooltip="Suppress: hide signals entirely. Dim: show as gray with ? suffix", group="Filters")
 
 i_useZones     = input.bool(true,   "Use Level Zones (wick-to-body)",  group="Zones")
 i_zoneATRPct   = input.float(3.0,   "Zone Width for PM/ORB (% of ATR)", minval=0, step=0.5, group="Zones")
@@ -80,9 +85,15 @@ else if isPremarket
     pmHigh := math.max(pmHigh, high)
     pmLow  := math.min(pmLow, low)
 
+// ─── Filter Helpers ──────────────────────────────────────
+// ADX extraction for request.security (ta.dmi returns tuple)
+f_adx() =>
+    [_, _, adx] = ta.dmi(14, 14)
+    adx
+
 // Yesterday OHLC (non-repainting) — tuple reduces request.security calls
-[yestHigh, yestLow, yestOpen, yestClose] = request.security(syminfo.tickerid, "D",
-     [high[1], low[1], open[1], close[1]], lookahead = barmerge.lookahead_on)
+[yestHigh, yestLow, yestOpen, yestClose, todayOpen] = request.security(syminfo.tickerid, "D",
+     [high[1], low[1], open[1], close[1], open], lookahead = barmerge.lookahead_on)
 
 // Last Week OHLC (non-repainting) — tuple reduces request.security calls
 [weekHigh, weekLow, weekOpen, weekClose] = request.security(syminfo.tickerid, "W",
@@ -91,6 +102,14 @@ else if isPremarket
 // Daily ATR + Average Volume (non-repainting)
 dailyATR    = request.security(syminfo.tickerid, "D", ta.atr(14)[1], lookahead = barmerge.lookahead_on)
 dailyVolSma = request.security(syminfo.tickerid, "D", ta.sma(volume, i_volLen)[1], lookahead = barmerge.lookahead_on)
+
+// ─── Evidence Stack Filter Data (v2.5) ───────────────────
+// 5m EMA(20), EMA(50), ADX — single call, non-repainting
+[ema20_5m, ema50_5m, adx_5m] = request.security(syminfo.tickerid, "5",
+     [ta.ema(close, 20)[1], ta.ema(close, 50)[1], f_adx()[1]], lookahead = barmerge.lookahead_on)
+// SPY intraday data for relative strength
+spyClose   = request.security("SPY", i_signalTF, close[1], lookahead = barmerge.lookahead_on)
+spyDayOpen = request.security("SPY", "D", open, lookahead = barmerge.lookahead_on)
 
 // ORB High/Low — first 5-min bar(s) of regular session
 var float orbHigh = na
@@ -307,6 +326,40 @@ if newSigBar
 vwapVal  = ta.vwap
 breakBuf = i_atrBuf and not na(dailyATR) ? dailyATR * i_atrPct / 100.0 : 0.0
 rearmBuf = i_atrBuf and not na(dailyATR) ? dailyATR * i_atrRearm / 100.0 : 0.0
+
+// ─── Evidence Stack Filter Flags (v2.5) ──────────────────
+// Filter 1: 5m EMA alignment (trend direction)
+fEMA_bull = ema20_5m > ema50_5m
+fEMA_bear = ema20_5m < ema50_5m
+
+// Filter 2: Intraday RS vs SPY
+// SPY/QQQ/GLD/SLV: skip RS filter (always pass)
+bool rsSkip = syminfo.ticker == "SPY" or syminfo.ticker == "QQQ" or syminfo.ticker == "GLD" or syminfo.ticker == "SLV"
+stockChg = not na(todayOpen) and todayOpen > 0 ? (sigC - todayOpen) / todayOpen : 0.0
+spyChg   = not na(spyDayOpen) and spyDayOpen > 0 ? (spyClose - spyDayOpen) / spyDayOpen : 0.0
+rsVsSpy  = stockChg - spyChg
+fRS_bull = rsSkip or rsVsSpy > 0
+fRS_bear = rsSkip or rsVsSpy < 0
+
+// Filter 3: ADX trend strength (5m)
+fADX = not na(adx_5m) ? adx_5m > 20 : true
+
+// Filter 4: Candle body quality
+candleRange = sigH - sigL
+bodyRatio   = candleRange > 0 ? math.abs(sigC - sigO) / candleRange : 0.0
+closeLoc_bull = candleRange > 0 ? (sigC - sigL) / candleRange : 0.0
+closeLoc_bear = candleRange > 0 ? (sigH - sigC) / candleRange : 0.0
+fCandle_bull = bodyRatio > 0.5 and closeLoc_bull > 0.6
+fCandle_bear = bodyRatio > 0.5 and closeLoc_bear > 0.6
+
+// Combined evidence stack pass (per direction)
+evStackBull = (not i_fEMA or fEMA_bull) and (not i_fRS or fRS_bull) and (not i_fADX or fADX) and (not i_fCandle or fCandle_bull)
+evStackBear = (not i_fEMA or fEMA_bear) and (not i_fRS or fRS_bear) and (not i_fADX or fADX) and (not i_fCandle or fCandle_bear)
+
+// Suppress gate: blocks signal generation entirely when filter fails
+fGateBull = i_fMode == "Suppress" ? evStackBull : true
+fGateBear = i_fMode == "Suppress" ? evStackBear : true
+
 retestBuf      = not na(dailyATR) ? dailyATR * i_retestProx / 100.0 : rearmBuf
 retestMaxElapsed = i_retestWindow == "Short (50 min)" ? 10 : i_retestWindow == "Extended (2.5 hr)" ? 30 : 99999
 
