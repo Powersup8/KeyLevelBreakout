@@ -439,7 +439,7 @@ dbAppend(string dir, string typ, string levels, float vol, int clsPos, string co
             string volStr = na(vol) ? "" : str.tostring(vol, "#.#") + "x"
             string vwapStr = not na(vwapVal) ? (sigC > vwapVal ? "above" : "below") : "na"
             string emaStr = not na(ema20_5m) ? (ema20_5m > ema50_5m ? "bull" : "bear") : "na"
-            string rsStr  = not na(rsVsSpy) ? str.tostring(rsVsSpy * 100, "+#.#;-#.#") + "%" : "na"
+            string rsStr  = not na(rsVsSpy) ? (rsVsSpy >= 0 ? "+" : "") + str.tostring(rsVsSpy * 100, "#.#") + "%" : "na"
             string adxStr = not na(adx_5m) ? str.tostring(adx_5m, "#") : "na"
             string bodyStr = str.tostring(math.round(bodyRatio * 100)) + "%"
             string msg = "[KLB] " + fmtTime(time) + " " + dir + " " + typ + " " + levels + " vol=" + volStr + " pos=" + posStr + " vwap=" + vwapStr + " ema=" + emaStr + " rs=" + rsStr + " adx=" + adxStr + " body=" + bodyStr + " " + ohlc + " ATR=" + str.tostring(nz(dailyATR), "#.##") + " rawVol=" + str.tostring(nz(sigVol), "#") + " volSMA=" + str.tostring(nz(volBase), "#") + " buf=" + str.tostring(breakBuf, "#.###") + " prices=" + lvlPrices
