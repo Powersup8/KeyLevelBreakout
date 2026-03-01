@@ -29,7 +29,7 @@ Video: ["Der PERFEKTE Frühindikator"](https://www.youtube.com/watch?v=ut9eUdP6-
 
 ---
 
-## Current State of KeyLevelBreakout.pine (v2.2)
+## Current State of KeyLevelBreakout.pine (v2.3)
 
 `KeyLevelBreakout.pine` (~1100 lines) detects four setup types at key intraday levels on a configurable signal timeframe:
 
@@ -317,3 +317,141 @@ bearBreak(float level) =>
 2. Test thoroughly on a single chart
 3. Port the same filters to `KeyLevelScanner.pine` (watch `request.security` budget)
 4. Once stable, proceed to Tier 2 features one at a time
+
+---
+
+## v2.4 Improvement Proposals (from 6-week analysis, Feb 28 2026)
+
+**Evidence base:** 3,753 signals, 13 symbols, Jan 20 - Feb 27 (~24 trading days). 525 signals with candle follow-through data. Full analysis in `debug/master-summary.md`.
+
+### Problems Identified
+
+| # | Problem | Evidence | Severity |
+|---|---------|----------|----------|
+| P1 | **CONF ✓ visually invisible** — CONF ✗ changes label to gray, but CONF ✓ only appends "✓" text with no color change. The gold standard signal (53% GOOD, 0% BAD) looks identical to an unconfirmed breakout. | Lines 749/864: `label.set_text()` only. Lines 912-915: CONF ✗ sets gray + small. Asymmetry. | HIGH |
+| P2 | **Afternoon noise** — Signals after 11:00 have 0-6.9% GOOD rate but get equal visual weight as morning signals (31.3% GOOD). | 116 signals in 11:00-16:00 window: 6.9% GOOD overall, 0% in 11-13 dead zone. | HIGH |
+| P3 | **Reclaims get equal weight** — `~~` signals score 8.1% GOOD vs 33.5% for reversals `~`, yet look the same (aqua/orange). | 62 reclaims measured: 8.1% GOOD, 8.1% BAD. Weakest signal type by far. | MEDIUM |
+| P4 | **Volume encoding too subtle** — Alpha transparency range is 0-35 (lines 307-308: `35 - volRatioBull * 10`). At 3.5x volume the label is already fully opaque. The 5x-10x "conviction zone" is invisible. | Volume ≥10x has 59.6% CONF rate vs 32.2% for <2x — huge signal, zero visual difference above 3.5x. | MEDIUM |
+| P5 | **No day health indicator** — Chop days (18% of sample) identifiable by early CONF failures, but no visual warning exists. | Chop day early CONF rate: 27.6% vs Mixed: 51.1%. Detectable by bar 3-4 of day. | MEDIUM |
+| P6 | **Window expiry is dead code** — Lines 945-950 (bull) and 990-995 (bear) promote CONF to ✓ when signal doesn't retrace within `retestMaxElapsed` bars. Default "Session" = 99999 bars. **Fires zero times in 6 weeks.** | 0 out of 3,753 signals used this path. All 352 passes were auto-promotes. | LOW |
+| P7 | **Logging gaps** — No VWAP position in log output (cannot validate Fix 3). No cascade/auto-promote info logged. | Rule 8 (VWAP filter) marked UNVALIDATABLE due to missing data. | LOW |
+
+### Proposed Changes (Tiered by Impact × Simplicity)
+
+#### Tier A: CONF ✓ Visual Boost (1-2 lines, HIGH impact)
+
+**What:** When CONF passes (auto-promote), change the label color to a distinct "confirmed" color (e.g., bright green border, or prepend a ✅ emoji).
+
+**Why:** CONF ✓ signals are 53.3% GOOD with 0% BAD — the gold standard. Currently invisible among all breakouts.
+
+**Code location:** Lines 749 (bull) and 864 (bear) — add `label.set_color()` or `label.set_textcolor()` after the existing `label.set_text()`.
+
+**Risk:** NONE — display only.
+
+---
+
+#### Tier B: Add VWAP to Log Output (~2 lines, LOW risk)
+
+**What:** Add `vwap=above/below` to `log.info()` messages so we can validate the VWAP filter against historical data.
+
+**Why:** Fix 3 (VWAP filter ON) cannot be validated without this. Rule 8 is currently UNVALIDATABLE.
+
+**Code location:** `dbAppend()` function or the log.info() calls — add `ta.vwap(close)` comparison.
+
+**Risk:** NONE — logging only.
+
+---
+
+#### Tier C: Afternoon Visual Dimming (~5 lines, LOW risk)
+
+**What:** Reduce label opacity/size for signals firing after 11:00 ET. Already partially implemented via cooldown dimming — extend concept to time-based dimming.
+
+**Why:** 11:00-13:00 = 0% GOOD rate. 13:00-16:00 = 6.9% GOOD. These signals are noise for most traders.
+
+**Code location:** Label creation blocks (lines ~683-731 for bull, mirror for bear). Add time check alongside existing cooldown logic.
+
+**Risk:** LOW — may hide rare but valid afternoon breakouts (15:00 CONF rate = 42.9%, but tiny sample).
+
+**Recommendation:** Make it toggleable with default ON. Don't suppress — just dim (smaller size, lighter color).
+
+---
+
+#### Tier D: Day Health Counter / Chop Warning (~15 lines, MEDIUM risk)
+
+**What:** Track consecutive CONF failures from session open. After 2-3 consecutive ✗, show a "CHOP?" table cell or label. Reset at session open.
+
+**Why:** Chop days (18% of sample) have 27.6% early CONF rate vs 51.1% for mixed days. Detectable early.
+
+**Code location:** New `var int confFailStreak = 0` counter, reset on `session.isfirstbar`. Display in debug table or as standalone label.
+
+**Risk:** MEDIUM — chop detection is probabilistic (not guaranteed). Over-reliance could cause missing mixed-day opportunities.
+
+**Recommendation:** Display-only warning, not a filter. Let trader decide.
+
+---
+
+#### Tier E: High-Conviction Visual Tier (~10 lines, LOW risk)
+
+**What:** Visually distinguish signals that meet ALL of: CONF Pass + >5x volume + extreme position (≥80%). These are the "54.1% GOOD, 0% BAD" gold standard.
+
+**Why:** Only 37 signals in 6 weeks met all criteria — rare but extremely reliable. Currently look the same as any other breakout.
+
+**Code location:** After CONF pass (lines 749/864), check volume ratio and position. If all pass, upgrade label style (larger, brighter, border).
+
+**Risk:** LOW — visual enhancement only. But combines with Tier A (CONF ✓ boost), so implement A first.
+
+---
+
+#### Tier F: Widen Volume Alpha Range (1 line, LOW risk)
+
+**What:** Change alpha formula from `35 - volRatioBull * 10` to `70 - volRatioBull * 10` (or similar). Makes low-volume signals significantly more transparent while preserving high-volume labels.
+
+**Why:** Current range saturates at 3.5x volume. The 5x-10x zone (where CONF rate jumps from 40% to 60%) has no visual differentiation.
+
+**Code location:** Lines 307-308.
+
+**Risk:** LOW — may make some labels too transparent. Test visually before committing.
+
+---
+
+#### Tier G: Dead Code Cleanup (~10 lines removed, ZERO risk)
+
+**What:** Remove or simplify the window expiry promotion path (lines 945-950 bull, 990-995 bear).
+
+**Why:** Fires zero times in 6 weeks. Default "Session" = 99999 bars means this code path literally never executes. All CONF passes are auto-promotes.
+
+**Risk:** ZERO — removing code that never runs. But keep the `retestMaxElapsed` input for retest tracking (which does use it).
+
+**Recommendation:** Comment out or remove, with a note explaining why (auto-promote handles all cases).
+
+---
+
+### NOT Recommended (Over-Optimization Risk)
+
+| Proposal | Why NOT |
+|----------|---------|
+| Raise volume minimum above 2x | Would lose too many valid signals. Current 2x is well-calibrated. |
+| Suppress afternoon signals entirely | Rare but some run well (15:00 CONF = 42.9%). Dim, don't suppress. |
+| Symbol-specific tuning | Spread too narrow (30-51% CONF) to justify per-symbol rules. |
+| Change CONF timeout | Auto-promote mechanism works perfectly (100% of passes). |
+| Position filter as hard gate | pos≥80 gives +9.9pp lift but may be over-fitting to sample. |
+
+### Signal Quality Ranking (for reference)
+
+| Rank | Setup | GOOD% | BAD% | n | Action |
+|------|-------|-------|------|---|--------|
+| 1 | BRK + CONF ✓ + >5x vol | 54.1% | 0.0% | 37 | Trade with full size |
+| 2 | CONF ✓ (any) | 53.3% | 0.0% | 75 | Trade with confidence |
+| 3 | Week L/H level | 33.3-38.5% | 3.3% | 30 | Selective, high conviction |
+| 4 | Reversals (~) | 33.5% | 13.2% | 167 | Manage risk actively |
+| 5 | Morning BRK (9:30-10:00) | 31.3% | 13.8% | 319 | Best window, both directions |
+| 6 | Afternoon (13:00-16:00) | 9.8% | 0.0% | 116 | Skip unless extraordinary |
+| 7 | Reclaims (~~) | 8.1% | 8.1% | 62 | Weakest — proceed with caution |
+
+### Implementation Priority
+
+1. **Tier A + B** — CONF ✓ boost + VWAP logging (2-3 lines total, zero risk, highest impact)
+2. **Tier C** — Afternoon dimming (5 lines, low risk, reduces noise)
+3. **Tier D** — Chop warning (15 lines, display-only, actionable)
+4. **Tier E + F** — High-conviction tier + volume alpha (11 lines, visual only)
+5. **Tier G** — Dead code cleanup (last, lowest priority)
