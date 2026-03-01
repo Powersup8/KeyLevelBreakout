@@ -438,7 +438,11 @@ dbAppend(string dir, string typ, string levels, float vol, int clsPos, string co
             string posStr = na(clsPos) ? "" : (dir == "▲" ? "^" : "v") + str.tostring(clsPos)
             string volStr = na(vol) ? "" : str.tostring(vol, "#.#") + "x"
             string vwapStr = not na(vwapVal) ? (sigC > vwapVal ? "above" : "below") : "na"
-            string msg = "[KLB] " + fmtTime(time) + " " + dir + " " + typ + " " + levels + " vol=" + volStr + " pos=" + posStr + " vwap=" + vwapStr + " " + ohlc + " ATR=" + str.tostring(nz(dailyATR), "#.##") + " rawVol=" + str.tostring(nz(sigVol), "#") + " volSMA=" + str.tostring(nz(volBase), "#") + " buf=" + str.tostring(breakBuf, "#.###") + " prices=" + lvlPrices
+            string emaStr = not na(ema20_5m) ? (ema20_5m > ema50_5m ? "bull" : "bear") : "na"
+            string rsStr  = not na(rsVsSpy) ? str.tostring(rsVsSpy * 100, "+#.#;-#.#") + "%" : "na"
+            string adxStr = not na(adx_5m) ? str.tostring(adx_5m, "#") : "na"
+            string bodyStr = str.tostring(math.round(bodyRatio * 100)) + "%"
+            string msg = "[KLB] " + fmtTime(time) + " " + dir + " " + typ + " " + levels + " vol=" + volStr + " pos=" + posStr + " vwap=" + vwapStr + " ema=" + emaStr + " rs=" + rsStr + " adx=" + adxStr + " body=" + bodyStr + " " + ohlc + " ATR=" + str.tostring(nz(dailyATR), "#.##") + " rawVol=" + str.tostring(nz(sigVol), "#") + " volSMA=" + str.tostring(nz(volBase), "#") + " buf=" + str.tostring(breakBuf, "#.###") + " prices=" + lvlPrices
             log.info(msg)
     array.size(dbTime) - 1
 
@@ -554,14 +558,14 @@ rBullOH  = i_showORB   and not isORBwin and bullBreak(orbHigh)
 rBearOL  = i_showORB   and not isORBwin and bearBreak(orbLow)
 
 // ─── Filtered Signals (suppressed when flag active) ──────
-sigBullPMH = rBullPMH and (not i_firstOnly or not xPMH)
-sigBearPML = rBearPML and (not i_firstOnly or not xPML)
-sigBullYH  = rBullYH  and (not i_firstOnly or not xYH)
-sigBearYL  = rBearYL  and (not i_firstOnly or not xYL)
-sigBullWH  = rBullWH  and (not i_firstOnly or not xWH)
-sigBearWL  = rBearWL  and (not i_firstOnly or not xWL)
-sigBullOH  = rBullOH  and (not i_firstOnly or not xOH)
-sigBearOL  = rBearOL  and (not i_firstOnly or not xOL)
+sigBullPMH = rBullPMH and (not i_firstOnly or not xPMH) and fGateBull
+sigBearPML = rBearPML and (not i_firstOnly or not xPML) and fGateBear
+sigBullYH  = rBullYH  and (not i_firstOnly or not xYH)  and fGateBull
+sigBearYL  = rBearYL  and (not i_firstOnly or not xYL)  and fGateBear
+sigBullWH  = rBullWH  and (not i_firstOnly or not xWH)  and fGateBull
+sigBearWL  = rBearWL  and (not i_firstOnly or not xWL)  and fGateBear
+sigBullOH  = rBullOH  and (not i_firstOnly or not xOH)  and fGateBull
+sigBearOL  = rBearOL  and (not i_firstOnly or not xOL)  and fGateBear
 
 // Update flags after signal evaluation
 if rBullPMH
@@ -594,15 +598,15 @@ rRevBearWH  = i_showReversal and i_showWeek  and i_revWeek and bearRev(weekHigh,
 rRevBearOH  = i_showReversal and i_showORB   and i_revORB  and not isORBwin and bearRev(orbHigh, orbHBody)
 
 // ─── Filtered Reversal Signals ────────────────────────
-sigRevBullPML = rRevBullPML and (not i_firstOnly or not rPML)
-sigRevBullYL  = rRevBullYL  and (not i_firstOnly or not rYL)
-sigRevBullWL  = rRevBullWL  and (not i_firstOnly or not rWL)
-sigRevBullOL  = rRevBullOL  and (not i_firstOnly or not rOL)
+sigRevBullPML = rRevBullPML and (not i_firstOnly or not rPML) and fGateBull
+sigRevBullYL  = rRevBullYL  and (not i_firstOnly or not rYL)  and fGateBull
+sigRevBullWL  = rRevBullWL  and (not i_firstOnly or not rWL)  and fGateBull
+sigRevBullOL  = rRevBullOL  and (not i_firstOnly or not rOL)  and fGateBull
 
-sigRevBearPMH = rRevBearPMH and (not i_firstOnly or not rPMH)
-sigRevBearYH  = rRevBearYH  and (not i_firstOnly or not rYH)
-sigRevBearWH  = rRevBearWH  and (not i_firstOnly or not rWH)
-sigRevBearOH  = rRevBearOH  and (not i_firstOnly or not rOH)
+sigRevBearPMH = rRevBearPMH and (not i_firstOnly or not rPMH) and fGateBear
+sigRevBearYH  = rRevBearYH  and (not i_firstOnly or not rYH)  and fGateBear
+sigRevBearWH  = rRevBearWH  and (not i_firstOnly or not rWH)  and fGateBear
+sigRevBearOH  = rRevBearOH  and (not i_firstOnly or not rOH)  and fGateBear
 
 // Update reversal flags
 if rRevBullPML
@@ -754,15 +758,19 @@ if revBullText != ""
 
 if combinedBullText != ""
     combinedBullText += bullQualLine != "" ? "\n" + bullQualLine : ""
+    // Evidence stack dim mode: append ? suffix when filter fails
+    bool isDimBull = i_fMode == "Dim" and not evStackBull
+    if isDimBull
+        combinedBullText += "\n?"
     // Determine color: breakout color if breakout present, reversal color if reversal-only
     color lblColor = bullText != "" ? bullColor : revBullColor
     int totalCount = bullCount + revBullCount
     // Cooldown + afternoon dimming
     bool isCooled = i_cooldownBars > 0 and (sigBarIdx - lastBullSigBar) <= i_cooldownBars
     bool isAftn   = i_dimAfternoon and isAfternoon and not isOld and not isCooled
-    color finalColor = isCooled ? color.new(color.gray, 70) : isAftn ? color.new(lblColor, 60) : (isOld ? color.new(color.gray, 90) : lblColor)
-    color finalText  = isCooled ? color.new(color.gray, 50) : isAftn ? color.new(color.gray, 30) : (isOld ? color.new(color.gray, 70) : color.black)
-    string finalSize = isCooled ? size.tiny : isAftn ? size.tiny : (totalCount > 1 ? size.normal : size.small)
+    color finalColor = isDimBull ? color.new(color.gray, 70) : isCooled ? color.new(color.gray, 70) : isAftn ? color.new(lblColor, 60) : (isOld ? color.new(color.gray, 90) : lblColor)
+    color finalText  = isDimBull ? color.new(color.gray, 50) : isCooled ? color.new(color.gray, 50) : isAftn ? color.new(color.gray, 30) : (isOld ? color.new(color.gray, 70) : color.black)
+    string finalSize = isDimBull ? size.tiny : isCooled ? size.tiny : isAftn ? size.tiny : (totalCount > 1 ? size.normal : size.small)
     // Vertical offset for adjacent labels
     bool needsOffset = (bar_index + shapeOff - lastBullLblBar) <= 1 and lastBullLblBar >= 0
 
@@ -881,15 +889,19 @@ if revBearText != ""
 
 if combinedBearText != ""
     combinedBearText += bearQualLine != "" ? "\n" + bearQualLine : ""
+    // Evidence stack dim mode: append ? suffix when filter fails
+    bool isDimBear = i_fMode == "Dim" and not evStackBear
+    if isDimBear
+        combinedBearText += "\n?"
     // Determine color: breakout color if breakout present, reversal color if reversal-only
     color lblColor = bearText != "" ? bearColor : revBearColor
     int totalCount = bearCount + revBearCount
     // Cooldown + afternoon dimming
     bool isCooled = i_cooldownBars > 0 and (sigBarIdx - lastBearSigBar) <= i_cooldownBars
     bool isAftn   = i_dimAfternoon and isAfternoon and not isOld and not isCooled
-    color finalColor = isCooled ? color.new(color.gray, 70) : isAftn ? color.new(lblColor, 60) : (isOld ? color.new(color.gray, 90) : lblColor)
-    color finalText  = isCooled ? color.new(color.gray, 50) : isAftn ? color.new(color.gray, 30) : (isOld ? color.new(color.gray, 70) : color.black)
-    string finalSize = isCooled ? size.tiny : isAftn ? size.tiny : (totalCount > 1 ? size.normal : size.small)
+    color finalColor = isDimBear ? color.new(color.gray, 70) : isCooled ? color.new(color.gray, 70) : isAftn ? color.new(lblColor, 60) : (isOld ? color.new(color.gray, 90) : lblColor)
+    color finalText  = isDimBear ? color.new(color.gray, 50) : isCooled ? color.new(color.gray, 50) : isAftn ? color.new(color.gray, 30) : (isOld ? color.new(color.gray, 70) : color.black)
+    string finalSize = isDimBear ? size.tiny : isCooled ? size.tiny : isAftn ? size.tiny : (totalCount > 1 ? size.normal : size.small)
     // Vertical offset for adjacent labels
     bool needsOffset = (bar_index + shapeOff - lastBearLblBar) <= 1 and lastBearLblBar >= 0
 
@@ -1014,8 +1026,8 @@ if i_confirm and bRTState == 1 and not na(bRTConsLvl) and isRegular
             array.set(dbConf, dbConfBullIdx, "✗")
             if i_debugLog and barstate.isconfirmed
                 log.info("[KLB] CONF {0} ▲ BRK → ✗ (failed)", fmtTime(time))
-        // Chop day warning
-        if i_chopWarn and confFailStreak >= 3 and confPassCount == 0 and not chopWarned and not isOld
+        // Chop day warning (suppressed when ADX filter is active — it already detects chop)
+        if i_chopWarn and not i_fADX and confFailStreak >= 3 and confPassCount == 0 and not chopWarned and not isOld
             label.new(bar_index, high + nz(dailyATR) * 0.3, "CHOP?",
                  yloc=yloc.price, style=label.style_label_down,
                  color=color.new(color.orange, 20), textcolor=color.black, size=size.small)
@@ -1060,8 +1072,8 @@ if i_confirm and sRTState == 1 and not na(sRTConsLvl) and isRegular
             array.set(dbConf, dbConfBearIdx, "✗")
             if i_debugLog and barstate.isconfirmed
                 log.info("[KLB] CONF {0} ▼ BRK → ✗ (failed)", fmtTime(time))
-        // Chop day warning
-        if i_chopWarn and confFailStreak >= 3 and confPassCount == 0 and not chopWarned and not isOld
+        // Chop day warning (suppressed when ADX filter is active — it already detects chop)
+        if i_chopWarn and not i_fADX and confFailStreak >= 3 and confPassCount == 0 and not chopWarned and not isOld
             label.new(bar_index, high + nz(dailyATR) * 0.3, "CHOP?",
                  yloc=yloc.price, style=label.style_label_down,
                  color=color.new(color.orange, 20), textcolor=color.black, size=size.small)
