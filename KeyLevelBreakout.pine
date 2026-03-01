@@ -1,8 +1,8 @@
 // © Key Level Breakout Alert Indicator
-// Detects bullish/bearish 5m candle closes through key levels (v2.5)
+// Detects bullish/bearish 5m candle closes through key levels (v2.6)
 // Designed for US stocks (NYSE/NASDAQ) on 5-min charts
 //@version=6
-indicator("Key Level Breakout", overlay=true, max_labels_count=500)
+indicator("Key Level Breakout", overlay=true, max_labels_count=500, max_lines_count=200)
 
 // ─── Inputs ────────────────────────────────────────────────
 i_showPM    = input.bool(true,  "Premarket High/Low",         group="Level Toggles")
@@ -12,6 +12,8 @@ i_showORB   = input.bool(true,  "ORB High/Low",               group="Level Toggl
 i_firstOnly = input.bool(true,  "Once Per Breakout", group="Signals")
 i_signalTF  = input.timeframe("5", "Signal Timeframe",        group="Signals")
 i_showLines = input.bool(false, "Show Level Lines",           group="Visuals")
+i_showVWAP  = input.bool(true,  "Show VWAP Line",             group="Visuals")
+i_showSL    = input.bool(true,  "Show SL Lines (5 min)",      tooltip="Draw 0.10 and 0.15 ATR stop-loss reference lines for 5 minutes after each signal", group="Visuals")
 i_fadeOld   = input.bool(true,  "Fade Old Labels",            group="Visuals")
 i_fadeAge   = input.int(100,    "Fade After (signal bars)",    minval=10, group="Visuals")
 i_dimAfternoon = input.bool(true, "Dim Afternoon Signals (after 11:00)", group="Visuals")
@@ -33,6 +35,7 @@ i_retestProx   = input.float(3.0, "Retest Proximity (% of ATR)", minval=0.5, ste
 i_retestOnly  = input.bool(false, "Retest-Only Mode",                group="Signals")
 i_cooldownBars = input.int(2, "Signal Cooldown (signal bars)", minval=0, maxval=10, group="Signals")
 i_chopWarn     = input.bool(true, "Chop Day Warning (3+ CONF fails)", group="Signals")
+i_runnerScore  = input.bool(true, "Show Runner Score (①-⑤)",  tooltip="Score based on VWAP, vol 2-5x, time 10-11, level quality, symbol tier", group="Signals")
 
 // ─── Setup Inputs ──────────────────────────────────────
 i_showReversal = input.bool(true,   "Show Reversal Setups",            group="Setups")
@@ -216,6 +219,13 @@ if newRegular
     confPassCount  := 0
     chopWarned     := false
 
+// ─── VWAP Cross Exit State ─────────────────────────
+var bool vwapExitBull = false   // tracking a confirmed bull position for VWAP exit
+var bool vwapExitBear = false   // tracking a confirmed bear position for VWAP exit
+if newRegular
+    vwapExitBull := false
+    vwapExitBear := false
+
 // ─── Debug Signal Log Arrays ─────────────────────────
 var array<int>    dbTime       = array.new<int>()
 var array<string> dbDir        = array.new<string>()
@@ -377,6 +387,20 @@ volRatioBull = not na(volBase) and volBase > 0 ? sigVolBull / volBase : na
 volRatioBear = not na(volBase) and volBase > 0 ? sigVolBear / volBase : na
 bullVolAlpha = i_volFilter and not na(volRatioBull) ? math.max(0, math.round(60 - volRatioBull * 10)) : 0
 bearVolAlpha = i_volFilter and not na(volRatioBear) ? math.max(0, math.round(60 - volRatioBear * 10)) : 0
+
+// ─── Runner Score (v2.6) ─────────────────────────────
+// 5 factors: VWAP aligned, vol 2-5x, time 10-11, level quality (bear=LOW), not D-tier symbol
+int etHour = hour(time, TZ)
+bool isScoreWindow = etHour == 10
+bool isDTier = syminfo.ticker == "AMD" or syminfo.ticker == "MSFT" or syminfo.ticker == "GLD"
+// Bull score: VWAP, vol, time, not-D-tier (level quality = bull at HIGH is weak, skip)
+int scoreBull = (sigC > vwapVal ? 1 : 0) + (not na(volRatioBull) and volRatioBull >= 2.0 and volRatioBull <= 5.0 ? 1 : 0) + (isScoreWindow ? 1 : 0) + (not isDTier ? 1 : 0)
+// Bear score: VWAP, vol, time, not-D-tier + bear at LOW level = +1 (computed after signals fire, added to label)
+int scoreBear = (sigC < vwapVal ? 1 : 0) + (not na(volRatioBear) and volRatioBear >= 2.0 and volRatioBear <= 5.0 ? 1 : 0) + (isScoreWindow ? 1 : 0) + (not isDTier ? 1 : 0)
+string[] SCORE_GLYPHS = array.from("", "①", "②", "③", "④", "⑤")
+
+// ─── SL Line Bars (5 min on any chart TF) ────────────
+int slBars = math.max(1, math.round(300 / timeframe.in_seconds()))
 bullColor    = color.new(color.green, bullVolAlpha)
 bearColor    = color.new(color.red, bearVolAlpha)
 
@@ -668,6 +692,14 @@ bearQualLine = bearVolTrim + (bearVolTrim != "" and bearPosTrim != "" ? " " : ""
 bullCount = (sigBullPMH ? 1 : 0) + (sigBullYH ? 1 : 0) + (sigBullWH ? 1 : 0) + (sigBullOH ? 1 : 0)
 bearCount = (sigBearPML ? 1 : 0) + (sigBearYL ? 1 : 0) + (sigBearWL ? 1 : 0) + (sigBearOL ? 1 : 0)
 
+// Runner Score: +1 for breaking LOW level (bear) or multi-level confluence (bull)
+int finalScoreBull = math.min(scoreBull + (bullCount >= 2 ? 1 : 0), 5)
+int finalScoreBear = math.min(scoreBear + (bearCount > 0 ? 1 : 0), 5)
+if i_runnerScore and finalScoreBull >= 1 and bullQualLine != ""
+    bullQualLine += " " + array.get(SCORE_GLYPHS, finalScoreBull)
+if i_runnerScore and finalScoreBear >= 1 and bearQualLine != ""
+    bearQualLine += " " + array.get(SCORE_GLYPHS, finalScoreBear)
+
 // ─── Reversal/Reclaim Label Text ──────────────────────
 // Reclaim requires CONF failure on the original breakout (when CONF enabled)
 bool rclBullOK = not i_confirm or sRTState == -1  // bear BRK failed → bull reclaim valid
@@ -770,9 +802,14 @@ if combinedBullText != ""
     bool isAftn   = i_dimAfternoon and isAfternoon and not isOld and not isCooled
     color finalColor = isDimBull ? color.new(color.gray, 70) : isCooled ? color.new(color.gray, 70) : isAftn ? color.new(lblColor, 60) : (isOld ? color.new(color.gray, 90) : lblColor)
     color finalText  = isDimBull ? color.new(color.gray, 50) : isCooled ? color.new(color.gray, 50) : isAftn ? color.new(color.gray, 30) : (isOld ? color.new(color.gray, 70) : color.black)
-    string finalSize = isDimBull ? size.tiny : isCooled ? size.tiny : isAftn ? size.tiny : (totalCount > 1 ? size.normal : size.small)
+    string finalSize = isDimBull ? size.tiny : isCooled ? size.tiny : isAftn ? size.tiny : (totalCount >= 2 ? size.large : (totalCount == 1 ? size.small : size.small))
     // Vertical offset for adjacent labels
     bool needsOffset = (bar_index + shapeOff - lastBullLblBar) <= 1 and lastBullLblBar >= 0
+
+    // SL reference lines (5 min duration)
+    if i_showSL and not isOld and not isDimBull and not isCooled and not na(dailyATR)
+        line.new(bar_index, sigC - dailyATR * 0.10, bar_index + slBars, sigC - dailyATR * 0.10, color=color.new(color.orange, 40), style=line.style_dashed, width=1)
+        line.new(bar_index, sigC - dailyATR * 0.15, bar_index + slBars, sigC - dailyATR * 0.15, color=color.new(color.red, 30),    style=line.style_solid,  width=1)
 
     if i_retestOnly and bullText != "" and revBullText == "" and not isOld
         // Retest-only: suppress breakout-only label, show small gray dot
@@ -837,6 +874,8 @@ if combinedBullText != ""
                 label.set_color(bRTLbl, color.new(#32CD32, 0))
             confPassCount  += 1
             confFailStreak := 0
+            vwapExitBull   := true
+            vwapExitBear   := false
             if dbConfBullIdx >= 0 and dbConfBullIdx < array.size(dbConf)
                 array.set(dbConf, dbConfBullIdx, highConv ? "✓★" : "✓")
                 if i_debugLog and barstate.isconfirmed
@@ -901,9 +940,14 @@ if combinedBearText != ""
     bool isAftn   = i_dimAfternoon and isAfternoon and not isOld and not isCooled
     color finalColor = isDimBear ? color.new(color.gray, 70) : isCooled ? color.new(color.gray, 70) : isAftn ? color.new(lblColor, 60) : (isOld ? color.new(color.gray, 90) : lblColor)
     color finalText  = isDimBear ? color.new(color.gray, 50) : isCooled ? color.new(color.gray, 50) : isAftn ? color.new(color.gray, 30) : (isOld ? color.new(color.gray, 70) : color.black)
-    string finalSize = isDimBear ? size.tiny : isCooled ? size.tiny : isAftn ? size.tiny : (totalCount > 1 ? size.normal : size.small)
+    string finalSize = isDimBear ? size.tiny : isCooled ? size.tiny : isAftn ? size.tiny : (totalCount >= 2 ? size.large : (totalCount == 1 ? size.small : size.small))
     // Vertical offset for adjacent labels
     bool needsOffset = (bar_index + shapeOff - lastBearLblBar) <= 1 and lastBearLblBar >= 0
+
+    // SL reference lines (5 min duration)
+    if i_showSL and not isOld and not isDimBear and not isCooled and not na(dailyATR)
+        line.new(bar_index, sigC + dailyATR * 0.10, bar_index + slBars, sigC + dailyATR * 0.10, color=color.new(color.orange, 40), style=line.style_dashed, width=1)
+        line.new(bar_index, sigC + dailyATR * 0.15, bar_index + slBars, sigC + dailyATR * 0.15, color=color.new(color.red, 30),    style=line.style_solid,  width=1)
 
     if i_retestOnly and bearText != "" and revBearText == "" and not isOld
         // Retest-only: suppress breakout-only label, show small gray dot
@@ -968,6 +1012,8 @@ if combinedBearText != ""
                 label.set_color(sRTLbl, color.new(#32CD32, 0))
             confPassCount  += 1
             confFailStreak := 0
+            vwapExitBear   := true
+            vwapExitBull   := false
             if dbConfBearIdx >= 0 and dbConfBearIdx < array.size(dbConf)
                 array.set(dbConf, dbConfBearIdx, highConv ? "✓★" : "✓")
                 if i_debugLog and barstate.isconfirmed
@@ -1176,7 +1222,20 @@ if i_debugTable and barstate.islast
         table.cell(dbTbl, 6, row, conf,                        text_color=conf == "✓" ? color.lime : conf == "✗" ? color.red : color.gray, text_size=size.tiny, bgcolor=rowBg)
         table.cell(dbTbl, 7, row, array.get(dbOHLC, i),       text_color=rowTxt, text_size=size.tiny, bgcolor=rowBg, text_halign=text.align_left)
 
+// ─── VWAP Cross Exit Alert (v2.6) ────────────────────────
+// After CONF ✓/✓★, alert when price crosses VWAP against the confirmed direction
+bool vwapBullCross = vwapExitBull and not na(vwapVal) and close < vwapVal and close[1] >= vwapVal[1]
+bool vwapBearCross = vwapExitBear and not na(vwapVal) and close > vwapVal and close[1] <= vwapVal[1]
+if vwapBullCross
+    alert("VWAP exit ▼ — bull CONF position crossed below VWAP", alert.freq_once_per_bar_close)
+    vwapExitBull := false
+if vwapBearCross
+    alert("VWAP exit ▲ — bear CONF position crossed above VWAP", alert.freq_once_per_bar_close)
+    vwapExitBear := false
+alertcondition(vwapBullCross or vwapBearCross, "VWAP Exit Signal", "Price crossed VWAP against confirmed position")
+
 // ─── Level Lines (optional, off by default) ───────────────
+plot(i_showVWAP and isRegular ? vwapVal : na, "VWAP", color.new(#FFFFFF, 40), 1, plot.style_linebr)
 pPMH  = plot(i_showLines and i_showPM   and isRegular ? pmHigh   : na, "PM High",   color.new(color.orange, 40), 1, plot.style_linebr)
 pPML  = plot(i_showLines and i_showPM   and isRegular ? pmLow    : na, "PM Low",    color.new(color.orange, 40), 1, plot.style_linebr)
 pYH   = plot(i_showLines and i_showYest and isRegular ? yestHigh : na, "Yest High", color.new(color.blue, 40),   1, plot.style_linebr)
