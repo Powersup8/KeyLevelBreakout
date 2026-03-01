@@ -68,12 +68,6 @@ newRegular   = isRegular   and not isRegular[1]
 isSetupWindow = not na(time(timeframe.period, i_setupWindow + ":23456", TZ))
 isAfternoon   = isRegular and hour(time, TZ) >= 11
 
-// Reset chop warning at session start
-if newRegular
-    confFailStreak := 0
-    confPassCount  := 0
-    chopWarned     := false
-
 // ─── Level Calculation ────────────────────────────────────
 
 // Premarket High/Low — track during premarket, freeze at 9:30
@@ -196,6 +190,12 @@ var int      sRTClosePos = na                      // stored close position for 
 var int  confFailStreak = 0
 var int  confPassCount  = 0
 var bool chopWarned     = false
+
+// Reset chop warning at session start
+if newRegular
+    confFailStreak := 0
+    confPassCount  := 0
+    chopWarned     := false
 
 // ─── Debug Signal Log Arrays ─────────────────────────
 var array<int>    dbTime       = array.new<int>()
