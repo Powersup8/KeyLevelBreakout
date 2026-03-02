@@ -381,8 +381,8 @@ Direction?          With the break    Confirms break     Against approach   Agai
 Candle?             Green (bull)      Green at support   Red at resistance  Red at resistance
                     Red (bear)        Red at resistance  Green at support   Green at support
 
-When?               Any time          2+ bars after      Setup window       Setup window
-                                      breakout           (9:30-11:30)       (9:30-11:30)
+When?               Any time          2+ bars after      All session        All session
+                                      breakout           (default: all)     (default: all)
 
 Label?              New label         Appended to        New label          New label
                                       breakout label     ~ prefix           ~~ prefix
@@ -400,13 +400,46 @@ Label?              New label         Appended to        New label          New 
 | `✗` | Failed (closed back through level) | |
 | `~` | Reversal (rejection) | |
 | `~~` | Reclaim (reversal after failed breakout) | |
+| `✓★` | High-conviction confirmed (≥5x vol + ≥80% pos) | Gold label |
+| `①`-`⑤` | Runner Score (5 factors) | Higher = more aligned |
+| `CHOP?` | Chop day warning (3+ CONF fails) | Orange label |
+| `?` suffix | Dimmed signal (failed Evidence Stack filter) | Gray, smaller |
 
-## Colors
+## Complete Label Reference (all labels visible on chart)
 
-| Color | Meaning |
-|-------|---------|
-| Green | Bullish breakout (opacity scales with volume) |
-| Red | Bearish breakout (opacity scales with volume) |
-| Blue | Bullish reversal/reclaim |
-| Orange | Bearish reversal/reclaim |
-| Gray | Failed or old (faded) |
+Use the BG Hex column to generate a color swatch sheet.
+
+| # | Label Type | Arrow | Example Text | BG Hex | Text Hex | Size | Description |
+|---|-----------|-------|-------------|--------|----------|------|-------------|
+| 1 | **Bull breakout** | ↑ below | `PM H`<br>`2.1x ^82 ③` | `#089981` 0-60% alpha | `#000000` | small (large if 2+ levels) | Bullish breakout through key level. Opacity scales with volume. |
+| 2 | **Bear breakout** | ↓ above | `Yest L`<br>`1.8x v85 ②` | `#F23645` 0-60% alpha | `#000000` | small (large if 2+ levels) | Bearish breakout through key level. Opacity scales with volume. |
+| 3 | **Bull CONF ✓** | ↑ below | `PM H`<br>`2.1x ^82 ③`<br>`✓` | `#089981` solid | `#FFFFFF` | normal | Confirmed bull breakout — survived until next breakout fired. **Trade signal.** |
+| 4 | **Bear CONF ✓** | ↓ above | `Yest L`<br>`1.8x v85 ②`<br>`✓` | `#F23645` solid | `#FFFFFF` | normal | Confirmed bear breakout — survived until next breakout fired. **Trade signal.** |
+| 5 | **Bull CONF ✓★** | ↑ below | `ORB H`<br>`5.3x ^88 ④`<br>`✓★` | `#FFD700` solid | `#000000` | normal | High-conviction bull (≥5x vol + ≥80% close pos). Best signals. |
+| 6 | **Bear CONF ✓★** | ↓ above | `PM L`<br>`6.1x v92 ⑤`<br>`✓★` | `#FFD700` solid | `#000000` | normal | High-conviction bear (≥5x vol + ≥80% close pos). Best signals. |
+| 7 | **CONF ✗ (failed)** | ↑/↓ | `PM H`<br>`2.1x ^82`<br>`✗` | `#787B86` 60% alpha | `#787B86` 40% alpha | (unchanged) | Price closed back through level. Breakout dead. |
+| 8 | **Bull reversal ~** | ↑ below | `~ Yest L`<br>`1.5x ^74` | `#00BCD4` 0-60% alpha | `#000000` | small | Wick entered zone, close rejected. Bull at LOW levels. |
+| 9 | **Bear reversal ~** | ↓ above | `~ PM H`<br>`1.8x v82` | `#FF9800` 0-60% alpha | `#000000` | small | Wick entered zone, close rejected. Bear at HIGH levels. |
+| 10 | **Bull reclaim ~~** | ↑ below | `~~ Yest L`<br>`2.3x ^85` | `#00BCD4` brighter (-10 alpha) | `#000000` | small | Reversal after prior breakout failed. Stronger than ~. |
+| 11 | **Bear reclaim ~~** | ↓ above | `~~ PM H`<br>`2.3x v85` | `#FF9800` brighter (-10 alpha) | `#000000` | small | Reversal after prior breakout failed. Stronger than ~. |
+| 12 | **Bull retest ◆** | ↑ below (offset) | `◆³ ORB H 2.1x ^85` | `#089981` 0-60% alpha | `#000000` | small | Standalone retest label. Offset 0.3 ATR below bar. |
+| 13 | **Bear retest ◆** | ↓ above (offset) | `◆³ Yest L 1.4x v71` | `#F23645` 0-60% alpha | `#000000` | small | Standalone retest label. Offset 0.3 ATR above bar. |
+| 14 | **Retest-only dot** | ↑/↓ | `·` | `#787B86` 80% alpha | `#787B86` 60% alpha | tiny | Suppressed breakout in Retest-Only Mode. |
+| 15 | **CHOP?** | ↓ above | `CHOP?` | `#FF9800` 20% alpha | `#000000` | small | 3+ consecutive CONF failures at session start. |
+| 16 | **Dimmed (? suffix)** | ↑/↓ | `PM H`<br>`1.2x ^55`<br>`?` | `#787B86` 70% alpha | `#787B86` 50% alpha | tiny | Failed Evidence Stack filter (Dim mode). |
+| 17 | **Cooled** | ↑/↓ | (same as signal) | `#787B86` 70% alpha | `#787B86` 50% alpha | tiny | Rapid same-direction signal within cooldown window. |
+| 18 | **Afternoon** | ↑/↓ | (same as signal) | original color, 60% alpha | `#787B86` 30% alpha | tiny | After 11:00 ET. Near-zero follow-through. |
+
+**Note on alpha:** 0% = fully opaque (vivid). 60% = mostly transparent (faded). Volume-based alpha = `max(0, 60 - volRatio × 10)` — saturates at 6x volume.
+
+## Visual Overlays (lines on chart)
+
+| Element | Color | Hex | Style | Duration | When | Description |
+|---------|-------|-----|-------|----------|------|-------------|
+| **VWAP line** | Orange | `#FF6D00` 60% alpha | Solid, width 2 | Session | Always (toggleable) | Session VWAP — directional filter reference |
+| **SL 0.10 ATR** | Orange | `#FF9800` 40% alpha | Dashed, width 1 | 30 min | After CONF ✓/✓★ | Early warning — 85% of winners never breach |
+| **SL 0.15 ATR** | Red | `#F23645` 30% alpha | Solid, width 1 | 30 min | After CONF ✓/✓★ | Hard stop — losers hit this by minute 5 |
+| **Level lines** | Varies | see below | Solid, width 1 | Session | When "Show Level Lines" on | Key price levels |
+| **Level zones** | Varies | see below | Filled area | Session | When "Show Level Lines" on | Wick-to-body zone bands |
+
+**Level line colors:** PM H/L = `#FF9800` (orange), Yest H/L = `#2962FF` (blue), Week H/L = `#E040FB` (fuchsia), ORB H/L = `#089981` (green). All at 40% alpha.

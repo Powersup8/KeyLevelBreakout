@@ -12,7 +12,7 @@ All signals evaluate on confirmed signal-timeframe candle closes (default 5m) to
 - **Close Position %** — shows where the close landed within the bar's range (e.g. `^78` = 78% toward the high = strong buying pressure)
 - **Post-Breakout Confirmation** — monitors after breakout for retest-and-hold (◆), or failure (✗); retests fire independent labels and alerts
 - **Conviction coloring** — label opacity scales with volume ratio (transparent = low conviction, opaque = strong conviction); wider alpha range makes differences more visible
-- **CONF ✓ visual boost** — confirmed breakouts (auto-promoted) change to lime green; high-conviction (✓ + ≥5x volume + ≥80% close position) turn gold with ✓★ marker
+- **CONF ✓ visual boost** — confirmed breakouts (auto-promoted) turn solid green (bull) / solid red (bear) with white text; high-conviction (✓ + ≥5x volume + ≥80% close position) turn gold with ✓★ marker and black text; all CONF labels resize to `size.normal`
 - **Afternoon dimming** — signals after 11:00 ET render smaller and more transparent (toggleable, on by default); follow-through drops to near zero in the afternoon based on 6-week analysis
 - **Chop day warning** — after 3+ consecutive CONF failures with zero passes at session start, an orange "CHOP?" label appears (toggleable, on by default)
 - **VWAP Directional Filter** — suppress counter-trend reversals (bear reversals above VWAP, bull reversals below VWAP); on by default
@@ -29,9 +29,9 @@ All signals evaluate on confirmed signal-timeframe candle closes (default 5m) to
 - **Once Per Breakout** — One signal per level, re-arms after invalidation (on by default); turn off for backtesting
 - **`alert()` calls** — One merged alert per direction per bar (e.g. "Bullish breakout: PM H + Yest H")
 - **7 `alertcondition()` entries** — "Any Bullish/Bearish Breakout", "Any Breakout", "Any Bullish/Bearish Reversal", "Any Reversal", "Any Setup" for filtering in TradingView's alert dropdown
-- **VWAP line** — plots session VWAP on chart (toggleable, on by default); VWAP alignment is the #1 signal quality predictor (54% vs 10% CONF rate)
+- **VWAP line** — plots session VWAP as orange line on chart (toggleable, on by default); VWAP alignment is the #1 signal quality predictor (54% vs 10% CONF rate)
 - **Runner Score ①-⑤** — scores each signal on 5 data-driven factors (VWAP aligned, vol 2-5x, time 10-11, level quality, symbol tier); appended to quality line on labels; Score 5 signals average +0.071 ATR with only 1.4% BAD rate
-- **SL reference lines** — draws 0.10 ATR (dashed orange) and 0.15 ATR (solid red) stop-loss lines for 5 minutes after each signal (toggleable, on by default); BAD signals hit 0.10 ATR adverse by minute 2, 0.15 ATR by minute 5
+- **SL reference lines** — draws 0.10 ATR (dashed orange) and 0.15 ATR (solid red) stop-loss lines for 30 minutes after each CONF ✓/✓★ (toggleable, on by default); entry proxy = confirming breakout's close price; BAD signals hit 0.10 ATR adverse by minute 2, 0.15 ATR by minute 5
 - **VWAP cross exit alert** — after CONF ✓/✓★, fires an alert when price crosses VWAP against the confirmed direction; dedicated `alertcondition` for TradingView alert subscription; VWAP-based exits achieve Sharpe >3.0 in academic research (Maroy 2025)
 - **Multi-level size boost** — labels with 2+ levels (confluence breakouts) render as `size.large` for visual emphasis
 - **Debug Signal Table** — togglable chart overlay table listing all session signals with Time, Dir, Type, Levels, Vol, Pos, Conf, OHLC columns; configurable position and max rows; color-coded by setup type
@@ -57,6 +57,8 @@ All signals evaluate on confirmed signal-timeframe candle closes (default 5m) to
 | Once Per Breakout | On | Signals | One signal per level; re-arms after invalidation |
 | Signal Timeframe | 5 (5m) | Signals | Timeframe for breakout evaluation — signals only fire on closed bars of this TF |
 | Show Level Lines | Off | Visuals | Plot horizontal lines for active levels |
+| Show VWAP Line | On | Visuals | Plot session VWAP on chart (white line) — #1 directional filter |
+| Show SL Lines (5 min) | On | Visuals | Draw 0.10 ATR (orange dashed) and 0.15 ATR (red solid) stop-loss reference lines for 5 minutes |
 | Fade Old Labels | On | Visuals | Gray out labels older than N bars from chart edge — toggle off for historical analysis |
 | Fade After (signal bars) | 100 | Visuals | Age threshold for fading in signal-TF bars (100 × 5m = ~8 hours, well beyond one session) |
 | Dim Afternoon Signals | On | Visuals | Reduce size and opacity for signals after 11:00 ET (follow-through drops to near zero) |
@@ -85,6 +87,12 @@ All signals evaluate on confirmed signal-timeframe candle closes (default 5m) to
 | Yest H/L Reversal/Reclaim | On | Rev/Recl Toggles | Enable reversal/reclaim at yesterday levels |
 | Week H/L Reversal/Reclaim | On | Rev/Recl Toggles | Enable reversal/reclaim at weekly levels |
 | ORB H/L Reversal/Reclaim | On | Rev/Recl Toggles | Enable reversal/reclaim at opening range levels |
+| Show Runner Score (①-⑤) | On | Signals | Score each signal on 5 factors (VWAP, vol 2-5x, time 10-11, level quality, symbol tier); appended to quality line |
+| 5m EMA Alignment Filter | On | Filters | Suppress signals against the 5m EMA(20)/EMA(50) trend direction |
+| RS vs SPY Filter | On | Filters | Suppress long signals underperforming SPY (auto-bypasses SPY/QQQ/GLD/SLV) |
+| ADX Trend Strength Filter | On | Filters | Suppress signals when 5m ADX < 20 (chop/no trend) |
+| Candle Body Quality Filter | On | Filters | Suppress wick-heavy breakout candles (body < 50% or close in wrong zone) |
+| Filter Mode | Suppress | Filters | Suppress: hide signals entirely. Dim: show as gray with `?` suffix |
 | Show Signal Table | Off | Debug | Display a summary table of all session signals on the chart |
 | Log Signals (Pine Logs) | Off | Debug | Output full signal data to Pine Logs panel with `[KLB]` prefix |
 | Table Position | bottom_right | Debug | Chart corner for the debug table (6 positions) |
@@ -344,6 +352,7 @@ Edit the script in Pine Editor and click **Save** — all charts using the indic
 
 ## Changelog
 
+- **v2.6d** — Signal quality fixes from TSLA Feb 25 analysis. **ORB same-bar reversal bug** fixed: ORB reversals no longer fire on the first signal bar after the ORB window (that bar's data defines the ORB — self-referencing); eliminated ~20 bogus ORB reversal signals per symbol per month. **CONF level tracking** changed from most-conservative to most-aggressive: bull breakouts now track the highest broken level (not lowest), so PM H + Week H tracks against Week H; catches meaningful failures when far-apart levels break on the same bar. **Reversal filter exemption**: EMA alignment and RS vs SPY filters no longer apply to reversals/reclaims (reversals are counter-trend by nature; these trend-following filters were incorrectly suppressing valid setups like ORB H rejections); ADX and Body Quality filters still apply to all signal types.
 - **v2.6** — Profitability features backed by bar-by-bar momentum analysis (1,697 signals, 5-second candle data). **VWAP line** plotted on chart (toggleable); **Runner Score ①-⑤** on labels: 5 factors (VWAP aligned, vol 2-5x, time 10-11, level quality, symbol tier) — bear signals get +1 for LOW level, bull signals get +1 for multi-level confluence; **SL reference lines** at 0.10 ATR (dashed orange) and 0.15 ATR (solid red) extending 5 minutes after each signal — auto-scales bar count by chart timeframe; **VWAP cross exit alert** fires after CONF ✓/✓★ when price crosses VWAP against position + dedicated alertcondition; **Multi-level size boost** renders 2+ level confluence as `size.large`; `max_lines_count=200` added to indicator declaration. Key data: GOOD signals peak at minute 23 (still climbing at 30m), BAD peak at 3.5 min; 85% of GOOD signals never reverse -0.10 ATR; Score 5 = +0.071 ATR avg, 1.4% BAD.
 - **v2.5** — Evidence Stack Filters: 4 toggleable signal quality filters backed by 1,748-signal backtest (5s candle data, 28 days, 13 symbols). **5m EMA Alignment** suppresses signals against the 5m EMA(20)/EMA(50) trend direction; **RS vs SPY** requires stock to outperform SPY for longs (auto-bypasses SPY, QQQ, GLD, SLV); **ADX Trend Strength** suppresses signals when 5m ADX < 20 (replaces CHOP? label when active); **Candle Body Quality** requires body > 50% of range and close in favorable 60% zone. Filter Mode: Suppress (hide entirely) or Dim (gray + ? suffix). All 4 combined keep ~30% of signals, improve GOOD:BAD from 3.0:1 to 3.8:1, BRK GOOD:BAD from 3.1:1 to 4.9:1. Pine Log output extended with ema/rs/adx/body fields. 3 new `request.security()` calls (total 8 of 40 max).
 - **v2.4** — Visual quality tiers: CONF ✓ labels turn lime green (regular) or gold with ✓★ (high-conviction: ≥5x volume + ≥80% close position); afternoon dimming reduces size/opacity for signals after 11:00 ET (toggleable); chop day warning shows orange "CHOP?" label after 3+ consecutive CONF failures at session start (toggleable); volume alpha range widened (35→60) for better visual differentiation of low vs high volume signals; VWAP position added to Pine Log output (`vwap=above/below`); dead code cleanup: removed window expiry promotion path (never fired in 6-week analysis — all CONF passes are auto-promotes)

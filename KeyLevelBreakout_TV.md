@@ -20,6 +20,13 @@ Detects breakouts, reversals, reclaims, and retests at key intraday levels on co
 - **VWAP Directional Filter** — suppress counter-trend reversals (bear above VWAP, bull below VWAP). On by default.
 - **Once Per Breakout** — one signal per level, re-arms on invalidation. Resets each session.
 
+**Evidence Stack Filters (v2.5, all ON by default):**
+- **5m EMA Alignment** — blocks signals against 5m EMA(20)/EMA(50) trend direction
+- **RS vs SPY** — blocks longs underperforming SPY, shorts outperforming. Auto-bypasses SPY/QQQ/GLD/SLV.
+- **ADX > 20** — blocks signals in choppy/no-trend environment
+- **Candle Body Quality** — blocks wick-heavy candles (body < 50% of range, close in wrong zone)
+- **Filter Mode:** Suppress (default, hides signals) or Dim (gray labels with `?` suffix)
+
 **Label management:**
 - Same-bar breakout + reversal in same direction → merged into one label
 - Cooldown dimming: rapid same-direction signals within N bars render dimmer/smaller (default 2 signal bars)
@@ -36,20 +43,33 @@ Line 1: level names (merged for confluence). Line 2: volume ratio + close positi
 
 **Retest-Only Mode:** Suppress breakout labels (gray dot). Only retest signals fire their own labels and alerts. Reversals/reclaims unchanged.
 
-**Post-Breakout Monitoring:** Breakout signals evaluated on signal-TF bars — labels are identical on 1m and 5m charts. Each broken level tracked independently. Retest detection runs on chart-TF bars for precision. Failure (✗) = close back through most conservative level, label grayed out. Auto-promotion (✓) when next breakout fires — label turns lime green. High-conviction (✓★, ≥5x vol + ≥80% close pos) turns gold.
+**Post-Breakout Monitoring:** Breakout signals evaluated on signal-TF bars — labels are identical on 1m and 5m charts. Each broken level tracked independently. Retest detection runs on chart-TF bars for precision. Failure (✗) = close back through most conservative level, label grayed out. Auto-promotion (✓) when next breakout fires — bull turns solid green, bear turns solid red (both with white text). High-conviction (✓★, ≥5x vol + ≥80% close pos) turns gold.
 
 **Visual Quality Tiers:**
-- **CONF ✓** (lime green) — confirmed breakout, strong follow-through signal
-- **CONF ✓★** (gold) — high-conviction confirmation (54% win, 0% loss in 6-week analysis)
+- **CONF ✓** (direction-aware: solid green for bull, solid red for bear, white text) — confirmed breakout, strong follow-through signal
+- **CONF ✓★** (gold, black text) — high-conviction confirmation (54% win, 0% loss in 6-week analysis)
 - **CONF ✗** (gray) — failed confirmation
 - **Afternoon signals** — dimmed after 11:00 ET (near-zero follow-through)
 - **CHOP?** (orange) — warning after 3+ consecutive CONF failures at session start
+- **Multi-level confluence** — labels with 2+ levels use `size.large` (resized to `size.normal` on CONF)
+
+**Runner Score ①-⑤ (toggleable):**
+Appended to quality line on labels. Five data-backed factors, each +1 point: VWAP aligned, volume 2-5x, time 10:00-11:00 ET, level quality (LOW for bears, multi-level confluence for bulls), not a D-tier symbol (AMD/MSFT/GLD). Score ⑤ = all factors aligned, highest conviction.
+
+**VWAP Line (toggleable):**
+Plots session VWAP as an orange line on chart (width 2). Previously computed internally for filtering only — now visible for trade management.
+
+**Stop-Loss Reference Lines (toggleable):**
+After each CONF ✓/✓★, draws two horizontal lines lasting 30 minutes (chart-TF adjusted) from the confirming breakout's close price:
+- **0.10 ATR** (dashed orange) — early warning level. 85% of winning signals never breach this.
+- **0.15 ATR** (solid red) — hard stop level. Losing signals typically hit this by minute 5.
 
 **Alerts:**
 - Merged `alert()` per direction per bar (breakouts + reversals)
 - Retest alerts fire in all modes: "Retest: ◆³ ORB H 2.1x ^85"
 - Failure alerts: "Failed: ORB H + Yest H"
 - Reversal alerts: "Bullish reversal: ~ PM L 1.9x ^75"
+- **VWAP exit alert** — after CONF ✓/✓★, fires when price crosses VWAP against position direction. Momentum exhaustion signal.
 - 7 `alertcondition()` entries for granular filtering
 
 **Debug (togglable, off by default):**

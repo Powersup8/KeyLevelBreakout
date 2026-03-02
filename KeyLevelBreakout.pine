@@ -1,5 +1,5 @@
 // © Key Level Breakout Alert Indicator
-// Detects bullish/bearish 5m candle closes through key levels (v2.6)
+// Detects bullish/bearish 5m candle closes through key levels (v2.6d)
 // Designed for US stocks (NYSE/NASDAQ) on 5-min charts
 //@version=6
 indicator("Key Level Breakout", overlay=true, max_labels_count=500, max_lines_count=200)
@@ -13,7 +13,7 @@ i_firstOnly = input.bool(true,  "Once Per Breakout", group="Signals")
 i_signalTF  = input.timeframe("5", "Signal Timeframe",        group="Signals")
 i_showLines = input.bool(false, "Show Level Lines",           group="Visuals")
 i_showVWAP  = input.bool(true,  "Show VWAP Line",             group="Visuals")
-i_showSL    = input.bool(true,  "Show SL Lines (5 min)",      tooltip="Draw 0.10 and 0.15 ATR stop-loss reference lines for 5 minutes after each signal", group="Visuals")
+i_showSL    = input.bool(true,  "Show SL Lines (30 min)",     tooltip="Draw 0.10 and 0.15 ATR stop-loss reference lines for 30 minutes after each signal", group="Visuals")
 i_fadeOld   = input.bool(true,  "Fade Old Labels",            group="Visuals")
 i_fadeAge   = input.int(100,    "Fade After (signal bars)",    minval=10, group="Visuals")
 i_dimAfternoon = input.bool(true, "Dim Afternoon Signals (after 11:00)", group="Visuals")
@@ -125,6 +125,11 @@ if isORBwin
         orbHigh := math.max(orbHigh, high)
         orbLow  := math.min(orbLow, low)
 
+// ─── ORB Signal Guard ────────────────────────────────────
+// Skip ORB signals on the first signal bar after the ORB window:
+// that bar's data IS the ORB-forming bar (self-referencing).
+var bool orbFirstDone = false
+
 // ─── Zone Bounds ───────────────────────────────────────
 // D/W levels: body edge from candle OHLC. PM/ORB: ATR-derived width.
 // When zones OFF: body = wick (zone collapses to single line).
@@ -133,8 +138,8 @@ pmHBody   = i_useZones ? pmHigh - zoneWidth : pmHigh
 pmLBody   = i_useZones ? pmLow  + zoneWidth : pmLow
 yestHBody = i_useZones and not na(yestOpen) ? math.max(yestOpen, yestClose) : yestHigh
 yestLBody = i_useZones and not na(yestOpen) ? math.min(yestOpen, yestClose) : yestLow
-weekHBody = i_useZones and not na(weekOpen) ? math.max(weekOpen, weekClose) : weekHigh
-weekLBody = i_useZones and not na(weekOpen) ? math.min(weekOpen, weekClose) : weekLow
+weekHBody = i_useZones ? weekHigh - zoneWidth : weekHigh
+weekLBody = i_useZones ? weekLow  + zoneWidth : weekLow
 orbHBody  = i_useZones ? orbHigh - zoneWidth : orbHigh
 orbLBody  = i_useZones ? orbLow  + zoneWidth : orbLow
 
@@ -265,6 +270,8 @@ if newRegular
     rWL  := false
     rOH  := false
     rOL  := false
+    // Reset ORB signal guard
+    orbFirstDone := false
     // Reset reclaim context
     hadBrkPMH := false
     hadBrkPML := false
@@ -365,10 +372,15 @@ fCandle_bear = bodyRatio > 0.5 and closeLoc_bear > 0.6
 // Combined evidence stack pass (per direction)
 evStackBull = (not i_fEMA or fEMA_bull) and (not i_fRS or fRS_bull) and (not i_fADX or fADX) and (not i_fCandle or fCandle_bull)
 evStackBear = (not i_fEMA or fEMA_bear) and (not i_fRS or fRS_bear) and (not i_fADX or fADX) and (not i_fCandle or fCandle_bear)
+// Reversal stack: ADX + Body only (EMA/RS are trend-following; reversals are counter-trend by nature)
+evStackBull_rev = (not i_fADX or fADX) and (not i_fCandle or fCandle_bull)
+evStackBear_rev = (not i_fADX or fADX) and (not i_fCandle or fCandle_bear)
 
 // Suppress gate: blocks signal generation entirely when filter fails
-fGateBull = i_fMode == "Suppress" ? evStackBull : true
-fGateBear = i_fMode == "Suppress" ? evStackBear : true
+fGateBull     = i_fMode == "Suppress" ? evStackBull : true
+fGateBear     = i_fMode == "Suppress" ? evStackBear : true
+fGateBull_rev = i_fMode == "Suppress" ? evStackBull_rev : true
+fGateBear_rev = i_fMode == "Suppress" ? evStackBear_rev : true
 
 retestBuf      = not na(dailyATR) ? dailyATR * i_retestProx / 100.0 : rearmBuf
 retestMaxElapsed = i_retestWindow == "Short (50 min)" ? 10 : i_retestWindow == "Extended (2.5 hr)" ? 30 : 99999
@@ -400,7 +412,7 @@ int scoreBear = (sigC < vwapVal ? 1 : 0) + (not na(volRatioBear) and volRatioBea
 string[] SCORE_GLYPHS = array.from("", "①", "②", "③", "④", "⑤")
 
 // ─── SL Line Bars (5 min on any chart TF) ────────────
-int slBars = math.max(1, math.round(300 / timeframe.in_seconds()))
+int slBars = math.max(1, math.round(1800 / timeframe.in_seconds()))
 bullColor    = color.new(color.green, bullVolAlpha)
 bearColor    = color.new(color.red, bearVolAlpha)
 
@@ -466,7 +478,9 @@ dbAppend(string dir, string typ, string levels, float vol, int clsPos, string co
             string rsStr  = not na(rsVsSpy) ? (rsVsSpy >= 0 ? "+" : "") + str.tostring(rsVsSpy * 100, "#.#") + "%" : "na"
             string adxStr = not na(adx_5m) ? str.tostring(adx_5m, "#") : "na"
             string bodyStr = str.tostring(math.round(bodyRatio * 100)) + "%"
-            string msg = "[KLB] " + fmtTime(time) + " " + dir + " " + typ + " " + levels + " vol=" + volStr + " pos=" + posStr + " vwap=" + vwapStr + " ema=" + emaStr + " rs=" + rsStr + " adx=" + adxStr + " body=" + bodyStr + " " + ohlc + " ATR=" + str.tostring(nz(dailyATR), "#.##") + " rawVol=" + str.tostring(nz(sigVol), "#") + " volSMA=" + str.tostring(nz(volBase), "#") + " buf=" + str.tostring(breakBuf, "#.###") + " prices=" + lvlPrices
+            float slWarn = dir == "▲" ? sigC - nz(dailyATR) * 0.10 : sigC + nz(dailyATR) * 0.10
+            float slHard = dir == "▲" ? sigC - nz(dailyATR) * 0.15 : sigC + nz(dailyATR) * 0.15
+            string msg = "[KLB] " + fmtTime(time) + " " + dir + " " + typ + " " + levels + " vol=" + volStr + " pos=" + posStr + " vwap=" + vwapStr + " ema=" + emaStr + " rs=" + rsStr + " adx=" + adxStr + " body=" + bodyStr + " " + ohlc + " ATR=" + str.tostring(nz(dailyATR), "#.##") + " SL=" + str.tostring(slWarn, "#.##") + "/" + str.tostring(slHard, "#.##") + " rawVol=" + str.tostring(nz(sigVol), "#") + " volSMA=" + str.tostring(nz(volBase), "#") + " buf=" + str.tostring(breakBuf, "#.###") + " prices=" + lvlPrices
             log.info(msg)
     array.size(dbTime) - 1
 
@@ -500,27 +514,35 @@ if i_firstOnly and newSigBar
     if xPMH and not na(pmHigh) and sigC <= (pmHigh - rearmBuf)
         xPMH := false
         hadBrkPMH := true
+        rPMH := false                                // re-arm bear reversal — new setup
     if xPML and not na(pmLow) and sigC >= (pmLow + rearmBuf)
         xPML := false
         hadBrkPML := true
+        rPML := false                                // re-arm bull reversal — new setup
     if xYH and not na(yestHigh) and sigC <= (yestHigh - rearmBuf)
         xYH := false
         hadBrkYH := true
+        rYH := false                                 // re-arm bear reversal — new setup
     if xYL and not na(yestLow) and sigC >= (yestLow + rearmBuf)
         xYL := false
         hadBrkYL := true
+        rYL := false                                 // re-arm bull reversal — new setup
     if xWH and not na(weekHigh) and sigC <= (weekHigh - rearmBuf)
         xWH := false
         hadBrkWH := true
+        rWH := false                                 // re-arm bear reversal — new setup
     if xWL and not na(weekLow) and sigC >= (weekLow + rearmBuf)
         xWL := false
         hadBrkWL := true
+        rWL := false                                 // re-arm bull reversal — new setup
     if xOH and not na(orbHigh) and sigC <= (orbHigh - rearmBuf)
         xOH := false
         hadBrkOH := true
+        rOH := false                                 // re-arm bear reversal — new setup
     if xOL and not na(orbLow) and sigC >= (orbLow + rearmBuf)
         xOL := false
         hadBrkOL := true
+        rOL := false                                 // re-arm bull reversal — new setup
     // Reversal re-arm: price moved decisively away from the rejection zone
     if rPMH and not na(pmHigh) and sigC > (pmHigh + rearmBuf)
         rPMH := false
@@ -548,12 +570,14 @@ bullBreak(float level) =>
     float effLvl = level + breakBuf
     not na(level) and isRegular and newSigBar and sigC > sigO
      and sigC > level and sigH > effLvl
+     and sigO <= effLvl
      and (sigPC <= effLvl or sigPC2 <= effLvl) and volPassBull
 
 bearBreak(float level) =>
     float effLvl = level - breakBuf
     not na(level) and isRegular and newSigBar and sigC < sigO
      and sigC < level and sigL < effLvl
+     and sigO >= effLvl
      and (sigPC >= effLvl or sigPC2 >= effLvl) and volPassBear
 
 // ─── Reversal Helpers ───────────────────────────────────
@@ -578,8 +602,8 @@ rBullYH  = i_showYest  and bullBreak(yestHigh)
 rBearYL  = i_showYest  and bearBreak(yestLow)
 rBullWH  = i_showWeek  and bullBreak(weekHigh)
 rBearWL  = i_showWeek  and bearBreak(weekLow)
-rBullOH  = i_showORB   and not isORBwin and bullBreak(orbHigh)
-rBearOL  = i_showORB   and not isORBwin and bearBreak(orbLow)
+rBullOH  = i_showORB   and not isORBwin and orbFirstDone and bullBreak(orbHigh)
+rBearOL  = i_showORB   and not isORBwin and orbFirstDone and bearBreak(orbLow)
 
 // ─── Filtered Signals (suppressed when flag active) ──────
 sigBullPMH = rBullPMH and (not i_firstOnly or not xPMH) and fGateBull
@@ -614,23 +638,27 @@ if rBearOL
 rRevBullPML = i_showReversal and i_showPM   and i_revPM   and bullRev(pmLow,  pmLBody)
 rRevBullYL  = i_showReversal and i_showYest  and i_revYest and bullRev(yestLow, yestLBody)
 rRevBullWL  = i_showReversal and i_showWeek  and i_revWeek and bullRev(weekLow, weekLBody)
-rRevBullOL  = i_showReversal and i_showORB   and i_revORB  and not isORBwin and bullRev(orbLow, orbLBody)
+rRevBullOL  = i_showReversal and i_showORB   and i_revORB  and not isORBwin and orbFirstDone and bullRev(orbLow, orbLBody)
 
 rRevBearPMH = i_showReversal and i_showPM   and i_revPM   and bearRev(pmHigh,  pmHBody)
 rRevBearYH  = i_showReversal and i_showYest  and i_revYest and bearRev(yestHigh, yestHBody)
 rRevBearWH  = i_showReversal and i_showWeek  and i_revWeek and bearRev(weekHigh, weekHBody)
-rRevBearOH  = i_showReversal and i_showORB   and i_revORB  and not isORBwin and bearRev(orbHigh, orbHBody)
+rRevBearOH  = i_showReversal and i_showORB   and i_revORB  and not isORBwin and orbFirstDone and bearRev(orbHigh, orbHBody)
 
-// ─── Filtered Reversal Signals ────────────────────────
-sigRevBullPML = rRevBullPML and (not i_firstOnly or not rPML) and fGateBull
-sigRevBullYL  = rRevBullYL  and (not i_firstOnly or not rYL)  and fGateBull
-sigRevBullWL  = rRevBullWL  and (not i_firstOnly or not rWL)  and fGateBull
-sigRevBullOL  = rRevBullOL  and (not i_firstOnly or not rOL)  and fGateBull
+// Arm ORB signals after skipping the first signal bar post-ORB
+if not isORBwin and newSigBar
+    orbFirstDone := true
 
-sigRevBearPMH = rRevBearPMH and (not i_firstOnly or not rPMH) and fGateBear
-sigRevBearYH  = rRevBearYH  and (not i_firstOnly or not rYH)  and fGateBear
-sigRevBearWH  = rRevBearWH  and (not i_firstOnly or not rWH)  and fGateBear
-sigRevBearOH  = rRevBearOH  and (not i_firstOnly or not rOH)  and fGateBear
+// ─── Filtered Reversal Signals (use reversal gate: ADX + Body only) ──
+sigRevBullPML = rRevBullPML and (not i_firstOnly or not rPML) and fGateBull_rev
+sigRevBullYL  = rRevBullYL  and (not i_firstOnly or not rYL)  and fGateBull_rev
+sigRevBullWL  = rRevBullWL  and (not i_firstOnly or not rWL)  and fGateBull_rev
+sigRevBullOL  = rRevBullOL  and (not i_firstOnly or not rOL)  and fGateBull_rev
+
+sigRevBearPMH = rRevBearPMH and (not i_firstOnly or not rPMH) and fGateBear_rev
+sigRevBearYH  = rRevBearYH  and (not i_firstOnly or not rYH)  and fGateBear_rev
+sigRevBearWH  = rRevBearWH  and (not i_firstOnly or not rWH)  and fGateBear_rev
+sigRevBearOH  = rRevBearOH  and (not i_firstOnly or not rOH)  and fGateBear_rev
 
 // Update reversal flags
 if rRevBullPML
@@ -790,8 +818,8 @@ if revBullText != ""
 
 if combinedBullText != ""
     combinedBullText += bullQualLine != "" ? "\n" + bullQualLine : ""
-    // Evidence stack dim mode: append ? suffix when filter fails
-    bool isDimBull = i_fMode == "Dim" and not evStackBull
+    // Evidence stack dim mode: use breakout stack if breakout present, reversal stack if reversal-only
+    bool isDimBull = i_fMode == "Dim" and not (bullText != "" ? evStackBull : evStackBull_rev)
     if isDimBull
         combinedBullText += "\n?"
     // Determine color: breakout color if breakout present, reversal color if reversal-only
@@ -805,11 +833,6 @@ if combinedBullText != ""
     string finalSize = isDimBull ? size.tiny : isCooled ? size.tiny : isAftn ? size.tiny : (totalCount >= 2 ? size.large : (totalCount == 1 ? size.small : size.small))
     // Vertical offset for adjacent labels
     bool needsOffset = (bar_index + shapeOff - lastBullLblBar) <= 1 and lastBullLblBar >= 0
-
-    // SL reference lines (5 min duration)
-    if i_showSL and not isOld and not isDimBull and not isCooled and not na(dailyATR)
-        line.new(bar_index, sigC - dailyATR * 0.10, bar_index + slBars, sigC - dailyATR * 0.10, color=color.new(color.orange, 40), style=line.style_dashed, width=1)
-        line.new(bar_index, sigC - dailyATR * 0.15, bar_index + slBars, sigC - dailyATR * 0.15, color=color.new(color.red, 30),    style=line.style_solid,  width=1)
 
     if i_retestOnly and bullText != "" and revBullText == "" and not isOld
         // Retest-only: suppress breakout-only label, show small gray dot
@@ -868,14 +891,21 @@ if combinedBullText != ""
             if highConv
                 label.set_text(bRTLbl, bRTBase + "\n✓★")
                 label.set_color(bRTLbl, color.new(#FFD700, 0))
+                label.set_textcolor(bRTLbl, color.black)
                 label.set_size(bRTLbl, size.normal)
             else
                 label.set_text(bRTLbl, bRTBase + "\n✓")
-                label.set_color(bRTLbl, color.new(#32CD32, 0))
+                label.set_color(bRTLbl, color.new(color.green, 0))
+                label.set_textcolor(bRTLbl, color.white)
+                label.set_size(bRTLbl, size.normal)
             confPassCount  += 1
             confFailStreak := 0
             vwapExitBull   := true
             vwapExitBear   := false
+            // SL reference lines at CONF time (using new breakout's sigC as entry proxy)
+            if i_showSL and not na(dailyATR)
+                line.new(bar_index, sigC - dailyATR * 0.10, bar_index + slBars, sigC - dailyATR * 0.10, color=color.new(color.orange, 40), style=line.style_dashed, width=1)
+                line.new(bar_index, sigC - dailyATR * 0.15, bar_index + slBars, sigC - dailyATR * 0.15, color=color.new(color.red, 30),    style=line.style_solid,  width=1)
             if dbConfBullIdx >= 0 and dbConfBullIdx < array.size(dbConf)
                 array.set(dbConf, dbConfBullIdx, highConv ? "✓★" : "✓")
                 if i_debugLog and barstate.isconfirmed
@@ -888,16 +918,16 @@ if combinedBullText != ""
         array.set(bRTLvl, 1, sigBullYH  ? yestHigh : na)
         array.set(bRTLvl, 2, sigBullWH  ? weekHigh : na)
         array.set(bRTLvl, 3, sigBullOH  ? orbHigh : na)
-        // Most conservative level (lowest for bull)
+        // Track highest broken level for bull (last resistance to clear must hold)
         float lvl = na
         if sigBullPMH
-            lvl := na(lvl) ? pmHigh : math.min(lvl, pmHigh)
+            lvl := na(lvl) ? pmHigh : math.max(lvl, pmHigh)
         if sigBullYH
-            lvl := na(lvl) ? yestHigh : math.min(lvl, yestHigh)
+            lvl := na(lvl) ? yestHigh : math.max(lvl, yestHigh)
         if sigBullWH
-            lvl := na(lvl) ? weekHigh : math.min(lvl, weekHigh)
+            lvl := na(lvl) ? weekHigh : math.max(lvl, weekHigh)
         if sigBullOH
-            lvl := na(lvl) ? orbHigh : math.min(lvl, orbHigh)
+            lvl := na(lvl) ? orbHigh : math.max(lvl, orbHigh)
         bRTConsLvl    := lvl
         bRTStart      := sigBarIdx
         bRTBar0       := bar_index - 1
@@ -928,8 +958,8 @@ if revBearText != ""
 
 if combinedBearText != ""
     combinedBearText += bearQualLine != "" ? "\n" + bearQualLine : ""
-    // Evidence stack dim mode: append ? suffix when filter fails
-    bool isDimBear = i_fMode == "Dim" and not evStackBear
+    // Evidence stack dim mode: use breakout stack if breakout present, reversal stack if reversal-only
+    bool isDimBear = i_fMode == "Dim" and not (bearText != "" ? evStackBear : evStackBear_rev)
     if isDimBear
         combinedBearText += "\n?"
     // Determine color: breakout color if breakout present, reversal color if reversal-only
@@ -943,11 +973,6 @@ if combinedBearText != ""
     string finalSize = isDimBear ? size.tiny : isCooled ? size.tiny : isAftn ? size.tiny : (totalCount >= 2 ? size.large : (totalCount == 1 ? size.small : size.small))
     // Vertical offset for adjacent labels
     bool needsOffset = (bar_index + shapeOff - lastBearLblBar) <= 1 and lastBearLblBar >= 0
-
-    // SL reference lines (5 min duration)
-    if i_showSL and not isOld and not isDimBear and not isCooled and not na(dailyATR)
-        line.new(bar_index, sigC + dailyATR * 0.10, bar_index + slBars, sigC + dailyATR * 0.10, color=color.new(color.orange, 40), style=line.style_dashed, width=1)
-        line.new(bar_index, sigC + dailyATR * 0.15, bar_index + slBars, sigC + dailyATR * 0.15, color=color.new(color.red, 30),    style=line.style_solid,  width=1)
 
     if i_retestOnly and bearText != "" and revBearText == "" and not isOld
         // Retest-only: suppress breakout-only label, show small gray dot
@@ -1006,14 +1031,21 @@ if combinedBearText != ""
             if highConv
                 label.set_text(sRTLbl, sRTBase + "\n✓★")
                 label.set_color(sRTLbl, color.new(#FFD700, 0))
+                label.set_textcolor(sRTLbl, color.black)
                 label.set_size(sRTLbl, size.normal)
             else
                 label.set_text(sRTLbl, sRTBase + "\n✓")
-                label.set_color(sRTLbl, color.new(#32CD32, 0))
+                label.set_color(sRTLbl, color.new(color.red, 0))
+                label.set_textcolor(sRTLbl, color.white)
+                label.set_size(sRTLbl, size.normal)
             confPassCount  += 1
             confFailStreak := 0
             vwapExitBear   := true
             vwapExitBull   := false
+            // SL reference lines at CONF time (using new breakout's sigC as entry proxy)
+            if i_showSL and not na(dailyATR)
+                line.new(bar_index, sigC + dailyATR * 0.10, bar_index + slBars, sigC + dailyATR * 0.10, color=color.new(color.orange, 40), style=line.style_dashed, width=1)
+                line.new(bar_index, sigC + dailyATR * 0.15, bar_index + slBars, sigC + dailyATR * 0.15, color=color.new(color.red, 30),    style=line.style_solid,  width=1)
             if dbConfBearIdx >= 0 and dbConfBearIdx < array.size(dbConf)
                 array.set(dbConf, dbConfBearIdx, highConv ? "✓★" : "✓")
                 if i_debugLog and barstate.isconfirmed
@@ -1026,16 +1058,16 @@ if combinedBearText != ""
         array.set(sRTLvl, 1, sigBearYL  ? yestLow : na)
         array.set(sRTLvl, 2, sigBearWL  ? weekLow : na)
         array.set(sRTLvl, 3, sigBearOL  ? orbLow : na)
-        // Most conservative level (highest for bear)
+        // Track lowest broken level for bear (last support to break must hold)
         float lvl = na
         if sigBearPML
-            lvl := na(lvl) ? pmLow : math.max(lvl, pmLow)
+            lvl := na(lvl) ? pmLow : math.min(lvl, pmLow)
         if sigBearYL
-            lvl := na(lvl) ? yestLow : math.max(lvl, yestLow)
+            lvl := na(lvl) ? yestLow : math.min(lvl, yestLow)
         if sigBearWL
-            lvl := na(lvl) ? weekLow : math.max(lvl, weekLow)
+            lvl := na(lvl) ? weekLow : math.min(lvl, weekLow)
         if sigBearOL
-            lvl := na(lvl) ? orbLow : math.max(lvl, orbLow)
+            lvl := na(lvl) ? orbLow : math.min(lvl, orbLow)
         sRTConsLvl    := lvl
         sRTStart      := sigBarIdx
         sRTBar0       := bar_index - 1
@@ -1093,8 +1125,8 @@ if i_confirm and bRTState == 1 and not na(bRTConsLvl) and isRegular
             string rtText = str.substring(suffix, 1)  // skip leading \n
             // Independent retest label + alert (always, unless old)
             if not isOld
-                label.new(bar_index, na, rtText,
-                     yloc=yloc.belowbar, style=label.style_label_up,
+                label.new(bar_index, low - nz(dailyATR) * 0.3, rtText,
+                     yloc=yloc.price, style=label.style_label_up,
                      color=bullColor, textcolor=color.black, size=size.small)
                 alert("Retest: " + rtText, alert.freq_once_per_bar_close)
                 // Debug: log retest
@@ -1139,8 +1171,8 @@ if i_confirm and sRTState == 1 and not na(sRTConsLvl) and isRegular
             string rtText = str.substring(suffix, 1)  // skip leading \n
             // Independent retest label + alert (always, unless old)
             if not isOld
-                label.new(bar_index, na, rtText,
-                     yloc=yloc.abovebar, style=label.style_label_down,
+                label.new(bar_index, high + nz(dailyATR) * 0.3, rtText,
+                     yloc=yloc.price, style=label.style_label_down,
                      color=bearColor, textcolor=color.black, size=size.small)
                 alert("Retest: " + rtText, alert.freq_once_per_bar_close)
                 // Debug: log retest
@@ -1235,7 +1267,7 @@ if vwapBearCross
 alertcondition(vwapBullCross or vwapBearCross, "VWAP Exit Signal", "Price crossed VWAP against confirmed position")
 
 // ─── Level Lines (optional, off by default) ───────────────
-plot(i_showVWAP and isRegular ? vwapVal : na, "VWAP", color.new(#FFFFFF, 40), 1, plot.style_linebr)
+plot(i_showVWAP and isRegular ? vwapVal : na, "VWAP", color.new(#FF6D00, 60), 2, plot.style_linebr)
 pPMH  = plot(i_showLines and i_showPM   and isRegular ? pmHigh   : na, "PM High",   color.new(color.orange, 40), 1, plot.style_linebr)
 pPML  = plot(i_showLines and i_showPM   and isRegular ? pmLow    : na, "PM Low",    color.new(color.orange, 40), 1, plot.style_linebr)
 pYH   = plot(i_showLines and i_showYest and isRegular ? yestHigh : na, "Yest High", color.new(color.blue, 40),   1, plot.style_linebr)

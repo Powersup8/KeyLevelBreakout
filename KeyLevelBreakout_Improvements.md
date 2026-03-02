@@ -1,7 +1,7 @@
 # KeyLevelBreakout.pine — Improvement Plan
 
-**Date:** 2026-02-24
-**Status:** Approved for implementation
+**Date:** 2026-02-24 (updated 2026-03-02)
+**Status:** Tiers 1-2 complete, v2.4 proposals all implemented. v2.5 + v2.6 shipped. Remaining: items 4-6, 9-10, 12-13.
 **Source:** Analysis of current code + Tom Vorwald's Mag 7 / volume / liquidity methodology
 
 ---
@@ -29,9 +29,9 @@ Video: ["Der PERFEKTE Frühindikator"](https://www.youtube.com/watch?v=ut9eUdP6-
 
 ---
 
-## Current State of KeyLevelBreakout.pine (v2.3)
+## Current State of KeyLevelBreakout.pine (v2.6)
 
-`KeyLevelBreakout.pine` (~1100 lines) detects four setup types at key intraday levels on a configurable signal timeframe:
+`KeyLevelBreakout.pine` (~1290 lines) detects four setup types at key intraday levels on a configurable signal timeframe:
 
 - **Breakout** — closes through a level with volume + ATR buffer confirmation
 - **Reversal (`~`)** — wick enters level zone, close rejects back (blue/orange labels)
@@ -40,13 +40,15 @@ Video: ["Der PERFEKTE Frühindikator"](https://www.youtube.com/watch?v=ut9eUdP6-
 
 **4 level types:** Premarket H/L (live 04:00–09:30 ET), Yesterday H/L, Last Week H/L, ORB H/L.
 
-**Filters:** Volume confirmation (directional 2-bar lookback), ATR buffer zone (wick push + close hold), VWAP directional filter (reversals only), Once Per Breakout with invalidation re-arm.
+**Filters:** Volume confirmation (directional 2-bar lookback), ATR buffer zone (wick push + close hold), VWAP directional filter (reversals only), Once Per Breakout with invalidation re-arm. **Evidence Stack Filters** (v2.5): 5m EMA Alignment, RS vs SPY, ADX > 20, Candle Body Quality — all toggleable, Suppress or Dim mode.
 
-**Quality metrics:** Close position % (`^78`/`v85`), volume ratio (`2.1x`), conviction coloring, label management (merge, cooldown dimming, vertical offset).
+**Quality metrics:** Close position % (`^78`/`v85`), volume ratio (`2.1x`), conviction coloring, label management (merge, cooldown dimming, vertical offset). **Runner Score ①-⑤** (v2.6) on labels. **CONF ✓** (lime green) / **✓★** (gold) visual tiers. Afternoon dimming after 11:00 ET.
+
+**Trade management (v2.6):** VWAP line plotted on chart, SL reference lines at 0.10/0.15 ATR for 5 minutes after signal, VWAP cross exit alert after CONF ✓/✓★.
 
 **Retest system:** Session-long per-level tracking, chart-TF wick precision, configurable proximity, independent labels (`◆³ ORB H 2.1x ^85`), Retest-Only Mode.
 
-**Debug system (v2.1, fixed v2.2):** Chart overlay table (8 columns, color-coded) + Pine Logs (`log.info()` with `[KLB]` prefix, extended data, `barstate.isconfirmed` guard). Both togglable independently.
+**Debug system (v2.1, fixed v2.2):** Chart overlay table (8 columns, color-coded) + Pine Logs (`log.info()` with `[KLB]` prefix, extended data including ema/rs/adx/body fields, `barstate.isconfirmed` guard). Both togglable independently.
 
 **Companion file:** `KeyLevelScanner.pine` (~187 lines) — multi-symbol version (v1.2) monitoring up to 8 tickers with a status table. Uses breakout-only logic; does not yet include volume, ATR buffer, reversals, retests, or debug features.
 
@@ -338,7 +340,7 @@ bearBreak(float level) =>
 
 ### Proposed Changes (Tiered by Impact × Simplicity)
 
-#### Tier A: CONF ✓ Visual Boost (1-2 lines, HIGH impact)
+#### Tier A: CONF ✓ Visual Boost (1-2 lines, HIGH impact) ✅ IMPLEMENTED v2.4
 
 **What:** When CONF passes (auto-promote), change the label color to a distinct "confirmed" color (e.g., bright green border, or prepend a ✅ emoji).
 
@@ -350,7 +352,7 @@ bearBreak(float level) =>
 
 ---
 
-#### Tier B: Add VWAP to Log Output (~2 lines, LOW risk)
+#### Tier B: Add VWAP to Log Output (~2 lines, LOW risk) ✅ IMPLEMENTED v2.4
 
 **What:** Add `vwap=above/below` to `log.info()` messages so we can validate the VWAP filter against historical data.
 
@@ -362,7 +364,7 @@ bearBreak(float level) =>
 
 ---
 
-#### Tier C: Afternoon Visual Dimming (~5 lines, LOW risk)
+#### Tier C: Afternoon Visual Dimming (~5 lines, LOW risk) ✅ IMPLEMENTED v2.4
 
 **What:** Reduce label opacity/size for signals firing after 11:00 ET. Already partially implemented via cooldown dimming — extend concept to time-based dimming.
 
@@ -376,7 +378,7 @@ bearBreak(float level) =>
 
 ---
 
-#### Tier D: Day Health Counter / Chop Warning (~15 lines, MEDIUM risk)
+#### Tier D: Day Health Counter / Chop Warning (~15 lines, MEDIUM risk) ✅ IMPLEMENTED v2.4
 
 **What:** Track consecutive CONF failures from session open. After 2-3 consecutive ✗, show a "CHOP?" table cell or label. Reset at session open.
 
@@ -390,7 +392,7 @@ bearBreak(float level) =>
 
 ---
 
-#### Tier E: High-Conviction Visual Tier (~10 lines, LOW risk)
+#### Tier E: High-Conviction Visual Tier (~10 lines, LOW risk) ✅ IMPLEMENTED v2.4
 
 **What:** Visually distinguish signals that meet ALL of: CONF Pass + >5x volume + extreme position (≥80%). These are the "54.1% GOOD, 0% BAD" gold standard.
 
@@ -402,7 +404,7 @@ bearBreak(float level) =>
 
 ---
 
-#### Tier F: Widen Volume Alpha Range (1 line, LOW risk)
+#### Tier F: Widen Volume Alpha Range (1 line, LOW risk) ✅ IMPLEMENTED v2.4
 
 **What:** Change alpha formula from `35 - volRatioBull * 10` to `70 - volRatioBull * 10` (or similar). Makes low-volume signals significantly more transparent while preserving high-volume labels.
 
@@ -414,7 +416,7 @@ bearBreak(float level) =>
 
 ---
 
-#### Tier G: Dead Code Cleanup (~10 lines removed, ZERO risk)
+#### Tier G: Dead Code Cleanup (~10 lines removed, ZERO risk) ✅ IMPLEMENTED v2.4
 
 **What:** Remove or simplify the window expiry promotion path (lines 945-950 bull, 990-995 bear).
 
@@ -450,8 +452,10 @@ bearBreak(float level) =>
 
 ### Implementation Priority
 
-1. **Tier A + B** — CONF ✓ boost + VWAP logging (2-3 lines total, zero risk, highest impact)
-2. **Tier C** — Afternoon dimming (5 lines, low risk, reduces noise)
-3. **Tier D** — Chop warning (15 lines, display-only, actionable)
-4. **Tier E + F** — High-conviction tier + volume alpha (11 lines, visual only)
-5. **Tier G** — Dead code cleanup (last, lowest priority)
+1. ~~**Tier A + B** — CONF ✓ boost + VWAP logging~~ ✅ Done in v2.4
+2. ~~**Tier C** — Afternoon dimming~~ ✅ Done in v2.4
+3. ~~**Tier D** — Chop warning~~ ✅ Done in v2.4
+4. ~~**Tier E + F** — High-conviction tier + volume alpha~~ ✅ Done in v2.4
+5. ~~**Tier G** — Dead code cleanup~~ ✅ Done in v2.4
+6. **Evidence Stack Filters** — ✅ Done in v2.5 (EMA, RS, ADX, Candle Body)
+7. **Runner Score + VWAP line + SL lines + VWAP exit alert** — ✅ Done in v2.6

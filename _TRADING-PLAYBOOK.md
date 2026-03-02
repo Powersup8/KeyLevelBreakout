@@ -9,8 +9,8 @@
 
 | Setup | CONF Rate | GOOD% | BAD% | How to spot |
 |-------|-----------|-------|------|-------------|
-| **CONF ✓ (any)** | — | 10% | **0%** | Lime green label with ✓ — zero BAD rate |
-| **CONF ✓★** | — | 27.3% | 4.5% | Gold label with ✓★ — biggest moves |
+| **CONF ✓ (any)** | — | 10% | **0%** | Solid green (bull) / red (bear) label with ✓, white text — zero BAD rate |
+| **CONF ✓★** | — | 27.3% | 4.5% | Gold label with ✓★, black text — biggest moves |
 | **2-5x vol + with-trend VWAP** | **62%** | 7.1% | 3.4% | Best CONF bucket overall |
 | **10:00-11:00 window** | **60%** | 4.3% | 1.6% | Best risk/reward of the day |
 | **Yest L breakout** | **60%** | 12.7% | 3.3% | #1 level for follow-through |
@@ -71,9 +71,9 @@ Signal fires → Is it dimmed/suppressed?
       └─ 13:00-16:00? → SKIP (0% GOOD, negative MFE/MAE)
 
 After any BRK:
-  CONF ✓  → Size up (0% BAD)
+  CONF ✓  → Size up (0% BAD) — solid green/red with white text
   CONF ✓★ → Full size (27% GOOD, gold label)
-  CONF ✗  → Exit immediately
+  CONF ✗  → Exit immediately (grayed out)
 
 Level preference: LOW levels (Yest L > PM L > ORB L > Week L)
 Avoid: HIGH levels (ORB H worst at 8.5% BAD)
@@ -137,11 +137,12 @@ Avoid: HIGH levels (ORB H worst at 8.5% BAD)
 - GOOD signals peak at **minute 23** on average; BAD signals peak at **minute 3.5**
 - Consider extending to 60 min for ✓★ signals (research: momentum persists 30-120 min)
 
-### Stop Loss (visible as SL lines on chart)
-- **0.15 ATR (solid red line)** — hard stop. BAD signals hit this by minute 5.
-- **0.10 ATR (dashed orange line)** — early warning. If here at minute 2, likely BAD.
+### Stop Loss (visible as SL lines on chart after CONF ✓/✓★)
+- **0.15 ATR (solid red line)** — hard stop. BAD signals hit this by minute 5. Lines last 30 minutes.
+- **0.10 ATR (dashed orange line)** — early warning. If here at minute 2, likely BAD. Lines last 30 minutes.
 - **At 5 minutes:** if positive, switch to 0.25 ATR trailing stop from high
 - **85% of GOOD signals never reverse below -0.10 ATR** — once they go, they go
+- SL lines fire at CONF time (not breakout time) — drawn from the confirming breakout's close price
 
 ### Runner Score ①-⑤ (on labels)
 | Score | Meaning | Data |
@@ -160,7 +161,7 @@ After CONF ✓/✓★, the indicator tracks VWAP. When price crosses VWAP agains
 | Signal State | Size |
 |-------------|------|
 | CONF ✓★ (gold) | Full size |
-| CONF ✓ (lime) | Large size (0% BAD) |
+| CONF ✓ (solid green/red, white text) | Large size (0% BAD) |
 | Score ④-⑤, unconfirmed | Standard size |
 | Score ①-③, unconfirmed | Small or skip |
 | Dimmed (gray ?) | Do not trade |
@@ -200,6 +201,6 @@ When Debug Log is ON, each signal logs:
 | Filter Mode | Suppress | Switch to Dim to see filtered signals |
 | Confirmation | ON | Keep ON always |
 | Chop Warning | ON | Redundant when ADX filter is ON |
-| **VWAP Line** | **ON** | OFF if you have another VWAP indicator |
-| **SL Lines** | **ON** | OFF if chart feels cluttered |
+| **VWAP Line** | **ON** | Orange line on chart. OFF if you have another VWAP |
+| **SL Lines** | **ON** | 30 min after CONF ✓/✓★. OFF if chart feels cluttered |
 | **Runner Score** | **ON** | OFF if you prefer clean labels |
