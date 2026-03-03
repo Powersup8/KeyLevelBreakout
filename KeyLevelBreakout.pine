@@ -1,5 +1,5 @@
 // © Key Level Breakout Alert Indicator
-// Detects bullish/bearish 5m candle closes through key levels (v2.6d)
+// Detects bullish/bearish 5m candle closes through key levels (v2.6e)
 // Designed for US stocks (NYSE/NASDAQ) on 5-min charts
 //@version=6
 indicator("Key Level Breakout", overlay=true, max_labels_count=500, max_lines_count=200)
@@ -587,13 +587,13 @@ bearBreak(float level) =>
 bullRev(float wick, float body) =>
     not na(wick) and not na(body) and isRegular and newSigBar
      and (not i_limitRevWin or isSetupWindow)
-     and sigC > sigO and sigL <= body and sigC > body and volPassBull
+     and sigC > sigO and sigL <= body and sigC > body
      and (not i_vwapFilter or not na(vwapVal) and sigC > vwapVal)
 
 bearRev(float wick, float body) =>
     not na(wick) and not na(body) and isRegular and newSigBar
      and (not i_limitRevWin or isSetupWindow)
-     and sigC < sigO and sigH >= body and sigC < body and volPassBear
+     and sigC < sigO and sigH >= body and sigC < body
      and (not i_vwapFilter or not na(vwapVal) and sigC < vwapVal)
 
 // ─── Raw Signals ──────────────────────────────────────────
