@@ -1,7 +1,7 @@
 # KeyLevelBreakout.pine — Improvement Plan
 
-**Date:** 2026-02-24 (updated 2026-03-02)
-**Status:** Tiers 1-2 complete, v2.4 proposals all implemented. v2.5 + v2.6 shipped. Remaining: items 4-6, 9-10, 12-13.
+**Date:** 2026-02-24 (updated 2026-03-03)
+**Status:** Tiers 1-2 complete, v2.4-v2.7 shipped. v2.7: body filter 30%, vol ≥5x, VWAP zone signals, 5-min checkpoint. Remaining: items 4-6, 9-10, 12-13.
 **Source:** Analysis of current code + Tom Vorwald's Mag 7 / volume / liquidity methodology
 
 ---
@@ -556,8 +556,8 @@ CONF rate is flat across time buckets (22%), but MFE drops sharply after 12:00 (
 
 | # | Change | Impact | Risk | Priority |
 |---|--------|--------|------|----------|
-| R1 | **Lower or remove Body% filter** (currently ≥50%) | Reduces false suppression — body% is not a differentiator | LOW | HIGH |
-| R2 | **Revise Runner Score vol factor**: change from 2-5x to ≥5x or ≥10x | Better aligns with data (10x+ = 32% CONF, 0.50 MFE) | LOW | MEDIUM |
+| R1 | ~~**Lower or remove Body% filter**~~ | ✅ **IMPLEMENTED v2.7** — lowered 50%→30%, closeLoc 60%→40% | LOW | ~~HIGH~~ |
+| R2 | ~~**Revise Runner Score vol factor**~~ | ✅ **IMPLEMENTED v2.7** — changed 2-5x→≥5x | LOW | ~~MEDIUM~~ |
 | R3 | **Consider HIGH-level dimming**: ORB H (14% CONF) vs Yest L (30%) | Reduces noise from weak HIGH-level signals | MEDIUM | MEDIUM |
 | R4 | **GLD special handling**: 6% CONF rate is extreme outlier | Could exclude or require extra filter | LOW | LOW |
 | R5 | Keep EMA filter ON, ADX > 20 ON, VWAP ON | All validated — especially EMA (+13% gap) | ZERO | DONE |
@@ -570,3 +570,104 @@ CONF rate is flat across time buckets (22%), but MFE drops sharply after 12:00 (
 | "ADX 38 is better than 33" (TSLA-only) | **TSLA-specific.** Multi-symbol avg ADX is 26 (good) vs 27 (bad). 20-25 has best CONF rate. | Multi-symbol fingerprint |
 | "Body% matters" (TSLA 77% vs 76%) | **Noise.** Multi-symbol: 49% vs 48%, zero differentiation. | Multi-symbol fingerprint |
 | "10:00-11:00 is the best window" (v2.4) | **PARTIALLY confirmed.** CONF rate is flat (22%), but 9:30-10:00 has best MFE (0.42). 12:00+ MFE drops to 0.15. | Multi-symbol fingerprint |
+
+---
+
+## Big Move Fingerprint Analysis (March 2026)
+
+**Evidence base:** 9,596 significant 5m bars across 13 symbols (body≥60%, range≥0.12 ATR). Period: Jan 20 – Mar 2, 2026. For each bar: ADX, EMA9/20/50, VWAP distance, volume ratio, body%, direction, time. MFE/MAE measured from 5s candle data. 5-minute checkpoint P&L computed.
+
+**Classification:** Runners (MFE>0.3 ATR): 8,098 (84%) | Fakeouts (MFE<0.1, MAE<-0.15): 268 (3%) | Middle: 1,230
+
+**Data files:** `debug/big-moves.csv` (9596 rows), `debug/big-move-fingerprint.md` (full report), `debug/big_move_fingerprint.py` (script).
+
+### Top Differentiators: Runner vs Fakeout
+
+| Rank | Metric | Runners | Fakeouts | Gap | Direction |
+|------|--------|---------|----------|-----|-----------|
+| 1 | **5min P&L positive** | 50% | 16% | **+34%** | Runners higher — strongest predictor |
+| 2 | **5min P&L > 0.05 ATR** | 31% | 2% | **+30%** | Runners higher — near-perfect filter |
+| 3 | **Body ≥ 80%** | 36% | 55% | **-19%** | **FAKEOUTS higher — body is INVERSE!** |
+| 4 | **Before 11:00** | 24% | 16% | **+8%** | Runners higher — morning edge |
+| 5 | **Bear direction** | 51% | 44% | **+7%** | Runners higher — bear edge persists |
+| 6 | **Vol ≥ 2x** | 8% | 15% | **-7%** | **FAKEOUTS higher — high vol = exhaustion** |
+| 7 | **ADX ≥ 30** | 33% | 29% | **+4%** | Runners slightly higher |
+
+### Key Finding 1: Body ≥ 80% is a FAKEOUT Indicator
+
+55% of fakeouts have body ≥80%, vs only 36% of runners. **Very clean candles with no wick at the extreme of a move signal exhaustion/capitulation, not conviction.** This confirms the multi-symbol signal finding (49% good vs 48% bad for body%) from a completely independent angle.
+
+**Action:** Lower body filter from ≥50% to ≥30% or remove entirely. It actively suppresses valid signals.
+
+### Key Finding 2: VWAP Proximity = Best Follow-Through
+
+| VWAP Distance (ATR) | n | Runner% | Avg MFE | Interpretation |
+|---------------------|---|---------|---------|----------------|
+| At VWAP (±0.1 ATR) | 412 | **89%** | **1.98** | **Best zone — inflection point** |
+| Near VWAP (0.1-0.3) | 565 | 87% | 1.45 | Good |
+| Extended (>0.3) | 8,619 | 84% | 1.45 | Average |
+
+Moves originating right at VWAP have 89% runner rate and **1.98 ATR MFE** — 37% better than extended moves. This directly validates the "VWAP as signal level" proposal from the TSLA 2/26 analysis. The VWAP acts as an inflection point: breaks AT VWAP have the best follow-through.
+
+**Action:** Implement VWAP rejection/break as a signal type (highest-priority "level desert" fix).
+
+### Key Finding 3: 5-Minute Gate is Universal
+
+| 5min P&L bucket | n | Runner% | Fakeout% | Avg MFE |
+|-----------------|---|---------|----------|---------|
+| < -0.05 ATR | 2,556 | 81% | 5% | 1.38 |
+| -0.05 to 0 | 1,646 | 86% | 3% | 1.42 |
+| 0 to +0.05 | 2,628 | 78% | 3% | 1.32 |
+| **+0.05 to +0.15** | 1,870 | **91%** | **0%** | 1.62 |
+| **> +0.15** | 896 | **98%** | **0%** | 1.98 |
+
+Not just for key-level signals — across ALL 9,596 significant bars: if the move is >+0.05 ATR after 5 minutes, fakeout rate drops to 0%. Combined with EMA + VWAP alignment → **93% runner rate, 0% fakeout** (n=1,411).
+
+**Action:** The 5-minute gate should inform runner management. Consider a post-signal checkpoint indicator or alert.
+
+### Key Finding 4: High Volume = More Fakeouts (for general big moves)
+
+Vol ≥ 2x bars are 15% of fakeouts but only 8% of runners. For **general big moves** (not key-level signals), high volume relative to the 20-bar average signals exhaustion — the volume spike comes AT the end of a move, not the beginning.
+
+**Note:** This does NOT contradict the key-level signal finding (10x+ volume = 32% CONF). At key levels, volume confirms institutional participation in the breakout. Away from key levels, volume spikes signal capitulation. Context matters.
+
+### Key Finding 5: Time & Fakeout Patterns
+
+| Time | Runner% | MFE | Key Pattern |
+|------|---------|-----|-------------|
+| **9:30-10:00** | **92%** | **2.35** | Best window by far |
+| 10:00-11:00 | 84% | 1.44 | Solid |
+| 11:00-12:00 | 85% | 1.27 | Decent |
+| 12:00+ | 84% | 1.42 | OK runner%, but **11 of top 20 fakeouts are 15:00-15:50** |
+
+Morning (9:30-10:00) big moves have 92% runner rate. Top fakeouts cluster in the last hour (15:00-15:50) — end-of-day reversals.
+
+### Best Filter Stacking Combos
+
+| Stack | n | Runner% | Fakeout% | MFE |
+|-------|---|---------|----------|-----|
+| **5min >0.05 + EMA + VWAP** | 1,411 | **93%** | **0%** | 1.75 |
+| EMA + VWAP + bear + ADX≥20 + before 11 | 523 | 86% | 2% | 1.82 |
+| EMA + VWAP + before 11 | 1,324 | 86% | 2% | 1.78 |
+| EMA + VWAP + ADX≥20 + vol≥2x | 370 | 85% | 4% | 2.04 |
+
+### Combined Actionable Recommendations (from both analyses)
+
+| # | Change | Source | Impact | Priority |
+|---|--------|--------|--------|----------|
+| R1 | ~~**Lower/remove Body% filter**~~ | ✅ **IMPLEMENTED v2.7** — 50%→30% | ~~**HIGH**~~ |
+| R2 | ~~**VWAP as signal level**~~ | ✅ **IMPLEMENTED v2.7** — VWAP zone ±0.1 ATR, 9th level type | ~~**HIGH**~~ |
+| R3 | ~~**5-minute gate checkpoint**~~ | ✅ **IMPLEMENTED v2.7** — label update + alert after CONF | ~~**HIGH**~~ |
+| R4 | **Revise Runner Score vol factor** | Signal analysis | ≥5x or ≥10x instead of 2-5x | MEDIUM |
+| R5 | **HIGH-level dimming** | Signal analysis | ORB H 14% vs Yest L 30% CONF | MEDIUM |
+| R6 | **GLD special handling** | Signal analysis | 6% CONF rate is extreme outlier | LOW |
+
+### The Three Pillars of Trade Quality
+
+From all analyses combined, trade quality depends on:
+
+1. **Direction + Level** — bear breakout at LOW level (Yest L, PM L, ORB L) = ~2x CONF rate vs HIGH levels
+2. **Location** — near VWAP (±0.1 ATR), not extended = best follow-through (1.98 vs 1.42 MFE)
+3. **Momentum confirmation** — positive at 5 minutes + EMA aligned = 93% runner, 0% fakeout
+
+What traditional TA emphasizes (body%, high volume at signal bar) is either noise or inverted for predicting follow-through.

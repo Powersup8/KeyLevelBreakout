@@ -1,5 +1,5 @@
 // © Key Level Breakout Alert Indicator
-// Detects bullish/bearish 5m candle closes through key levels (v2.6e)
+// Detects bullish/bearish 5m candle closes through key levels (v2.7)
 // Designed for US stocks (NYSE/NASDAQ) on 5-min charts
 //@version=6
 indicator("Key Level Breakout", overlay=true, max_labels_count=500, max_lines_count=200)
@@ -35,7 +35,8 @@ i_retestProx   = input.float(3.0, "Retest Proximity (% of ATR)", minval=0.5, ste
 i_retestOnly  = input.bool(false, "Retest-Only Mode",                group="Signals")
 i_cooldownBars = input.int(2, "Signal Cooldown (signal bars)", minval=0, maxval=10, group="Signals")
 i_chopWarn     = input.bool(true, "Chop Day Warning (3+ CONF fails)", group="Signals")
-i_runnerScore  = input.bool(true, "Show Runner Score (①-⑤)",  tooltip="Score based on VWAP, vol 2-5x, time 10-11, level quality, symbol tier", group="Signals")
+i_runnerScore  = input.bool(true, "Show Runner Score (①-⑤)",  tooltip="Score based on VWAP, vol ≥5x, time 10-11, level quality, symbol tier", group="Signals")
+i_vwapSignal   = input.bool(true, "VWAP Zone Signals",  tooltip="Fire reversal signals when price rejects off VWAP ±0.1 ATR zone", group="Signals")
 
 // ─── Setup Inputs ──────────────────────────────────────
 i_showReversal = input.bool(true,   "Show Reversal Setups",            group="Setups")
@@ -47,7 +48,7 @@ i_vwapFilter   = input.bool(true,   "VWAP Directional Filter (reversals)", toolt
 i_fEMA    = input.bool(true, "5m EMA Alignment Filter",     tooltip="Suppress signals against the 5m EMA(20)/EMA(50) trend", group="Filters")
 i_fRS     = input.bool(true, "RS vs SPY Filter",            tooltip="Suppress long signals underperforming SPY (and vice versa)", group="Filters")
 i_fADX    = input.bool(true, "ADX Trend Strength Filter",   tooltip="Suppress signals when 5m ADX < 20 (chop/no trend)", group="Filters")
-i_fCandle = input.bool(true, "Candle Body Quality Filter",  tooltip="Suppress wick-heavy breakout candles (body < 50% or close in wrong zone)", group="Filters")
+i_fCandle = input.bool(true, "Candle Body Quality Filter",  tooltip="Suppress wick-heavy breakout candles (body < 30% or close in wrong zone)", group="Filters")
 i_fMode   = input.string("Suppress", "Filter Mode", options=["Suppress", "Dim"], tooltip="Suppress: hide signals entirely. Dim: show as gray with ? suffix", group="Filters")
 
 i_useZones     = input.bool(true,   "Use Level Zones (wick-to-body)",  group="Zones")
@@ -152,6 +153,8 @@ var bool xWH  = false
 var bool xWL  = false
 var bool xOH  = false
 var bool xOL  = false
+var bool xVWAPBull = false
+var bool xVWAPBear = false
 
 // ─── Reversal Flags (reset each regular session) ──────
 var bool rPMH = false
@@ -227,9 +230,20 @@ if newRegular
 // ─── VWAP Cross Exit State ─────────────────────────
 var bool vwapExitBull = false   // tracking a confirmed bull position for VWAP exit
 var bool vwapExitBear = false   // tracking a confirmed bear position for VWAP exit
+
+// ─── 5-Minute Checkpoint State ─────────────────────────
+var float checkpointEntry = na     // entry price at CONF time
+var int   checkpointBar   = na     // bar_index when CONF fired
+var label checkpointLbl   = na     // the label to update
+var int   checkpointDir   = 0      // +1 bull, -1 bear
+
 if newRegular
     vwapExitBull := false
     vwapExitBear := false
+    checkpointEntry := na
+    checkpointBar   := na
+    checkpointLbl   := na
+    checkpointDir   := 0
 
 // ─── Debug Signal Log Arrays ─────────────────────────
 var array<int>    dbTime       = array.new<int>()
@@ -261,6 +275,8 @@ if newRegular
     xWL  := false
     xOH  := false
     xOL  := false
+    xVWAPBull := false
+    xVWAPBear := false
     // Reset reversal flags
     rPMH := false
     rPML := false
@@ -344,6 +360,11 @@ vwapVal  = ta.vwap
 breakBuf = i_atrBuf and not na(dailyATR) ? dailyATR * i_atrPct / 100.0 : 0.0
 rearmBuf = i_atrBuf and not na(dailyATR) ? dailyATR * i_atrRearm / 100.0 : 0.0
 
+// VWAP zone: ±0.1 ATR around VWAP (data: best follow-through at this distance)
+float vwapZoneWidth = not na(dailyATR) ? dailyATR * 0.10 : 0.0
+float vwapZoneHi    = not na(vwapVal) ? vwapVal + vwapZoneWidth : na
+float vwapZoneLo    = not na(vwapVal) ? vwapVal - vwapZoneWidth : na
+
 // ─── Evidence Stack Filter Flags (v2.5) ──────────────────
 // Filter 1: 5m EMA alignment (trend direction)
 fEMA_bull = ema20_5m > ema50_5m
@@ -366,8 +387,8 @@ candleRange = sigH - sigL
 bodyRatio   = candleRange > 0 ? math.abs(sigC - sigO) / candleRange : 0.0
 closeLoc_bull = candleRange > 0 ? (sigC - sigL) / candleRange : 0.0
 closeLoc_bear = candleRange > 0 ? (sigH - sigC) / candleRange : 0.0
-fCandle_bull = bodyRatio > 0.5 and closeLoc_bull > 0.6
-fCandle_bear = bodyRatio > 0.5 and closeLoc_bear > 0.6
+fCandle_bull = bodyRatio > 0.3 and closeLoc_bull > 0.4
+fCandle_bear = bodyRatio > 0.3 and closeLoc_bear > 0.4
 
 // Combined evidence stack pass (per direction)
 evStackBull = (not i_fEMA or fEMA_bull) and (not i_fRS or fRS_bull) and (not i_fADX or fADX) and (not i_fCandle or fCandle_bull)
@@ -406,9 +427,9 @@ int etHour = hour(time, TZ)
 bool isScoreWindow = etHour == 10
 bool isDTier = syminfo.ticker == "AMD" or syminfo.ticker == "MSFT" or syminfo.ticker == "GLD"
 // Bull score: VWAP, vol, time, not-D-tier (level quality = bull at HIGH is weak, skip)
-int scoreBull = (sigC > vwapVal ? 1 : 0) + (not na(volRatioBull) and volRatioBull >= 2.0 and volRatioBull <= 5.0 ? 1 : 0) + (isScoreWindow ? 1 : 0) + (not isDTier ? 1 : 0)
+int scoreBull = (sigC > vwapVal ? 1 : 0) + (not na(volRatioBull) and volRatioBull >= 5.0 ? 1 : 0) + (isScoreWindow ? 1 : 0) + (not isDTier ? 1 : 0)
 // Bear score: VWAP, vol, time, not-D-tier + bear at LOW level = +1 (computed after signals fire, added to label)
-int scoreBear = (sigC < vwapVal ? 1 : 0) + (not na(volRatioBear) and volRatioBear >= 2.0 and volRatioBear <= 5.0 ? 1 : 0) + (isScoreWindow ? 1 : 0) + (not isDTier ? 1 : 0)
+int scoreBear = (sigC < vwapVal ? 1 : 0) + (not na(volRatioBear) and volRatioBear >= 5.0 ? 1 : 0) + (isScoreWindow ? 1 : 0) + (not isDTier ? 1 : 0)
 string[] SCORE_GLYPHS = array.from("", "①", "②", "③", "④", "⑤")
 
 // ─── SL Line Bars (5 min on any chart TF) ────────────
@@ -646,6 +667,17 @@ rRevBearYH  = i_showReversal and i_showYest  and i_revYest and bearRev(yestHigh,
 rRevBearWH  = i_showReversal and i_showWeek  and i_revWeek and bearRev(weekHigh, weekHBody)
 rRevBearOH  = i_showReversal and i_showORB   and i_revORB  and not isORBwin and orbFirstDone and bearRev(orbHigh, orbHBody)
 
+// ─── VWAP Zone Reversals ────────────────────────────────
+// Bull: wick dips into VWAP zone from above, close rejects above zone top
+rRevBullVWAP = i_vwapSignal and not na(vwapZoneHi) and isRegular and newSigBar
+     and sigC > sigO and sigL <= vwapZoneHi and sigC > vwapZoneHi
+     and (not i_vwapFilter or not na(vwapVal) and sigC > vwapVal)
+
+// Bear: wick pushes into VWAP zone from below, close rejects below zone bottom
+rRevBearVWAP = i_vwapSignal and not na(vwapZoneLo) and isRegular and newSigBar
+     and sigC < sigO and sigH >= vwapZoneLo and sigC < vwapZoneLo
+     and (not i_vwapFilter or not na(vwapVal) and sigC < vwapVal)
+
 // Arm ORB signals after skipping the first signal bar post-ORB
 if not isORBwin and newSigBar
     orbFirstDone := true
@@ -660,6 +692,10 @@ sigRevBearPMH = rRevBearPMH and (not i_firstOnly or not rPMH) and fGateBear_rev
 sigRevBearYH  = rRevBearYH  and (not i_firstOnly or not rYH)  and fGateBear_rev
 sigRevBearWH  = rRevBearWH  and (not i_firstOnly or not rWH)  and fGateBear_rev
 sigRevBearOH  = rRevBearOH  and (not i_firstOnly or not rOH)  and fGateBear_rev
+
+// VWAP filtered signals (reversal stack: ADX + Body)
+sigRevBullVWAP = rRevBullVWAP and not xVWAPBull and fGateBull_rev
+sigRevBearVWAP = rRevBearVWAP and not xVWAPBear and fGateBear_rev
 
 // Update reversal flags
 if rRevBullPML
@@ -678,14 +714,18 @@ if rRevBearWH
     rWH := true
 if rRevBearOH
     rOH := true
+if sigRevBullVWAP
+    xVWAPBull := true
+if sigRevBearVWAP
+    xVWAPBear := true
 
 // ─── Combined Signals ────────────────────────────────────
 anyBull     = sigBullPMH or sigBullYH or sigBullWH or sigBullOH
 anyBear     = sigBearPML or sigBearYL or sigBearWL or sigBearOL
 anyBreakout = anyBull or anyBear
 
-anyRevBull  = sigRevBullPML or sigRevBullYL or sigRevBullWL or sigRevBullOL
-anyRevBear  = sigRevBearPMH or sigRevBearYH or sigRevBearWH or sigRevBearOH
+anyRevBull  = sigRevBullPML or sigRevBullYL or sigRevBullWL or sigRevBullOL or sigRevBullVWAP
+anyRevBear  = sigRevBearPMH or sigRevBearYH or sigRevBearWH or sigRevBearOH or sigRevBearVWAP
 anyReversal = anyRevBull or anyRevBear
 
 // ─── Signal Labels (confluent levels merged) ────────────────
@@ -755,6 +795,8 @@ if sigRevBullOL
     revBullText := revBullText + (revBullText != "" ? " + " : "") + pfx + "ORB L"
     if i_showReclaim and hadBrkOL and rclBullOK
         revBullHasReclaim := true
+if sigRevBullVWAP
+    revBullText := revBullText + (revBullText != "" ? "\n" : "") + "~ VWAP"
 
 revBearText = ""
 revBearHasReclaim = false
@@ -778,9 +820,11 @@ if sigRevBearOH
     revBearText := revBearText + (revBearText != "" ? " + " : "") + pfx + "ORB H"
     if i_showReclaim and hadBrkOH and rclBearOK
         revBearHasReclaim := true
+if sigRevBearVWAP
+    revBearText := revBearText + (revBearText != "" ? "\n" : "") + "~ VWAP"
 
-revBullCount = (sigRevBullPML ? 1 : 0) + (sigRevBullYL ? 1 : 0) + (sigRevBullWL ? 1 : 0) + (sigRevBullOL ? 1 : 0)
-revBearCount = (sigRevBearPMH ? 1 : 0) + (sigRevBearYH ? 1 : 0) + (sigRevBearWH ? 1 : 0) + (sigRevBearOH ? 1 : 0)
+revBullCount = (sigRevBullPML ? 1 : 0) + (sigRevBullYL ? 1 : 0) + (sigRevBullWL ? 1 : 0) + (sigRevBullOL ? 1 : 0) + (sigRevBullVWAP ? 1 : 0)
+revBearCount = (sigRevBearPMH ? 1 : 0) + (sigRevBearYH ? 1 : 0) + (sigRevBearWH ? 1 : 0) + (sigRevBearOH ? 1 : 0) + (sigRevBearVWAP ? 1 : 0)
 
 var int lastBullSigBar = -999
 var int lastBearSigBar = -999
@@ -903,6 +947,11 @@ if combinedBullText != ""
             confFailStreak := 0
             vwapExitBull   := true
             vwapExitBear   := false
+            // Start 5-minute checkpoint
+            checkpointEntry := sigC
+            checkpointBar   := bar_index
+            checkpointLbl   := bRTLbl
+            checkpointDir   := 1
             // SL reference lines at CONF time (using new breakout's sigC as entry proxy)
             if i_showSL and not na(dailyATR)
                 line.new(bar_index, sigC - dailyATR * 0.10, bar_index + slBars, sigC - dailyATR * 0.10, color=color.new(color.orange, 40), style=line.style_dashed, width=1)
@@ -1043,6 +1092,11 @@ if combinedBearText != ""
             confFailStreak := 0
             vwapExitBear   := true
             vwapExitBull   := false
+            // Start 5-minute checkpoint
+            checkpointEntry := sigC
+            checkpointBar   := bar_index
+            checkpointLbl   := sRTLbl
+            checkpointDir   := -1
             // SL reference lines at CONF time (using new breakout's sigC as entry proxy)
             if i_showSL and not na(dailyATR)
                 line.new(bar_index, sigC + dailyATR * 0.10, bar_index + slBars, sigC + dailyATR * 0.10, color=color.new(color.orange, 40), style=line.style_dashed, width=1)
@@ -1075,6 +1129,39 @@ if combinedBearText != ""
         sRTState      := 1
         sRTVolRatio   := volRatioBear
         sRTClosePos   := bearClosePos
+
+// ─── 5-Minute Checkpoint ────────────────────────────────
+// Evaluate 1 signal bar after CONF pass: is price still positive?
+if not na(checkpointBar) and newSigBar and bar_index > checkpointBar
+    float pnl = checkpointDir == 1
+         ? (sigC - checkpointEntry) / dailyATR
+         : (checkpointEntry - sigC) / dailyATR
+
+    bool hold = not na(pnl) and pnl > 0.05
+
+    // Update existing CONF label
+    if not na(checkpointLbl)
+        string curText = label.get_text(checkpointLbl)
+        label.set_text(checkpointLbl, curText + (hold ? "\n5m✓" : "\n5m✗"))
+
+    // Alert
+    string dir = checkpointDir == 1 ? "▲" : "▼"
+    string pnlStr = str.tostring(math.round(pnl, 2))
+    if hold
+        alert("5m HOLD " + dir + " +" + pnlStr + " ATR", alert.freq_once_per_bar)
+    else
+        alert("5m BAIL " + dir + " " + pnlStr + " ATR", alert.freq_once_per_bar)
+
+    // Log
+    if i_debugLog and barstate.isconfirmed
+        log.info("[KLB] 5m CHECK {0} {1} pnl={2} → {3}",
+            fmtTime(time), dir, pnlStr, hold ? "HOLD" : "BAIL")
+
+    // Reset
+    checkpointEntry := na
+    checkpointBar   := na
+    checkpointLbl   := na
+    checkpointDir   := 0
 
 // ─── Per-Level Retest Monitoring ─────────────────────────
 // Runs every signal-TF bar for chart-TF independent monitoring.
