@@ -24,7 +24,7 @@ Detects breakouts, reversals, reclaims, and retests at key intraday levels on co
 - **5m EMA Alignment** — blocks signals against 5m EMA(20)/EMA(50) trend direction
 - **RS vs SPY** — blocks longs underperforming SPY, shorts outperforming. Auto-bypasses SPY/QQQ/GLD/SLV.
 - **ADX > 20** — blocks signals in choppy/no-trend environment
-- **Candle Body Quality** — blocks wick-heavy candles (body < 50% of range, close in wrong zone)
+- **Candle Body Quality** — blocks wick-heavy candles (body < 30% of range, close in wrong 30%)
 - **Filter Mode:** Suppress (default, hides signals) or Dim (gray labels with `?` suffix)
 
 **Label management:**
@@ -51,10 +51,15 @@ Line 1: level names (merged for confluence). Line 2: volume ratio + close positi
 - **CONF ✗** (gray) — failed confirmation
 - **Afternoon signals** — dimmed after 11:00 ET (near-zero follow-through)
 - **CHOP?** (orange) — warning after 3+ consecutive CONF failures at session start
-- **Multi-level confluence** — labels with 2+ levels use `size.large` (resized to `size.normal` on CONF)
+- **Multi-level confluence / Big move** — labels with 2+ levels or 2x ATR range use `size.large` (resized to `size.normal` on CONF)
+- **QBS/MC signals (v2.8)** — 🔇 Quiet Before Storm (volume drying → explosion) and 🔊 Momentum Cascade (volume surging → continuation). Standalone signals with cyan/orange labels, CONF tracking, dedicated alerts. Fire when pre-move volume fingerprint matches, even without key level breakout.
+- **Volume ramp glyphs (v2.8)** — 🔇/🔊 on labels showing pre-move volume ramp pattern
+- **Big-move flag (v2.8)** — ⚡ on labels when bar range ≥ 2x signal-TF ATR
+- **Body warning (v2.8)** — ⚠ on labels when body ≥80% (data: inverse fakeout indicator)
+- **Moderate ramp dimming (v2.8)** — 1-2x vol ramp signals auto-dimmed (worst outcome bucket)
 
 **Runner Score ①-⑤ (toggleable):**
-Appended to quality line on labels. Five data-backed factors, each +1 point: VWAP aligned, volume 2-5x, time 10:00-11:00 ET, level quality (LOW for bears, multi-level confluence for bulls), not a D-tier symbol (AMD/MSFT/GLD). Score ⑤ = all factors aligned, highest conviction.
+Appended to quality line on labels. Five data-backed factors, each +1 point: VWAP aligned, volume ≥5x, time 9:30-10:00 ET, level quality (LOW for bears, multi-level confluence for bulls), not a D-tier symbol (AMD/MSFT/GLD/TSM). Score ⑤ = all factors aligned, highest conviction.
 
 **VWAP Line (toggleable):**
 Plots session VWAP as an orange line on chart (width 2). Previously computed internally for filtering only — now visible for trade management.
@@ -70,7 +75,8 @@ After each CONF ✓/✓★, draws two horizontal lines lasting 30 minutes (chart
 - Failure alerts: "Failed: ORB H + Yest H"
 - Reversal alerts: "Bullish reversal: ~ PM L 1.9x ^75"
 - **VWAP exit alert** — after CONF ✓/✓★, fires when price crosses VWAP against position direction. Momentum exhaustion signal.
-- 7 `alertcondition()` entries for granular filtering
+- QBS/MC alerts: "🔇 QBS Bull/Bear: vol drying → explosion"
+- 9 `alertcondition()` entries for granular filtering (incl. QBS, MC)
 
 **Debug (togglable, off by default):**
 - **Signal Table** — chart overlay with Time, Dir, Type, Levels, Vol, Pos, Conf, OHLC columns; color-coded by setup type; configurable position and max rows

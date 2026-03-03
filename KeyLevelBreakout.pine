@@ -1,5 +1,5 @@
 // © Key Level Breakout Alert Indicator
-// Detects bullish/bearish 5m candle closes through key levels (v2.7)
+// Detects bullish/bearish 5m candle closes through key levels (v2.8)
 // Designed for US stocks (NYSE/NASDAQ) on 5-min charts
 //@version=6
 indicator("Key Level Breakout", overlay=true, max_labels_count=500, max_lines_count=200)
@@ -37,6 +37,7 @@ i_cooldownBars = input.int(2, "Signal Cooldown (signal bars)", minval=0, maxval=
 i_chopWarn     = input.bool(true, "Chop Day Warning (3+ CONF fails)", group="Signals")
 i_runnerScore  = input.bool(true, "Show Runner Score (①-⑤)",  tooltip="Score based on VWAP, vol ≥5x, time 10-11, level quality, symbol tier", group="Signals")
 i_vwapSignal   = input.bool(true, "VWAP Zone Signals",  tooltip="Fire reversal signals when price rejects off VWAP ±0.1 ATR zone", group="Signals")
+i_qbsSignal    = input.bool(true, "QBS/MC Signals (Vol Ramp Patterns)",  tooltip="Fire signals when pre-move volume pattern matches high-probability fingerprint", group="Signals")
 
 // ─── Setup Inputs ──────────────────────────────────────
 i_showReversal = input.bool(true,   "Show Reversal Setups",            group="Setups")
@@ -237,6 +238,20 @@ var int   checkpointBar   = na     // bar_index when CONF fired
 var label checkpointLbl   = na     // the label to update
 var int   checkpointDir   = 0      // +1 bull, -1 bear
 
+// ─── QBS/MC Session + CONF State (v2.8) ──────────────
+var bool qbsBullFired = false
+var bool qbsBearFired = false
+var bool mcBullFired  = false
+var bool mcBearFired  = false
+var int   qmcRTState    = 0       // 0=inactive, 1=monitoring, -1=failed
+var label qmcRTLbl      = na
+var string qmcRTBase    = ""
+var float qmcRTEntry    = na
+var int   qmcRTDir      = 0       // +1 bull, -1 bear
+var int   qmcRTStart    = 0
+var float qmcRTVolRatio = na
+var int   qmcRTClosePos = na
+
 if newRegular
     vwapExitBull := false
     vwapExitBear := false
@@ -244,6 +259,16 @@ if newRegular
     checkpointBar   := na
     checkpointLbl   := na
     checkpointDir   := 0
+    qbsBullFired := false
+    qbsBearFired := false
+    mcBullFired  := false
+    mcBearFired  := false
+    qmcRTState   := 0
+    qmcRTLbl     := na
+    qmcRTBase    := ""
+    qmcRTEntry   := na
+    qmcRTDir     := 0
+    qmcRTStart   := 0
 
 // ─── Debug Signal Log Arrays ─────────────────────────
 var array<int>    dbTime       = array.new<int>()
@@ -337,8 +362,8 @@ if newRegular
 
 // ─── Signal Timeframe Data (confirmed bar only) ──────────
 // Previous completed signal-TF bar's OHLC — non-repainting
-[sigC, sigO, sigH, sigL, sigPC, sigPC2, sigVol, sigVolPrev, sigVolSma] = request.security(syminfo.tickerid, i_signalTF,
-     [close[1], open[1], high[1], low[1], close[2], close[3], volume[1], volume[2], ta.sma(volume, i_volLen)[1]], lookahead = barmerge.lookahead_on)
+[sigC, sigO, sigH, sigL, sigPC, sigPC2, sigVol, sigVolPrev, sigVolSma, sigVol2, sigVol3, sigVol4, sigVol5, sigATR14] = request.security(syminfo.tickerid, i_signalTF,
+     [close[1], open[1], high[1], low[1], close[2], close[3], volume[1], volume[2], ta.sma(volume, i_volLen)[1], volume[3], volume[4], volume[5], volume[6], ta.atr(14)[1]], lookahead = barmerge.lookahead_on)
 
 // Detect when a new signal-TF bar starts (previous one just closed)
 _sigT     = time(i_signalTF)
@@ -387,8 +412,9 @@ candleRange = sigH - sigL
 bodyRatio   = candleRange > 0 ? math.abs(sigC - sigO) / candleRange : 0.0
 closeLoc_bull = candleRange > 0 ? (sigC - sigL) / candleRange : 0.0
 closeLoc_bear = candleRange > 0 ? (sigH - sigC) / candleRange : 0.0
-fCandle_bull = bodyRatio > 0.3 and closeLoc_bull > 0.4
-fCandle_bear = bodyRatio > 0.3 and closeLoc_bear > 0.4
+fCandle_bull = bodyRatio > 0.3 and closeLoc_bull > 0.3
+fCandle_bear = bodyRatio > 0.3 and closeLoc_bear > 0.3
+bool bodyWarn = bodyRatio >= 0.8
 
 // Combined evidence stack pass (per direction)
 evStackBull = (not i_fEMA or fEMA_bull) and (not i_fRS or fRS_bull) and (not i_fADX or fADX) and (not i_fCandle or fCandle_bull)
@@ -421,11 +447,26 @@ volRatioBear = not na(volBase) and volBase > 0 ? sigVolBear / volBase : na
 bullVolAlpha = i_volFilter and not na(volRatioBull) ? math.max(0, math.round(60 - volRatioBull * 10)) : 0
 bearVolAlpha = i_volFilter and not na(volRatioBear) ? math.max(0, math.round(60 - volRatioBear * 10)) : 0
 
+// ─── Pre-Move Volume Ramp (v2.8) ───────────────────────
+float recentVol3 = (nz(sigVol) + nz(sigVolPrev) + nz(sigVol2)) / 3.0
+float priorVol3  = (nz(sigVol3) + nz(sigVol4) + nz(sigVol5)) / 3.0
+float preVolRamp = priorVol3 > 0 ? recentVol3 / priorVol3 : 1.0
+bool isVolDrying    = preVolRamp < 0.5
+bool isVolExplosive = preVolRamp > 5.0
+bool isVolModerate  = preVolRamp >= 1.0 and preVolRamp < 2.0
+
+// Signal-TF ATR for big-move detection (v2.8)
+float sigRangeATR = not na(sigATR14) and sigATR14 > 0 ? (sigH - sigL) / sigATR14 : 0
+bool isBigMove = sigRangeATR >= 2.0
+string volRampGlyph = isVolDrying ? "🔇" : isVolExplosive ? "🔊" : ""
+string bigMoveGlyph = isBigMove ? "⚡" : ""
+
 // ─── Runner Score (v2.6) ─────────────────────────────
-// 5 factors: VWAP aligned, vol 2-5x, time 10-11, level quality (bear=LOW), not D-tier symbol
+// 5 factors: VWAP aligned, vol ≥5x, time 9:30-10, level quality (bear=LOW), not D-tier symbol
 int etHour = hour(time, TZ)
-bool isScoreWindow = etHour == 10
-bool isDTier = syminfo.ticker == "AMD" or syminfo.ticker == "MSFT" or syminfo.ticker == "GLD"
+int etMin = minute(time, TZ)
+bool isScoreWindow = etHour == 9 and etMin >= 30
+bool isDTier = syminfo.ticker == "AMD" or syminfo.ticker == "MSFT" or syminfo.ticker == "GLD" or syminfo.ticker == "TSM"
 // Bull score: VWAP, vol, time, not-D-tier (level quality = bull at HIGH is weak, skip)
 int scoreBull = (sigC > vwapVal ? 1 : 0) + (not na(volRatioBull) and volRatioBull >= 5.0 ? 1 : 0) + (isScoreWindow ? 1 : 0) + (not isDTier ? 1 : 0)
 // Bear score: VWAP, vol, time, not-D-tier + bear at LOW level = +1 (computed after signals fire, added to label)
@@ -719,6 +760,30 @@ if sigRevBullVWAP
 if sigRevBearVWAP
     xVWAPBear := true
 
+// ─── QBS/MC Volume Ramp Signals (v2.8) ──────────────────
+bool rQBS_bull = i_qbsSignal and isVolDrying and sigRangeATR >= 1.5
+     and sigC > sigO and isRegular and newSigBar
+bool rQBS_bear = i_qbsSignal and isVolDrying and sigRangeATR >= 1.5
+     and sigC < sigO and isRegular and newSigBar
+bool rMC_bull = i_qbsSignal and isVolExplosive and sigRangeATR >= 1.5
+     and sigC > sigO and isRegular and newSigBar
+bool rMC_bear = i_qbsSignal and isVolExplosive and sigRangeATR >= 1.5
+     and sigC < sigO and isRegular and newSigBar
+bool sigQBS_bull = rQBS_bull and not qbsBullFired and fGateBull_rev
+bool sigQBS_bear = rQBS_bear and not qbsBearFired and fGateBear_rev
+bool sigMC_bull  = rMC_bull  and not mcBullFired  and fGateBull_rev
+bool sigMC_bear  = rMC_bear  and not mcBearFired  and fGateBear_rev
+bool qbsFired = sigQBS_bull or sigQBS_bear
+bool mcFired  = sigMC_bull  or sigMC_bear
+if sigQBS_bull
+    qbsBullFired := true
+if sigQBS_bear
+    qbsBearFired := true
+if sigMC_bull
+    mcBullFired := true
+if sigMC_bear
+    mcBearFired := true
+
 // ─── Combined Signals ────────────────────────────────────
 anyBull     = sigBullPMH or sigBullYH or sigBullWH or sigBullOH
 anyBear     = sigBearPML or sigBearYL or sigBearWL or sigBearOL
@@ -727,6 +792,7 @@ anyBreakout = anyBull or anyBear
 anyRevBull  = sigRevBullPML or sigRevBullYL or sigRevBullWL or sigRevBullOL or sigRevBullVWAP
 anyRevBear  = sigRevBearPMH or sigRevBearYH or sigRevBearWH or sigRevBearOH or sigRevBearVWAP
 anyReversal = anyRevBull or anyRevBear
+anyQBSMC    = qbsFired or mcFired
 
 // ─── Signal Labels (confluent levels merged) ────────────────
 bullText = ""
@@ -840,6 +906,61 @@ revBearAlpha = revBearHasReclaim ? math.max(0, bearVolAlpha - 10) : bearVolAlpha
 revBullColor = color.new(color.aqua, revBullAlpha)
 revBearColor = color.new(color.orange, revBearAlpha)
 
+// ─── QBS/MC Labels (v2.8) ────────────────────────────────
+if sigQBS_bull or sigMC_bull
+    bool isQBS = sigQBS_bull
+    string qmType = isQBS ? "🔇 QBS" : "🔊 MC"
+    string rampStr = str.tostring(preVolRamp, "#.#") + "x"
+    int score = finalScoreBull
+    string scoreStr = i_runnerScore and score >= 1 ? " " + array.get(SCORE_GLYPHS, math.min(score, 5)) : ""
+    string qmText = qmType + "\nBull " + rampStr + scoreStr
+    bool isDimQM = i_fMode == "Dim" and not evStackBull_rev
+    bool isModDim = isVolModerate
+    if isDimQM or isModDim
+        qmText += "\n?"
+    color qmColor = isDimQM or isModDim ? color.new(color.gray, 70) : isQBS ? color.new(color.teal, 0) : color.new(#FF6D00, 0)
+    color qmTextColor = isDimQM or isModDim ? color.new(color.gray, 50) : color.black
+    string qmSize = isBigMove ? size.large : size.normal
+    label qmLbl = label.new(bar_index + shapeOff, na, qmText,
+         yloc=yloc.belowbar, style=label.style_label_up,
+         color=qmColor, textcolor=qmTextColor, size=qmSize)
+    if i_confirm and not isOld
+        qmcRTState    := 1
+        qmcRTLbl      := qmLbl
+        qmcRTBase     := qmText
+        qmcRTEntry    := sigC
+        qmcRTDir      := 1
+        qmcRTStart    := sigBarIdx
+        qmcRTVolRatio := volRatioBull
+        qmcRTClosePos := bullClosePos
+
+if sigQBS_bear or sigMC_bear
+    bool isQBS = sigQBS_bear
+    string qmType = isQBS ? "🔇 QBS" : "🔊 MC"
+    string rampStr = str.tostring(preVolRamp, "#.#") + "x"
+    int score = finalScoreBear
+    string scoreStr = i_runnerScore and score >= 1 ? " " + array.get(SCORE_GLYPHS, math.min(score, 5)) : ""
+    string qmText = qmType + "\nBear " + rampStr + scoreStr
+    bool isDimQM = i_fMode == "Dim" and not evStackBear_rev
+    bool isModDim = isVolModerate
+    if isDimQM or isModDim
+        qmText += "\n?"
+    color qmColor = isDimQM or isModDim ? color.new(color.gray, 70) : isQBS ? color.new(color.teal, 0) : color.new(#FF6D00, 0)
+    color qmTextColor = isDimQM or isModDim ? color.new(color.gray, 50) : color.black
+    string qmSize = isBigMove ? size.large : size.normal
+    label qmLbl = label.new(bar_index + shapeOff, na, qmText,
+         yloc=yloc.abovebar, style=label.style_label_down,
+         color=qmColor, textcolor=qmTextColor, size=qmSize)
+    if i_confirm and not isOld
+        qmcRTState    := 1
+        qmcRTLbl      := qmLbl
+        qmcRTBase     := qmText
+        qmcRTEntry    := sigC
+        qmcRTDir      := -1
+        qmcRTStart    := sigBarIdx
+        qmcRTVolRatio := volRatioBear
+        qmcRTClosePos := bearClosePos
+
 // ─── Combined Bull Label ─────────────────────────────────
 string combinedBullText = ""
 if bullText != ""
@@ -862,9 +983,12 @@ if revBullText != ""
     combinedBullText := combinedBullText + (combinedBullText != "" ? "\n" : "") + revBullText
 
 if combinedBullText != ""
-    combinedBullText += bullQualLine != "" ? "\n" + bullQualLine : ""
+    string bwSuffix = bodyWarn ? " ⚠" : ""
+    string sigGlyphs = bigMoveGlyph + volRampGlyph
+    string glyphPfx = sigGlyphs != "" ? sigGlyphs + " " : ""
+    combinedBullText += bullQualLine != "" ? "\n" + glyphPfx + bullQualLine + bwSuffix : (sigGlyphs != "" or bwSuffix != "" ? "\n" + sigGlyphs + bwSuffix : "")
     // Evidence stack dim mode: use breakout stack if breakout present, reversal stack if reversal-only
-    bool isDimBull = i_fMode == "Dim" and not (bullText != "" ? evStackBull : evStackBull_rev)
+    bool isDimBull = (i_fMode == "Dim" and not (bullText != "" ? evStackBull : evStackBull_rev)) or isVolModerate
     if isDimBull
         combinedBullText += "\n?"
     // Determine color: breakout color if breakout present, reversal color if reversal-only
@@ -875,7 +999,7 @@ if combinedBullText != ""
     bool isAftn   = i_dimAfternoon and isAfternoon and not isOld and not isCooled
     color finalColor = isDimBull ? color.new(color.gray, 70) : isCooled ? color.new(color.gray, 70) : isAftn ? color.new(lblColor, 60) : (isOld ? color.new(color.gray, 90) : lblColor)
     color finalText  = isDimBull ? color.new(color.gray, 50) : isCooled ? color.new(color.gray, 50) : isAftn ? color.new(color.gray, 30) : (isOld ? color.new(color.gray, 70) : color.black)
-    string finalSize = isDimBull ? size.tiny : isCooled ? size.tiny : isAftn ? size.tiny : (totalCount >= 2 ? size.large : (totalCount == 1 ? size.small : size.small))
+    string finalSize = isDimBull ? size.tiny : isCooled ? size.tiny : isAftn ? size.tiny : (isBigMove or totalCount >= 2 ? size.large : (totalCount == 1 ? size.small : size.small))
     // Vertical offset for adjacent labels
     bool needsOffset = (bar_index + shapeOff - lastBullLblBar) <= 1 and lastBullLblBar >= 0
 
@@ -1007,9 +1131,12 @@ if revBearText != ""
     combinedBearText := combinedBearText + (combinedBearText != "" ? "\n" : "") + revBearText
 
 if combinedBearText != ""
-    combinedBearText += bearQualLine != "" ? "\n" + bearQualLine : ""
+    string bwSuffix = bodyWarn ? " ⚠" : ""
+    string sigGlyphs = bigMoveGlyph + volRampGlyph
+    string glyphPfx = sigGlyphs != "" ? sigGlyphs + " " : ""
+    combinedBearText += bearQualLine != "" ? "\n" + glyphPfx + bearQualLine + bwSuffix : (sigGlyphs != "" or bwSuffix != "" ? "\n" + sigGlyphs + bwSuffix : "")
     // Evidence stack dim mode: use breakout stack if breakout present, reversal stack if reversal-only
-    bool isDimBear = i_fMode == "Dim" and not (bearText != "" ? evStackBear : evStackBear_rev)
+    bool isDimBear = (i_fMode == "Dim" and not (bearText != "" ? evStackBear : evStackBear_rev)) or isVolModerate
     if isDimBear
         combinedBearText += "\n?"
     // Determine color: breakout color if breakout present, reversal color if reversal-only
@@ -1020,7 +1147,7 @@ if combinedBearText != ""
     bool isAftn   = i_dimAfternoon and isAfternoon and not isOld and not isCooled
     color finalColor = isDimBear ? color.new(color.gray, 70) : isCooled ? color.new(color.gray, 70) : isAftn ? color.new(lblColor, 60) : (isOld ? color.new(color.gray, 90) : lblColor)
     color finalText  = isDimBear ? color.new(color.gray, 50) : isCooled ? color.new(color.gray, 50) : isAftn ? color.new(color.gray, 30) : (isOld ? color.new(color.gray, 70) : color.black)
-    string finalSize = isDimBear ? size.tiny : isCooled ? size.tiny : isAftn ? size.tiny : (totalCount >= 2 ? size.large : (totalCount == 1 ? size.small : size.small))
+    string finalSize = isDimBear ? size.tiny : isCooled ? size.tiny : isAftn ? size.tiny : (isBigMove or totalCount >= 2 ? size.large : (totalCount == 1 ? size.small : size.small))
     // Vertical offset for adjacent labels
     bool needsOffset = (bar_index + shapeOff - lastBearLblBar) <= 1 and lastBearLblBar >= 0
 
@@ -1162,6 +1289,43 @@ if not na(checkpointBar) and newSigBar and bar_index > checkpointBar
     checkpointBar   := na
     checkpointLbl   := na
     checkpointDir   := 0
+
+// ─── QBS/MC Confirmation (v2.8) ────────────────────────
+if qmcRTState == 1 and newSigBar and isRegular
+    int elapsed = sigBarIdx - qmcRTStart
+    if elapsed > 0
+        bool continues = qmcRTDir == 1 ? sigC > qmcRTEntry : sigC < qmcRTEntry
+        if continues
+            bool highConv = not na(qmcRTVolRatio) and qmcRTVolRatio >= 5.0 and not na(qmcRTClosePos) and qmcRTClosePos >= 80
+            if not na(qmcRTLbl)
+                if highConv
+                    label.set_text(qmcRTLbl, qmcRTBase + "\n✓★")
+                    label.set_color(qmcRTLbl, color.new(#FFD700, 0))
+                    label.set_textcolor(qmcRTLbl, color.black)
+                else
+                    label.set_text(qmcRTLbl, qmcRTBase + "\n✓")
+                    label.set_color(qmcRTLbl, qmcRTDir == 1 ? color.new(color.green, 0) : color.new(color.red, 0))
+                    label.set_textcolor(qmcRTLbl, color.white)
+            confPassCount  += 1
+            confFailStreak := 0
+            if qmcRTDir == 1
+                vwapExitBull := true
+                vwapExitBear := false
+            else
+                vwapExitBear := true
+                vwapExitBull := false
+            checkpointEntry := sigC
+            checkpointBar   := bar_index
+            checkpointLbl   := qmcRTLbl
+            checkpointDir   := qmcRTDir
+            qmcRTState := 0
+        else
+            qmcRTState := -1
+            confFailStreak += 1
+            if not na(qmcRTLbl)
+                label.set_text(qmcRTLbl, qmcRTBase + "\n✗")
+                label.set_color(qmcRTLbl, color.new(color.gray, 60))
+                label.set_textcolor(qmcRTLbl, color.new(color.gray, 40))
 
 // ─── Per-Level Retest Monitoring ─────────────────────────
 // Runs every signal-TF bar for chart-TF independent monitoring.
@@ -1396,6 +1560,14 @@ if revBullText != ""
     alert("Bullish reversal: " + revBullText + " " + bullQualLine, alert.freq_once_per_bar)
 if revBearText != ""
     alert("Bearish reversal: " + revBearText + " " + bearQualLine, alert.freq_once_per_bar)
+if sigQBS_bull
+    alert("🔇 QBS Bull: vol drying → explosion " + str.tostring(preVolRamp, "#.#") + "x", alert.freq_once_per_bar)
+if sigQBS_bear
+    alert("🔇 QBS Bear: vol drying → explosion " + str.tostring(preVolRamp, "#.#") + "x", alert.freq_once_per_bar)
+if sigMC_bull
+    alert("🔊 MC Bull: vol surging → continuation " + str.tostring(preVolRamp, "#.#") + "x", alert.freq_once_per_bar)
+if sigMC_bear
+    alert("🔊 MC Bear: vol surging → continuation " + str.tostring(preVolRamp, "#.#") + "x", alert.freq_once_per_bar)
 
 // ─── Alert Conditions ───────────────────────────────────────
 // Note: per-level alertconditions removed — "Any alert() function call"
@@ -1408,4 +1580,6 @@ alertcondition(anyBreakout, "Any Breakout",               "Breakout detected (bu
 alertcondition(anyRevBull,  "Any Bullish Reversal",       "Bullish reversal detected")
 alertcondition(anyRevBear,  "Any Bearish Reversal",       "Bearish reversal detected")
 alertcondition(anyReversal, "Any Reversal",               "Reversal detected (bull or bear)")
-alertcondition(anyBreakout or anyReversal, "Any Setup",   "Breakout or reversal detected")
+alertcondition(qbsFired, "QBS — Quiet Before Storm", "🔇 Quiet Before Storm: vol drying → explosion")
+alertcondition(mcFired,  "MC — Momentum Cascade",    "🔊 Momentum Cascade: vol surging → continuation")
+alertcondition(anyBreakout or anyReversal or anyQBSMC, "Any Setup", "Breakout, reversal, or QBS/MC detected")
