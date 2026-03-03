@@ -30,7 +30,9 @@ SYMBOL = "TSLA"
 SPREAD_COST = 0.15
 DELTA = 0.50
 CONTRACT_MULT = 100
-MAX_HOLD_SECS = 120
+MAX_HOLD_SECS = 300       # default; overridden dynamically by hard exit time
+HARD_EXIT_TIME = "09:35:00"  # must be out by this time
+ENTRY_WINDOW_SECS = 120   # entry within first 120s (9:30:00-9:32:00)
 
 
 def load_5s_data(symbol):
@@ -227,11 +229,14 @@ def find_entry(day_bars, window_start, window_end, trigger):
 
 
 def run_strategy(df, trading_days, trigger, tp, sl, trail_start=None, trail_offset=None,
-                 window_offset_s=0, window_duration_s=90, only_direction=None):
-    """Run a full strategy across all days. only_direction='long'/'short' to filter."""
+                 window_offset_s=0, window_duration_s=ENTRY_WINDOW_SECS, only_direction=None):
+    """Run a full strategy across all days. only_direction='long'/'short' to filter.
+    Max hold = time from entry until HARD_EXIT_TIME (default 9:35:00)."""
+    hard_exit_t = datetime.strptime(HARD_EXIT_TIME, "%H:%M:%S").time()
     trades = []
     for date in trading_days:
         day_start = ET.localize(datetime.combine(date, datetime.strptime("09:30:00", "%H:%M:%S").time()))
+        hard_exit_ts = ET.localize(datetime.combine(date, hard_exit_t))
         day_end = day_start + timedelta(hours=6, minutes=30)
         day_bars = df.loc[(df.index >= day_start) & (df.index < day_end)]
         if len(day_bars) < 30:
@@ -249,8 +254,12 @@ def run_strategy(df, trading_days, trigger, tp, sl, trail_start=None, trail_offs
         if only_direction and direction != only_direction:
             continue
 
+        # Dynamic max hold: time remaining until hard exit
+        entry_time = remaining.index[0] if len(remaining) > 0 else w_end
+        max_hold = max(10, (hard_exit_ts - entry_time).total_seconds())
+
         result = simulate_trade(remaining, entry_price, direction, tp, sl,
-                                trail_start, trail_offset)
+                                trail_start, trail_offset, max_secs=max_hold)
         if result is None:
             continue
 
@@ -298,7 +307,7 @@ def main():
 
     lines = []
     lines.append("# TSLA Open Scalp v3 — Finding the Best Entry & Exit")
-    lines.append(f"\n**Concept:** Buy call/put at open based on first-move direction, exit within 120s")
+    lines.append(f"\n**Concept:** Buy call/put within first 120s, active management, must exit by {HARD_EXIT_TIME}")
     lines.append(f"**Data:** {len(trading_days)} trading days, 5-second candle data")
     lines.append(f"**Assumptions:** Delta={DELTA}, Spread=${SPREAD_COST:.2f}, 1 contract")
     lines.append(f"**Date range:** {trading_days[0]} to {trading_days[-1]}")
@@ -307,7 +316,7 @@ def main():
     # PART 1: Find best ENTRY TRIGGER
     # ══════════════════════════════════════════════════════════════════
     lines.append("\n\n---\n## Part 1: Entry Trigger Comparison")
-    lines.append("Fixed exit: TP=$0.75, SL=$0.50. Window: 9:30:00 - 9:31:30")
+    lines.append(f"Fixed exit: TP=$0.75, SL=$0.50. Entry: first {ENTRY_WINDOW_SECS}s. Hard exit: {HARD_EXIT_TIME}")
     lines.append("")
     lines.append("| Trigger | Trades | Win% | Avg P&L | Total | Sharpe | Avg Hold | TP% | SL% | TIME% |")
     lines.append("|---------|--------|------|---------|-------|--------|----------|-----|-----|-------|")
@@ -325,6 +334,10 @@ def main():
         'wait_30s',
         'wait_60s',
         'wait_90s',
+        'wait_120s',
+        'wait_180s',
+        'wait_240s',
+        'wait_300s',
         'biggest_bar',
     ]
 
@@ -363,15 +376,16 @@ def main():
     best_window = None
     best_window_total = -999999
 
-    for offset in [0, 5, 10, 15, 30, 45, 60]:
-        for duration in [30, 45, 60, 90, 120]:
+    for offset in [0, 5, 10, 15, 30, 60, 90, 120, 180, 240]:
+        for duration in [30, 60, 90, 120, 180, 300]:
             trades = run_strategy(df, trading_days, best_trigger, tp=0.75, sl=0.50,
                                   window_offset_s=offset, window_duration_s=duration)
             s = summarize(trades)
             if not s or s['n'] < 10:
                 continue
 
-            start_str = f"9:30:{offset:02d}" if offset < 60 else f"9:31:{offset-60:02d}"
+            mins, secs = divmod(offset, 60)
+            start_str = f"9:{30+mins}:{secs:02d}"
 
             if s['total_pnl'] > best_window_total:
                 best_window_total = s['total_pnl']
@@ -384,10 +398,12 @@ def main():
 
     if best_window:
         bo, bd = best_window
-        bw_str = f"9:30:{bo:02d}" if bo < 60 else f"9:31:{bo-60:02d}"
+        bm, bs = divmod(bo, 60)
+        bw_str = f"9:{30+bm}:{bs:02d}"
         lines.append(f"\n**Best window: {bw_str} + {bd}s** ({fmt(best_window_total)} total)")
     else:
-        bo, bd = 0, 90
+        bo, bd = 0, 300
+        bw_str = "9:30:00"
 
     # ══════════════════════════════════════════════════════════════════
     # PART 3: Find best TP/SL with best trigger + window
@@ -538,7 +554,8 @@ def main():
     lines.append("|---------|--------|------|---------|-------|--------|-----|-----|-------|")
 
     call_triggers = ['first_up_bar', 'price_above_open', 'cum_up_2bars',
-                     'wait_5s', 'wait_10s', 'wait_15s', 'wait_30s', 'wait_60s']
+                     'wait_5s', 'wait_10s', 'wait_15s', 'wait_30s', 'wait_60s',
+                     'wait_90s', 'wait_120s', 'wait_180s', 'wait_240s', 'wait_300s']
     best_call_trigger = None
     best_call_trigger_total = -999999
 
