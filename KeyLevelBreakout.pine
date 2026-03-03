@@ -1,5 +1,5 @@
 // © Key Level Breakout Alert Indicator
-// Detects bullish/bearish 5m candle closes through key levels (v2.8)
+// Detects bullish/bearish 5m candle closes through key levels (v2.8a)
 // Designed for US stocks (NYSE/NASDAQ) on 5-min charts
 //@version=6
 indicator("Key Level Breakout", overlay=true, max_labels_count=500, max_lines_count=200)
@@ -542,7 +542,9 @@ dbAppend(string dir, string typ, string levels, float vol, int clsPos, string co
             string bodyStr = str.tostring(math.round(bodyRatio * 100)) + "%"
             float slWarn = dir == "▲" ? sigC - nz(dailyATR) * 0.10 : sigC + nz(dailyATR) * 0.10
             float slHard = dir == "▲" ? sigC - nz(dailyATR) * 0.15 : sigC + nz(dailyATR) * 0.15
-            string msg = "[KLB] " + fmtTime(time) + " " + dir + " " + typ + " " + levels + " vol=" + volStr + " pos=" + posStr + " vwap=" + vwapStr + " ema=" + emaStr + " rs=" + rsStr + " adx=" + adxStr + " body=" + bodyStr + " " + ohlc + " ATR=" + str.tostring(nz(dailyATR), "#.##") + " SL=" + str.tostring(slWarn, "#.##") + "/" + str.tostring(slHard, "#.##") + " rawVol=" + str.tostring(nz(sigVol), "#") + " volSMA=" + str.tostring(nz(volBase), "#") + " buf=" + str.tostring(breakBuf, "#.###") + " prices=" + lvlPrices
+            string rampStr = str.tostring(preVolRamp, "#.#") + "x"
+            string flagStr = (isBigMove ? " ⚡" : "") + (bodyWarn ? " ⚠" : "") + (isVolDrying ? " 🔇" : isVolExplosive ? " 🔊" : "")
+            string msg = "[KLB] " + fmtTime(time) + " " + dir + " " + typ + " " + levels + " vol=" + volStr + " pos=" + posStr + " vwap=" + vwapStr + " ema=" + emaStr + " rs=" + rsStr + " adx=" + adxStr + " body=" + bodyStr + " ramp=" + rampStr + " rangeATR=" + str.tostring(sigRangeATR, "#.#") + flagStr + " " + ohlc + " ATR=" + str.tostring(nz(dailyATR), "#.##") + " SL=" + str.tostring(slWarn, "#.##") + "/" + str.tostring(slHard, "#.##") + " rawVol=" + str.tostring(nz(sigVol), "#") + " volSMA=" + str.tostring(nz(volBase), "#") + " buf=" + str.tostring(breakBuf, "#.###") + " prices=" + lvlPrices
             log.info(msg)
     array.size(dbTime) - 1
 
@@ -924,6 +926,16 @@ if sigQBS_bull or sigMC_bull
     label qmLbl = label.new(bar_index + shapeOff, na, qmText,
          yloc=yloc.belowbar, style=label.style_label_up,
          color=qmColor, textcolor=qmTextColor, size=qmSize)
+    if i_debugLog and barstate.isconfirmed
+        string qmVolStr = not na(volRatioBull) ? str.tostring(volRatioBull, "#.#") + "x" : ""
+        string qmPosStr = not na(bullClosePos) ? "^" + str.tostring(bullClosePos) : ""
+        string qmVwapStr = not na(vwapVal) ? (sigC > vwapVal ? "above" : "below") : "na"
+        string qmEmaStr = not na(ema20_5m) ? (ema20_5m > ema50_5m ? "bull" : "bear") : "na"
+        string qmAdxStr = not na(adx_5m) ? str.tostring(adx_5m, "#") : "na"
+        string qmBodyStr = str.tostring(math.round(bodyRatio * 100)) + "%"
+        string qmOhlc = "O" + str.tostring(sigO, "#.##") + " H" + str.tostring(sigH, "#.##") + " L" + str.tostring(sigL, "#.##") + " C" + str.tostring(sigC, "#.##")
+        string dimStr = isDimQM ? " dim" : isModDim ? " moddim" : ""
+        log.info("[KLB] " + fmtTime(time) + " ▲ " + qmType + " ramp=" + rampStr + " vol=" + qmVolStr + " pos=" + qmPosStr + " vwap=" + qmVwapStr + " ema=" + qmEmaStr + " adx=" + qmAdxStr + " body=" + qmBodyStr + " rangeATR=" + str.tostring(sigRangeATR, "#.#") + (isBigMove ? " ⚡" : "") + dimStr + " " + qmOhlc + " ATR=" + str.tostring(nz(dailyATR), "#.##"))
     if i_confirm and not isOld
         qmcRTState    := 1
         qmcRTLbl      := qmLbl
@@ -951,6 +963,16 @@ if sigQBS_bear or sigMC_bear
     label qmLbl = label.new(bar_index + shapeOff, na, qmText,
          yloc=yloc.abovebar, style=label.style_label_down,
          color=qmColor, textcolor=qmTextColor, size=qmSize)
+    if i_debugLog and barstate.isconfirmed
+        string qmVolStr = not na(volRatioBear) ? str.tostring(volRatioBear, "#.#") + "x" : ""
+        string qmPosStr = not na(bearClosePos) ? "v" + str.tostring(bearClosePos) : ""
+        string qmVwapStr = not na(vwapVal) ? (sigC > vwapVal ? "above" : "below") : "na"
+        string qmEmaStr = not na(ema20_5m) ? (ema20_5m > ema50_5m ? "bull" : "bear") : "na"
+        string qmAdxStr = not na(adx_5m) ? str.tostring(adx_5m, "#") : "na"
+        string qmBodyStr = str.tostring(math.round(bodyRatio * 100)) + "%"
+        string qmOhlc = "O" + str.tostring(sigO, "#.##") + " H" + str.tostring(sigH, "#.##") + " L" + str.tostring(sigL, "#.##") + " C" + str.tostring(sigC, "#.##")
+        string dimStr = isDimQM ? " dim" : isModDim ? " moddim" : ""
+        log.info("[KLB] " + fmtTime(time) + " ▼ " + qmType + " ramp=" + rampStr + " vol=" + qmVolStr + " pos=" + qmPosStr + " vwap=" + qmVwapStr + " ema=" + qmEmaStr + " adx=" + qmAdxStr + " body=" + qmBodyStr + " rangeATR=" + str.tostring(sigRangeATR, "#.#") + (isBigMove ? " ⚡" : "") + dimStr + " " + qmOhlc + " ATR=" + str.tostring(nz(dailyATR), "#.##"))
     if i_confirm and not isOld
         qmcRTState    := 1
         qmcRTLbl      := qmLbl
@@ -1308,6 +1330,9 @@ if qmcRTState == 1 and newSigBar and isRegular
                     label.set_textcolor(qmcRTLbl, color.white)
             confPassCount  += 1
             confFailStreak := 0
+            if i_debugLog and barstate.isconfirmed
+                string dirStr = qmcRTDir == 1 ? "▲" : "▼"
+                log.info("[KLB] CONF {0} {1} QBS/MC → {2} (auto-promote)", fmtTime(time), dirStr, highConv ? "✓★" : "✓")
             if qmcRTDir == 1
                 vwapExitBull := true
                 vwapExitBear := false
@@ -1322,6 +1347,9 @@ if qmcRTState == 1 and newSigBar and isRegular
         else
             qmcRTState := -1
             confFailStreak += 1
+            if i_debugLog and barstate.isconfirmed
+                string dirStr = qmcRTDir == 1 ? "▲" : "▼"
+                log.info("[KLB] CONF {0} {1} QBS/MC → ✗ (failed)", fmtTime(time), dirStr)
             if not na(qmcRTLbl)
                 label.set_text(qmcRTLbl, qmcRTBase + "\n✗")
                 label.set_color(qmcRTLbl, color.new(color.gray, 60))

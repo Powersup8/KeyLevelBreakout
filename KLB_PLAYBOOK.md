@@ -2,9 +2,9 @@
 
 | Doc | What's Inside |
 |-----|---------------|
-| **PLAYBOOK.md** | Signal Catalog, Time Windows, Avoid List, Decision Flowchart, Execution, Symbols |
-| [KeyLevelBreakout.md](KeyLevelBreakout.md) | Setup, Signal Types, Label Anatomy, CONF System, Levels, Filters, Visuals, Alerts, Settings |
-| [DESIGN-JOURNAL.md](DESIGN-JOURNAL.md) | The Idea, Data Foundation, Key Discoveries, Filter Validation, Evolution, Dead Ends |
+| **KLB_PLAYBOOK.md** | Signal Catalog, Time Windows, Avoid List, Decision Flowchart, Execution, Symbols |
+| [KLB_Reference.md](KLB_Reference.md) | Setup, Signal Types, Label Anatomy, CONF System, Levels, Filters, Visuals, Alerts, Settings |
+| [KLB_DESIGN-JOURNAL.md](KLB_DESIGN-JOURNAL.md) | The Idea, Data Foundation, Key Discoveries, Filter Validation, Evolution, Dead Ends |
 
 > Based on 1,841 signals, 9,596 big moves, 13 symbols, 28+ trading days
 

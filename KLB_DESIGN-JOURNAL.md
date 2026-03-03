@@ -2,9 +2,9 @@
 
 | Doc | What's Inside |
 |-----|---------------|
-| [PLAYBOOK.md](PLAYBOOK.md) | Signal Catalog, Time Windows, Avoid List, Decision Flowchart, Execution, Symbols |
-| [KeyLevelBreakout.md](KeyLevelBreakout.md) | Setup, Signal Types, Label Anatomy, CONF System, Levels, Filters, Visuals, Alerts, Settings |
-| **DESIGN-JOURNAL.md** | The Idea, Data Foundation, Key Discoveries, Filter Validation, Evolution, Dead Ends |
+| [KLB_PLAYBOOK.md](KLB_PLAYBOOK.md) | Signal Catalog, Time Windows, Avoid List, Decision Flowchart, Execution, Symbols |
+| [KLB_Reference.md](KLB_Reference.md) | Setup, Signal Types, Label Anatomy, CONF System, Levels, Filters, Visuals, Alerts, Settings |
+| **KLB_DESIGN-JOURNAL.md** | The Idea, Data Foundation, Key Discoveries, Filter Validation, Evolution, Dead Ends |
 
 ---
 
