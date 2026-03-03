@@ -1,7 +1,7 @@
 # KeyLevelBreakout.pine — Improvement Plan
 
 **Date:** 2026-02-24 (updated 2026-03-03)
-**Status:** Tiers 1-2 complete, v2.4-v2.7 shipped. v2.7: body filter 30%, vol ≥5x, VWAP zone signals, 5-min checkpoint. Remaining: items 4-6, 9-10, 12-13.
+**Status:** Tiers 1-2 complete, v2.4-v2.8 shipped. v2.8: Big-Move Fingerprint Integration — vol ramp (🔇QBS/🔊MC signals), 2x ATR flag (⚡), body warning (⚠), moderate ramp dimming, Runner Score tuned (9:30-10, TSM D-tier, closeLoc 0.3). Remaining: items 4-6, 9-10, 12-13.
 **Source:** Analysis of current code + Tom Vorwald's Mag 7 / volume / liquidity methodology
 
 ---
@@ -29,9 +29,9 @@ Video: ["Der PERFEKTE Frühindikator"](https://www.youtube.com/watch?v=ut9eUdP6-
 
 ---
 
-## Current State of KeyLevelBreakout.pine (v2.6)
+## Current State of KeyLevelBreakout.pine (v2.8)
 
-`KeyLevelBreakout.pine` (~1290 lines) detects four setup types at key intraday levels on a configurable signal timeframe:
+`KeyLevelBreakout.pine` (~1585 lines) detects five setup types at key intraday levels on a configurable signal timeframe:
 
 - **Breakout** — closes through a level with volume + ATR buffer confirmation
 - **Reversal (`~`)** — wick enters level zone, close rejects back (blue/orange labels)
@@ -42,9 +42,12 @@ Video: ["Der PERFEKTE Frühindikator"](https://www.youtube.com/watch?v=ut9eUdP6-
 
 **Filters:** Volume confirmation (directional 2-bar lookback), ATR buffer zone (wick push + close hold), VWAP directional filter (reversals only), Once Per Breakout with invalidation re-arm. **Evidence Stack Filters** (v2.5): 5m EMA Alignment, RS vs SPY, ADX > 20, Candle Body Quality — all toggleable, Suppress or Dim mode.
 
-**Quality metrics:** Close position % (`^78`/`v85`), volume ratio (`2.1x`), conviction coloring, label management (merge, cooldown dimming, vertical offset). **Runner Score ①-⑤** (v2.6) on labels. **CONF ✓** (lime green) / **✓★** (gold) visual tiers. Afternoon dimming after 11:00 ET.
+- **QBS (Quiet Before Storm)** — pre-move volume drying (<0.5x ramp) + big bar (≥1.5x 5m-ATR). Cyan labels. Once per direction per session.
+- **MC (Momentum Cascade)** — explosive pre-move volume (>5x ramp) + big bar (≥1.5x 5m-ATR). Orange labels. Once per direction per session.
 
-**Trade management (v2.6):** VWAP line plotted on chart, SL reference lines at 0.10/0.15 ATR for 5 minutes after signal, VWAP cross exit alert after CONF ✓/✓★.
+**Quality metrics:** Close position % (`^78`/`v85`), volume ratio (`2.1x`), conviction coloring, label management (merge, cooldown dimming, vertical offset). **Runner Score ①-⑤** (v2.6, tuned v2.8: time 9:30-10, +TSM D-tier) on labels. **CONF ✓** (lime green) / **✓★** (gold) visual tiers. Afternoon dimming after 11:00 ET. **Body ≥80% warning** (⚠ on labels). **Volume ramp glyphs** (🔇 quiet / 🔊 explosive). **Big-move flag** (⚡ on 2x ATR bars). **Moderate ramp dimming** (1-2x vol ramp = gray + ?).
+
+**Trade management (v2.6+):** VWAP line plotted on chart, SL reference lines at 0.10/0.15 ATR for 5 minutes after signal, VWAP cross exit alert after CONF ✓/✓★. 5-minute checkpoint (v2.7).
 
 **Retest system:** Session-long per-level tracking, chart-TF wick precision, configurable proximity, independent labels (`◆³ ORB H 2.1x ^85`), Retest-Only Mode.
 
@@ -459,6 +462,7 @@ bearBreak(float level) =>
 5. ~~**Tier G** — Dead code cleanup~~ ✅ Done in v2.4
 6. **Evidence Stack Filters** — ✅ Done in v2.5 (EMA, RS, ADX, Candle Body)
 7. **Runner Score + VWAP line + SL lines + VWAP exit alert** — ✅ Done in v2.6
+8. **Big-Move Fingerprint Integration** — ✅ Done in v2.8 (vol ramp, QBS/MC signals, ⚡ big-move flag, ⚠ body warning, moderate dim, Runner Score tuned)
 
 ---
 
@@ -658,7 +662,7 @@ Morning (9:30-10:00) big moves have 92% runner rate. Top fakeouts cluster in the
 | R1 | ~~**Lower/remove Body% filter**~~ | ✅ **IMPLEMENTED v2.7** — 50%→30% | ~~**HIGH**~~ |
 | R2 | ~~**VWAP as signal level**~~ | ✅ **IMPLEMENTED v2.7** — VWAP zone ±0.1 ATR, 9th level type | ~~**HIGH**~~ |
 | R3 | ~~**5-minute gate checkpoint**~~ | ✅ **IMPLEMENTED v2.7** — label update + alert after CONF | ~~**HIGH**~~ |
-| R4 | **Revise Runner Score vol factor** | Signal analysis | ≥5x or ≥10x instead of 2-5x | MEDIUM |
+| R4 | ~~**Revise Runner Score vol factor**~~ | ✅ **IMPLEMENTED v2.7** (≥5x) + v2.8 tuned time 9:30-10, +TSM D-tier | ~~MEDIUM~~ |
 | R5 | **HIGH-level dimming** | Signal analysis | ORB H 14% vs Yest L 30% CONF | MEDIUM |
 | R6 | **GLD special handling** | Signal analysis | 6% CONF rate is extreme outlier | LOW |
 
@@ -671,3 +675,45 @@ From all analyses combined, trade quality depends on:
 3. **Momentum confirmation** — positive at 5 minutes + EMA aligned = 93% runner, 0% fakeout
 
 What traditional TA emphasizes (body%, high volume at signal bar) is either noise or inverted for predicting follow-through.
+
+---
+
+### Multi-Symbol Big-Move Fingerprint (2x 5m-ATR, March 2026)
+
+**Data:** 2,069 moves across 13 symbols, Dec 2025 – Mar 2026. Threshold: 5m bar range ≥ 2x ATR(14).
+**Overall: 65% runner rate, 5% fakeout rate.** ~3 moves/day/symbol.
+
+#### What GENERALIZES (validated across all/most symbols):
+
+| # | Finding | Evidence | Symbols validated |
+|---|---------|----------|-------------------|
+| 1 | **5-min P&L positive = THE universal predictor** | Runners 60-67% positive at 5min, fakeouts 0% — every symbol | 12/12 (all with 5s data) |
+| 2 | **Morning 9:30-10 = best time** | 70% runner rate vs 49% afternoon (+21% gap) | 11/13 (not GLD, SLV) |
+| 3 | **Body% is INVERSE** | High body (63.5%) = MORE fakeouts vs runners (55.9%) = -7.6 gap | Universal |
+| 4 | **Pre-vol ramp: U-shaped** | Drying (<0.5x) = 68% runner; Explosive (>5x) = 64% + best MFE 2.66; Moderate (1-2x) = worst 56% | Universal pattern |
+
+#### What DOESN'T generalize (TSLA-specific or inconsistent):
+
+| # | Finding | Reality | Action |
+|---|---------|---------|--------|
+| 5 | ~~ADX differentiates~~ | Only +1.9 gap multi-symbol. GLD/SLV inverse. | Keep ADX>20 filter (blocks worst), but don't weight in Runner Score |
+| 6 | ~~Gap Down = more runners~~ | Only AMD/AMZN/QQQ/TSLA/TSM. GLD is -29% inverse! | Symbol-specific, not generalizable |
+| 7 | ~~EMA/VWAP aligned~~ | -4% gap (slightly inverse at 2x ATR level) | Noise at big-move threshold — don't use for big-move filtering |
+| 8 | ~~Pre-vol ramp = monotonic~~ | It's U-shaped: drying AND explosive both good, moderate worst | Revise assumption |
+
+#### Symbol Tiers (2x ATR runner rate):
+
+| Tier | Symbols | Runner% range |
+|------|---------|---------------|
+| A | QQQ (72%), META (71%), GOOGL (70%), AMD (69%), AMZN (69%) | 69-72% |
+| B | MSFT (68%), SPY (67%), TSLA (66%), AAPL (63%), NVDA (63%) | 63-68% |
+| C | GLD (61%), SLV (57%) | 57-61% |
+| D | TSM (38%) | <40% — outlier |
+
+#### Key Insight: The "Quiet Before Storm" Pattern
+Pre-move volume DRYING (<0.5x ramp) + big 2x ATR bar = 68% runner, only 3% fakeout.
+This is the classic consolidation-then-explosion setup. The big bar IS the breakout from the quiet.
+Conversely, explosive pre-ramp (>5x) = slightly fewer runners (64%) but best MFE (2.66 ATR) when it works.
+Moderate ramping (1-2x) = worst bucket: 56% runner, 7% fakeout. Already distributed.
+
+**Data files:** `debug/multisym-bigmove-data.csv` (2069 rows), `debug/multisym-bigmove-fingerprint.md`, `debug/tsla-bigmove-data.csv` (6761 rows)

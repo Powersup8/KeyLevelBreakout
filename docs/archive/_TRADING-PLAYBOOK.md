@@ -152,7 +152,20 @@ Avoid: HIGH levels (ORB H worst at 8.5% BAD)
 | ③ | Decent setup | +0.047 ATR avg, 2.4% BAD |
 | ①② | Weak — be selective | Higher BAD rate |
 
-Factors: VWAP aligned, vol 2-5x, time 10-11, level quality (LOW for bear, confluence for bull), not D-tier symbol
+Factors: VWAP aligned, vol ≥5x, time 9:30-10, level quality (LOW for bear, confluence for bull), not D-tier symbol (AMD/MSFT/GLD/TSM)
+
+### QBS/MC Signals (v2.8)
+New standalone signal type based on pre-move volume ramp fingerprint (no key level needed):
+
+| Signal | Meaning | Color | Data |
+|--------|---------|-------|------|
+| **🔇 QBS** | Volume drying (<0.5x) before big bar — "quiet before storm" | Cyan/teal | 68% runner, 3% fakeout |
+| **🔊 MC** | Volume surging (>5x) before big bar — "momentum cascade" | Orange | 64% runner, 3% fakeout, best MFE 2.66 |
+| **⚡** | Big move — bar range ≥ 2x signal-TF ATR | Size upgrade | 65% runner across 13 symbols |
+| **⚠** | Body ≥80% — fakeout warning | Appended text | 55% fakeouts vs 36% runners — INVERSE |
+| **Gray ?** | Moderate vol ramp (1-2x) — trap bucket | Dimmed | Worst bucket: 56% runner, 7% fakeout |
+
+**Trading QBS/MC:** These fire once per direction per session with CONF tracking. Treat like reversal signals — ADX + Body filter applied. Best in morning 9:30-10 window.
 
 ### VWAP Exit Alert
 After CONF ✓/✓★, the indicator tracks VWAP. When price crosses VWAP against your position, an alert fires. This is your **momentum death signal** — consider closing.

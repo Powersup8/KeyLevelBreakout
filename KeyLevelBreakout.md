@@ -1,373 +1,317 @@
-# Key Level Breakout — Single Symbol
+# KeyLevelBreakout v2.8 — Reference
 
-Overlay indicator for US equities (NYSE/NASDAQ) that detects four types of price action setups at key intraday levels: breakouts (continuation through a level), reversals (rejection off a level zone), reclaims (reversal after a failed breakout), and retests (pullback to a broken level that holds). Monitors Premarket High/Low, Yesterday High/Low, Last Week High/Low, and Opening Range Breakout High/Low — each toggleable independently.
+| Doc | What's Inside |
+|-----|---------------|
+| [PLAYBOOK.md](PLAYBOOK.md) | Signal Catalog, Time Windows, Avoid List, Decision Flowchart, Execution, Symbols |
+| **KeyLevelBreakout.md** | Setup, Signal Types, Label Anatomy, CONF System, Levels, Filters, Visuals, Alerts, Settings |
+| [DESIGN-JOURNAL.md](DESIGN-JOURNAL.md) | The Idea, Data Foundation, Key Discoveries, Filter Validation, Evolution, Dead Ends |
 
-All signals evaluate on confirmed signal-timeframe candle closes (default 5m) to avoid noise, while the chart can run on any lower timeframe (e.g. 1m) for detail. Breakouts require above-average volume (directional 2-bar lookback) and ATR-buffered level clearance. Level zones use wick-to-body ranges from daily/weekly candle data (or ATR-derived width for PM/ORB), visualized as shaded bands when level lines are enabled. Per-level retest tracking monitors each broken level independently after a breakout, recording bar count and price action quality (volume multiple + close position %) on the retest candle. Labels use line breaks to separate level names, quality metrics, and retest lines for readability. A Retest-Only Mode suppresses breakout labels entirely, showing only retest entries — useful for traders who use the breakout as confirmation but trade the retest.
+---
 
-## Features
+## 1. Setup
 
-- **Green labels** (bullish) / **Red labels** (bearish) with dynamic text (e.g. "PM H 2.1x", "Yest L 1.8x")
-- **Volume Confirmation** — filter breakouts by above-average volume with directional 2-bar lookback (toggleable, on by default)
-- **ATR Buffer Zone** — require wick beyond level ± X% of daily ATR and close beyond raw level (toggleable, on by default)
-- **Close Position %** — shows where the close landed within the bar's range (e.g. `^78` = 78% toward the high = strong buying pressure)
-- **Post-Breakout Confirmation** — monitors after breakout for retest-and-hold (◆), or failure (✗); retests fire independent labels and alerts
-- **Conviction coloring** — label opacity scales with volume ratio (transparent = low conviction, opaque = strong conviction); wider alpha range makes differences more visible
-- **CONF ✓ visual boost** — confirmed breakouts (auto-promoted) turn solid green (bull) / solid red (bear) with white text; high-conviction (✓ + ≥5x volume + ≥80% close position) turn gold with ✓★ marker and black text; all CONF labels resize to `size.normal`
-- **Afternoon dimming** — signals after 11:00 ET render smaller and more transparent (toggleable, on by default); follow-through drops to near zero in the afternoon based on 6-week analysis
-- **Chop day warning** — after 3+ consecutive CONF failures with zero passes at session start, an orange "CHOP?" label appears (toggleable, on by default)
-- **VWAP Directional Filter** — suppress counter-trend reversals (bear reversals above VWAP, bull reversals below VWAP); on by default
-- **Confluence merging** — when multiple levels break on the same bar, labels and alerts merge (e.g. "PM H + Yest H 2.1x") with a larger label size
-- **Reversal setups** — detects rejection off level zones (wick enters zone, close rejects); bullish at LOW levels (blue), bearish at HIGH levels (orange)
-- **Reclaim setups** — context-enriched reversal when a prior breakout was invalidated (false breakout → rejection); labeled with `~~` prefix
-- **Level zones** — wick-to-body zones for daily/weekly levels (candle body data), ATR-derived for PM/ORB (toggleable)
-- **Setup time window** — configurable active window for reversal/reclaim signals (default 9:30-11:30 ET); optional via "Limit Reversal Window" toggle (off by default = reversals fire all session)
-- **Zone band visualization** — Shaded bands between wick and body edge for each level when level lines are on; wide band = strong rejection zone
-- **Per-level retest tracking** — Each broken level tracked independently with configurable window (Short/Extended/Session); retests fire independent labels at the retest bar (e.g. `◆³ ORB H 2.1x ^85`) plus alerts in all modes
-- **Retest-Only Mode** — Suppress breakout labels (small gray dot); only retest signals fire their own labels and alerts
-- **Label management** — Same-bar breakout + reversal merge into one label; cooldown dimming for rapid signals (configurable, default 2 signal bars); vertical offset for adjacent labels to prevent overlap
-- **Optional level lines** — Horizontal lines for all active levels (off by default to reduce clutter)
-- **Once Per Breakout** — One signal per level, re-arms after invalidation (on by default); turn off for backtesting
-- **`alert()` calls** — One merged alert per direction per bar (e.g. "Bullish breakout: PM H + Yest H")
-- **7 `alertcondition()` entries** — "Any Bullish/Bearish Breakout", "Any Breakout", "Any Bullish/Bearish Reversal", "Any Reversal", "Any Setup" for filtering in TradingView's alert dropdown
-- **VWAP line** — plots session VWAP as orange line on chart (toggleable, on by default); VWAP alignment is the #1 signal quality predictor (54% vs 10% CONF rate)
-- **Runner Score ①-⑤** — scores each signal on 5 data-driven factors (VWAP aligned, vol 2-5x, time 10-11, level quality, symbol tier); appended to quality line on labels; Score 5 signals average +0.071 ATR with only 1.4% BAD rate
-- **SL reference lines** — draws 0.10 ATR (dashed orange) and 0.15 ATR (solid red) stop-loss lines for 30 minutes after each CONF ✓/✓★ (toggleable, on by default); entry proxy = confirming breakout's close price; BAD signals hit 0.10 ATR adverse by minute 2, 0.15 ATR by minute 5
-- **VWAP cross exit alert** — after CONF ✓/✓★, fires an alert when price crosses VWAP against the confirmed direction; dedicated `alertcondition` for TradingView alert subscription; VWAP-based exits achieve Sharpe >3.0 in academic research (Maroy 2025)
-- **Multi-level size boost** — labels with 2+ levels (confluence breakouts) render as `size.large` for visual emphasis
-- **Debug Signal Table** — togglable chart overlay table listing all session signals with Time, Dir, Type, Levels, Vol, Pos, Conf, OHLC columns; configurable position and max rows; color-coded by setup type
-- **Debug Pine Logs** — togglable `log.info()` output with full signal data (`[KLB]` prefix) plus confirmation state change entries (`[KLB] CONF`); includes extended data (ATR, raw volume, volume SMA, buffer, level prices); all log calls gated by `barstate.isconfirmed` to prevent duplicate entries on real-time ticks
+1. **Paste** `KeyLevelBreakout.pine` into TradingView Pine Editor, click **Add to chart**. Works on any timeframe at or below Signal Timeframe (e.g. 1m chart with 5m signals).
+2. **Enable Extended Trading Hours** in chart settings (gear icon → Symbol → Extended Hours). Required for premarket level tracking.
+3. **Add alert** → Condition: `Key Level Breakout` → `Any alert() function call`. This single alert covers all signal types, confirmations, retests, failures, VWAP exits, and QBS/MC.
 
-## Setup
+---
 
-1. Open TradingView Pine Editor, paste `KeyLevelBreakout.pine`, click **Add to chart** (works on any timeframe ≤ the Signal Timeframe — e.g. 1m chart with 5m signals)
-2. Enable **Extended Trading Hours** in chart settings (required for premarket levels)
-3. Set up alerts:
-   - **Quick (recommended)**: Add one alert → Condition: `Key Level Breakout` → `Any alert() function call` — covers all levels, one toggle to switch on/off
-   - **Granular**: Use `alertcondition()` entries from the dropdown — "Any Bullish", "Any Bearish", or "Any Breakout"
-   - Visual markers (labels) always appear on the chart regardless of alert setup — alerts and visuals fire from the same signals
+## 2. Signal Types
 
-## Inputs
+Six signal types, each with a specific trigger and visual style.
 
-| Input | Default | Group | Description |
-|-------|---------|-------|-------------|
-| Premarket High/Low | On | Level Toggles | Track and alert on premarket levels |
-| Yesterday High/Low | On | Level Toggles | Track and alert on previous day levels |
-| Last Week High/Low | On | Level Toggles | Track and alert on previous week levels |
-| ORB High/Low | On | Level Toggles | Track and alert on opening range levels |
-| Once Per Breakout | On | Signals | One signal per level; re-arms after invalidation |
-| Signal Timeframe | 5 (5m) | Signals | Timeframe for breakout evaluation — signals only fire on closed bars of this TF |
-| Show Level Lines | Off | Visuals | Plot horizontal lines for active levels |
-| Show VWAP Line | On | Visuals | Plot session VWAP on chart (white line) — #1 directional filter |
-| Show SL Lines (5 min) | On | Visuals | Draw 0.10 ATR (orange dashed) and 0.15 ATR (red solid) stop-loss reference lines for 5 minutes |
-| Fade Old Labels | On | Visuals | Gray out labels older than N bars from chart edge — toggle off for historical analysis |
-| Fade After (signal bars) | 100 | Visuals | Age threshold for fading in signal-TF bars (100 × 5m = ~8 hours, well beyond one session) |
-| Dim Afternoon Signals | On | Visuals | Reduce size and opacity for signals after 11:00 ET (follow-through drops to near zero) |
-| Require Above-Avg Volume | On | Filters | Gate breakouts on above-average volume (directional 2-bar lookback: borrows prior bar volume only if same direction) |
-| Volume Baseline | Signal TF SMA | Filters | Compare against signal-TF SMA (granular) or daily average (stable) |
-| Volume Multiplier | 1.5 | Filters | How many times above average volume is required (e.g. 1.5 = 150%) |
-| Volume SMA Length | 20 | Filters | Lookback period for the volume moving average |
-| Use ATR Buffer | On | Filters | Require wick beyond level ± X% of daily ATR(14) and close beyond raw level |
-| Breakout Buffer (% of ATR) | 5.0 | Filters | How far past the level the wick must push to trigger a breakout (close only needs to hold above raw level) |
-| Re-arm Buffer (% of ATR) | 3.0 | Filters | How far back through the level price must close to re-arm the signal |
-| Show Close Position % | On | Quality | Display where the close landed within the bar's range (0-100%) |
-| Post-Breakout Confirmation | On | Confirmation | Monitor after breakout for retest-and-hold or failure |
-| Retest Window | Session | Confirmation | How long to track retests: Short (50 min), Extended (2.5 hr), or Session (until invalidated) |
-| Retest Proximity (% of ATR) | 3.0 | Confirmation | How close a wick must come to the broken level to count as a retest |
-| Retest-Only Mode | Off | Signals | Suppress breakout labels; only fire retest labels and alerts |
-| Signal Cooldown (signal bars) | 2 | Signals | Dim same-direction signals within N signal bars of the previous signal (0 = off) |
-| Chop Day Warning | On | Signals | Show "CHOP?" label after 3+ consecutive CONF failures with zero passes at session start |
-| Show Reversal Setups | On | Setups | Enable reversal signal detection at level zones |
-| Limit Reversal Window | Off | Setups | When ON, reversals only fire within Setup Active Window; when OFF (default), reversals fire all session |
-| Show Reclaim Setups | On | Setups | Enable reclaim labeling (reversal after failed breakout) |
-| Setup Active Window (ET) | 0930-1130 | Setups | Time window for reversal/reclaim signals when Limit Reversal Window is ON |
-| VWAP Directional Filter | On | Filters | Suppress counter-trend reversals: bear reversals above VWAP, bull reversals below VWAP |
-| Use Level Zones | On | Zones | Use wick-to-body zones instead of single-price levels |
-| Zone Width for PM/ORB | 3.0 | Zones | ATR% zone width for levels without candle body data |
-| PM H/L Reversal/Reclaim | On | Rev/Recl Toggles | Enable reversal/reclaim at premarket levels |
-| Yest H/L Reversal/Reclaim | On | Rev/Recl Toggles | Enable reversal/reclaim at yesterday levels |
-| Week H/L Reversal/Reclaim | On | Rev/Recl Toggles | Enable reversal/reclaim at weekly levels |
-| ORB H/L Reversal/Reclaim | On | Rev/Recl Toggles | Enable reversal/reclaim at opening range levels |
-| Show Runner Score (①-⑤) | On | Signals | Score each signal on 5 factors (VWAP, vol 2-5x, time 10-11, level quality, symbol tier); appended to quality line |
-| 5m EMA Alignment Filter | On | Filters | Suppress signals against the 5m EMA(20)/EMA(50) trend direction |
-| RS vs SPY Filter | On | Filters | Suppress long signals underperforming SPY (auto-bypasses SPY/QQQ/GLD/SLV) |
-| ADX Trend Strength Filter | On | Filters | Suppress signals when 5m ADX < 20 (chop/no trend) |
-| Candle Body Quality Filter | On | Filters | Suppress wick-heavy breakout candles (body < 50% or close in wrong zone) |
-| Filter Mode | Suppress | Filters | Suppress: hide signals entirely. Dim: show as gray with `?` suffix |
-| Show Signal Table | Off | Debug | Display a summary table of all session signals on the chart |
-| Log Signals (Pine Logs) | Off | Debug | Output full signal data to Pine Logs panel with `[KLB]` prefix |
-| Table Position | bottom_right | Debug | Chart corner for the debug table (6 positions) |
-| Max Table Rows | 20 | Debug | Maximum number of signals shown in the table (5-50) |
+**Breakout** — Signal-TF bar closes through a key level as a directional candle (bullish or bearish), with prior bar(s) on the other side of the level. Green labels (bull) / red labels (bear).
 
-## Once Per Breakout (Invalidation Logic)
+**Reversal (~)** — Wick enters a level zone, close rejects back out. Bullish reversals fire at LOW levels (blue labels), bearish reversals at HIGH levels (orange labels). No volume gate — reversals are judged by rejection quality, not volume.
 
-When enabled (default), each level fires **one signal** then stays suppressed until **invalidated**:
+**Reclaim (~~)** — Reversal after a prior breakout at that level was invalidated (CONF ✗). "False breakout then rejection." Same color scheme as reversals, brighter hue. Requires CONF system to be ON for the invalidation context.
 
-- Bullish breakout above PM High fires — suppressed while price holds above
-- Price closes back below PM High minus the re-arm buffer (on a signal-TF bar) — **invalidated** (re-armed)
-- Next bullish close above PM High plus the breakout buffer — fires again
+**Retest (◆)** — After a breakout, price pulls back to the broken level within configurable proximity and holds. Each broken level is tracked independently. Fires an independent label at the retest bar (e.g. `◆³ ORB H 2.1x ^85`) and also appends a retest line to the original breakout label. The superscript number is the count of signal-TF bars since breakout.
 
-Each level is tracked independently — a suppressed PM High does not block a subsequent Yesterday High breakout. All flags reset at each regular session open. Turn **off** to fire on every qualifying cross (useful for backtesting).
+**QBS (🔇 Quiet Before Storm)** — Pre-move volume drying (ramp < 0.5×) followed by a big bar (range ≥ 1.5× signal-TF ATR). Cyan labels. Once per direction per session. Does not require a key-level breakout.
 
-## Signal Timeframe
+**MC (🔊 Momentum Cascade)** — Pre-move volume surging (ramp > 5×) followed by a big bar (range ≥ 1.5× signal-TF ATR). Orange labels. Once per direction per session. Does not require a key-level breakout.
 
-The **Signal Timeframe** input (default: 5m) controls which candle closes are evaluated for breakouts. This lets you view a lower timeframe chart (e.g. 1m) for more detail while only triggering signals on completed 5m candles.
+### Direction Reference
 
-- **Chart on 5m, Signal TF = 5m**: Markers appear directly on the breakout candle
-- **Chart on 1m, Signal TF = 5m**: Markers appear on the last 1m candle of the 5m period (where the 5m bar closed) — only one signal per 5m bar, not on every 1m candle
-- **Chart timeframe must be ≤ Signal Timeframe** (e.g. 1m or 3m chart with 5m signals works; 15m chart with 5m signals does not)
+| Setup | At HIGH level | At LOW level |
+|-------|--------------|-------------|
+| Breakout | ▲ LONG (green) | ▼ SHORT (red) |
+| Reversal ~ | ▼ SHORT (orange) | ▲ LONG (blue) |
+| Reclaim ~~ | ▼ SHORT (orange, brighter) | ▲ LONG (blue, brighter) |
+| Retest ◆ | Confirms original break direction | Confirms original break direction |
 
-Level tracking (premarket, ORB) still uses chart-native data for maximum granularity.
+QBS and MC signals are direction-agnostic relative to levels — they fire based on candle direction (close > open = bull, close < open = bear).
 
-## Post-Breakout Confirmation & Retest Tracking
+---
 
-When enabled (default), the indicator tracks retests **per level** after a breakout. Each broken level (e.g. PM H, Yest H) is monitored independently on every chart bar for maximum precision.
+## 3. Label Anatomy
 
-**Retest detection:** After a breakout, retest monitoring begins on the very next chart bar (e.g. the first 1m candle after the breakout's 5m period). If a candle's wick comes within the Retest Proximity (default 3% of ATR) of a broken level and the close holds on the breakout side, that level's retest is recorded. Early retests (1-2 bars after breakout) are stronger signals. Detection uses chart-TF data (e.g. 1m bars on a 1m chart) for precise wick detection, while timeout uses signal-TF bar counts for chart-independent consistency. Each retest creates an **independent label** at the retest bar showing:
-- `◆` + superscript bar count (signal bars since breakout)
-- Level name
-- Volume multiple and close position % of the retest candle
-
-The original breakout label is also updated with the retest information.
-
-**Retest Window:** Controls how long retests are tracked:
-- **Short (50 min):** 10 signal bars — original behavior
-- **Extended (2.5 hr):** 30 signal bars — catches most intraday retests
-- **Session (default):** Tracks until invalidated or market close — catches all retests
-
-**Label format:**
-```
-◆³ ORB H 2.1x ^85
-```
-Independent label at the retest bar. Original breakout label also updated:
-```
-ORB H + Yest H
-1.8x ^82
-◆³ ORB H 2.1x ^85
-◆⁷ Yest H 1.4x ^71
-```
-
-**Failure:** If price closes back through the most conservative level beyond the re-arm buffer, the label is updated with `✗` and grayed out.
-
-**Auto-promotion:** If a new breakout fires while a previous one is being monitored, the previous one gets promoted to ✓ (it survived). The label turns **lime green** for regular confirmations, or **gold with ✓★** for high-conviction signals (≥5x volume AND ≥80% close position). High-conviction signals have a 54% win rate with 0% loss rate based on 6-week analysis. This is the only confirmation mechanism — 100% of CONF passes are auto-promotes.
-
-**Alerts:** Retest alerts fire in all modes (not just Retest-Only): `"Retest: ◆³ ORB H 2.1x ^85"`.
-
-**Retest-Only Mode:** When `i_retestOnly` is ON:
-- Breakout labels are suppressed (replaced by small gray dots)
-- Retest signals create their own labels at the retest bar
-- Only retest alerts fire; breakout alerts are suppressed
-- Reversal/reclaim labels are unchanged
-
-## Reversal & Reclaim Setups
-
-When enabled, the indicator detects two additional setup types at level zones:
-
-**Reversal (`~` prefix):** A single-bar rejection pattern. The signal-TF bar's wick enters the level zone, but the close rejects back outside. Bullish reversals fire at LOW levels (e.g., `~ Yest L`), bearish at HIGH levels (e.g., `~ Yest H`). Labels are blue (bull) and orange (bear).
-
-**Reclaim (`~~` prefix):** A reversal that occurs after a prior breakout at the same level was invalidated. For example: price breaks above Yesterday High, falls back below (invalidated), then a bearish reversal fires at Yesterday High — labeled as `~~ Yest H` instead of `~ Yest H`. This "false breakout → rejection" pattern often carries stronger conviction.
-
-**Level Zones:** Each level is treated as a range (body edge to wick edge) rather than a single price:
-- **Daily/Weekly levels:** Zone from candle body edge (`max(open, close)` for highs, `min(open, close)` for lows) to the wick (high/low)
-- **PM/ORB levels:** Zone derived from ATR (configurable width, default 3%)
-- When zones are disabled, all levels collapse back to single-price lines
-
-Reversal/reclaim signals respect all existing filters (volume, Once Per Breakout). By default, reversals fire during the entire regular session (9:30-16:00 ET). Enable "Limit Reversal Window" to restrict them to the Setup Active Window (default 9:30-11:30 ET). An optional VWAP Directional Filter suppresses counter-trend reversals. Breakout signals always fire all session regardless of these settings.
-
-When a new reversal/reclaim fires at a level that already had a prior reversal/reclaim signal, the prior label is grayed out (superseded by the newer signal with more context).
-
-## Zone Band Visualization
-
-When **Show Level Lines** and **Use Level Zones** are both ON, shaded bands are drawn between the wick line and the body edge for each level. The band width carries information:
-
-- **Daily/Weekly levels:** Band width varies based on actual candle body-to-wick distance — a wide band means a long wick (strong rejection)
-- **PM/ORB levels:** Uniform width derived from ATR (no single candle to reference)
-
-Colors match the level type: orange (PM), blue (Yesterday), purple (Weekly), teal (ORB) at 85% transparency.
-
-## Setup Direction Reference
-
-Four setup types, each with a clear directional rule:
-
-| Setup | At HIGH level (resistance) | At LOW level (support) | Rule |
-|-------|---------------------------|----------------------|------|
-| **Breakout** | Bullish break above → LONG | Bearish break below → SHORT | Trade the break |
-| **Reversal `~`** | Bearish rejection down → SHORT | Bullish rejection up → LONG | Fade the approach |
-| **Reclaim `~~`** | Bearish rejection after failed bull break → SHORT | Bullish rejection after failed bear break → LONG | Fade the trapped side |
-| **Retest `◆✓`** | Pullback to level, held above → confirms LONG | Bounce to level, held below → confirms SHORT | Confirms original break |
-
-**Breakout example (Yest H = $150):** Price closes above $150 on a green candle with volume → LONG.
-```
-Yest H
-2.1x ^78
-```
-
-**Reversal example (Yest H = $150):** Price wicks into $150 zone from below, closes back below on a red candle → SHORT.
-```
-~ Yest H
-1.8x v82
-```
-
-**Reclaim example (Yest H = $150):** Earlier bullish breakout above $150 failed. Price approaches again, wicks in, closes back below → SHORT.
-```
-~~ Yest H
-2.3x v85
-```
-
-**Retest example (Yest H + ORB H = $150):** Confluent bullish breakout. 3 bars later, ORB H retested and held. 7 bars later, Yest H retested and held.
-```
-ORB H + Yest H
-1.8x ^82
-◆³ ORB H 2.1x ^85
-◆⁷ Yest H 1.4x ^71
-```
-
-**Failed example:** Price closed back through the level → label grayed out.
-```
-Yest H
-1.8x ^82
-✗
-```
-
-**Retest-Only Mode:** Breakout becomes gray `·` dot. Retest fires its own label:
-```
-◆³ ORB H
-2.1x ^85
-```
-
-### Visual Reference
+Every label stacks information on separate lines. A fully-loaded example:
 
 ```
-  AT HIGH LEVELS (resistance)            AT LOW LEVELS (support)
-  ═══════════════════════════            ═════════════════════════
-
-  BREAKOUT                               BREAKOUT
-  Price breaks ABOVE                     Price breaks BELOW
-  ▲ LONG (green label)                   ▼ SHORT (red label)
-  ┌────────────┐                         ┌────────────┐
-  │ Yest H     │                         │ Yest L     │
-  │ 2.1x ^78   │                         │ 1.8x v72   │
-  └────────────┘                         └────────────┘
-
-  REVERSAL ~                             REVERSAL ~
-  Wick enters zone, close rejects        Wick enters zone, close rejects
-  ▼ SHORT (orange label)                 ▲ LONG (blue label)
-  ┌────────────┐                         ┌────────────┐
-  │ ~ Yest H   │                         │ ~ Yest L   │
-  │ 1.8x v82   │                         │ 2.0x ^75   │
-  └────────────┘                         └────────────┘
-
-  RECLAIM ~~                             RECLAIM ~~
-  Prior break FAILED, now rejecting      Prior break FAILED, now rejecting
-  ▼ SHORT (orange, brighter)             ▲ LONG (blue, brighter)
-  ┌────────────┐                         ┌────────────┐
-  │ ~~ Yest H  │                         │ ~~ Yest L  │
-  │ 2.3x v85   │                         │ 2.5x ^80   │
-  └────────────┘                         └────────────┘
-
-  RETEST ◆                              RETEST ◆
-  Pullback to level, held                Bounce to level, held
-  ▲ confirms LONG                        ▼ confirms SHORT
-  ┌──────────────────────┐               ┌──────────────────────┐
-  │ Yest H               │               │ Yest L               │
-  │ 2.1x ^78             │               │ 1.8x v72             │
-  │ ◆³ Yest H 1.9x ^80  │               │ ◆³ Yest L 1.7x v78  │
-  └──────────────────────┘               └──────────────────────┘
-
-  FAILED ✗                               FAILED ✗
-  Closed back through level              Closed back through level
-  Label grayed out                       Label grayed out
-  ┌────────────┐                         ┌────────────┐
-  │ Yest H     │                         │ Yest L     │
-  │ 2.1x ^78   │                         │ 1.8x v72   │
-  │ ✗          │                         │ ✗          │
-  └────────────┘                         └────────────┘
+⚡🔇 ORB L + PM L
+5.5x ^92 ④ ⚠
+◆³ ORB L 2.1x ^85
+✓★
 ```
 
-### Flow at a HIGH Level
+Line 1: `⚡🔇 ORB L + PM L` — Big-move flag, volume ramp glyph, level names (merged when confluent).
+Line 2: `5.5x ^92 ④ ⚠` — Volume ratio, close position, Runner Score, body warning.
+Line 3: `◆³ ORB L 2.1x ^85` — Retest line (per-level, superscript = signal bars since breakout).
+Line 4: `✓★` — Confirmation status.
 
+### Metrics Reference
+
+| Symbol | Meaning | Example |
+|--------|---------|---------|
+| `2.1x` | Volume ratio vs SMA(20) baseline | 2.1× average volume |
+| `^82` | Bull close position (82% toward bar high) | — |
+| `v85` | Bear close position (85% toward bar low) | — |
+| `◆³` | Retest, 3 signal bars after breakout | — |
+| `✓` | Confirmed (auto-promoted) | Solid green/red, white text |
+| `✓★` | High-conviction confirmed (≥5× vol + ≥80% pos) | Gold label, black text |
+| `✗` | Failed (closed back through level) | Grayed out |
+| `~` | Reversal (rejection off zone) | Blue/orange label |
+| `~~` | Reclaim (reversal after failed breakout) | Blue/orange, brighter |
+| `①`–`⑤` | Runner Score (5 factors) | Higher = more factors aligned |
+| `⚡` | Big move (bar range ≥ 2× signal-TF ATR) | Label upgrades to size.large |
+| `🔇` | Vol drying (ramp < 0.5×) — quiet before storm | Cyan label for standalone QBS |
+| `🔊` | Vol surging (ramp > 5×) — momentum cascade | Orange label for standalone MC |
+| `⚠` | Body ≥ 80% — fakeout warning | Appended to quality line |
+| `?` | Dimmed signal (failed filter or moderate ramp) | Gray, size.tiny |
+| `CHOP?` | 3+ consecutive CONF failures at session open | Orange label, no passes yet |
+
+---
+
+## 4. Confirmation System
+
+The CONF system tracks whether a breakout "survives" or fails.
+
+**Auto-promote (✓):** When a new breakout fires in the same direction, the previous breakout's label is promoted to ✓ — it survived long enough for another signal to follow. 100% of CONF passes use this mechanism.
+
+**CONF ✓** — Label turns solid green (bull) or solid red (bear) with white text. Label resizes to `size.normal`.
+
+**CONF ✓★** — Gold label with black text. Requires the original signal to have had ≥5× volume ratio AND ≥80% close position. Same resize to `size.normal`.
+
+**CONF ✗** — Label turns gray. Fires when price closes back through the most conservative level (lowest for bull breakouts, highest for bear) beyond the re-arm buffer. Resets the level for new signals.
+
+**5-minute checkpoint** — One signal-TF bar after CONF ✓/✓★, evaluates P&L relative to the confirming breakout's close. Appends `5m✓` (positive P&L = hold) or `5m✗` (negative P&L = bail) to the confirmed label. Fires a HOLD or BAIL alert.
+
+**VWAP exit alert** — After CONF ✓/✓★, monitors for price crossing VWAP against the confirmed direction. Fires an alert when a bull position crosses below VWAP, or a bear position crosses above VWAP. Resets at session start.
+
+---
+
+## 5. Levels
+
+Nine level types across five sources.
+
+| Level Type | Source | Zone Width | Reset |
+|------------|--------|------------|-------|
+| Premarket H/L | 04:00–09:30 ET live bars | ATR-derived (configurable, default 3%) | Daily |
+| Yesterday H/L | Prior day candle (non-repainting) | Wick-to-body range from daily OHLC | Daily |
+| Last Week H/L | Prior week candle (non-repainting) | Wick-to-body range from weekly OHLC | Weekly |
+| ORB H/L | First signal-TF bar of regular session | ATR-derived (configurable, default 3%) | Daily |
+| VWAP zone | Session VWAP ± 0.1× daily ATR | ATR-derived, continuous | Continuous |
+
+**Zones:** When "Use Level Zones" is ON, each level expands to a range:
+- Yesterday/Week: body edge (min/max of open, close) to wick edge (high/low). Wide zone = strong rejection area.
+- PM/ORB: ATR-derived fixed width above and below the wick price.
+- VWAP: ± 0.1× daily ATR around the live VWAP value.
+
+Zone bands are visible as shaded fills when Show Level Lines is ON.
+
+**ORB guard:** The first signal-TF bar after the ORB window is skipped for ORB signals, since that bar's data formed the ORB itself (self-referencing).
+
+---
+
+## 6. Filters
+
+Nine configurable filters. Each can be independently toggled. Filter Mode controls what happens to blocked signals.
+
+| Filter | What it does | Default |
+|--------|-------------|---------|
+| Volume | Requires signal-TF volume > multiplier × SMA(20). Uses directional 2-bar lookback (borrows prior bar's volume if same direction). | ON, 1.5× |
+| ATR Buffer | Wick must push past level ± X% of daily ATR; close must hold beyond the raw level price. | ON, 5% |
+| VWAP Direction | Suppresses counter-trend reversals: bear reversals above VWAP, bull reversals below VWAP. | ON |
+| Once Per Breakout | One signal per level per direction. Re-arms when price closes back through level (invalidation). | ON |
+| 5m EMA Alignment | Blocks signals against the 5m EMA(20)/EMA(50) trend direction. | ON |
+| RS vs SPY | Blocks long signals when the symbol underperforms SPY (and vice versa for shorts). Auto-bypasses SPY, QQQ, GLD, SLV. | ON |
+| ADX > 20 | Blocks signals when 5m ADX(14) < 20 (choppy/trendless environment). | ON |
+| Candle Body Quality | Blocks wick-heavy candles: body < 30% of range, or close in the wrong 40% of the bar. | ON |
+| Filter Mode | **Suppress:** filtered signals are hidden entirely. **Dim:** filtered signals show as gray with `?` suffix, size.tiny. | Suppress |
+
+Breakout signals must pass both Volume and ATR Buffer. Reversal/reclaim signals must pass VWAP Direction but do not require the Volume gate. QBS/MC signals pass through the reversal filter gate (EMA, RS, ADX, Body).
+
+---
+
+## 7. Visual Elements
+
+### Chart Overlays
+
+| Element | Style | When Visible |
+|---------|-------|-------------|
+| VWAP line | Orange (`#FF6D00`), width 2, semi-transparent | Regular session, when Show VWAP Line ON |
+| SL 0.10 ATR | Orange dashed, width 1 | 30 min after CONF ✓/✓★ signal |
+| SL 0.15 ATR | Red solid, width 1 | 30 min after CONF ✓/✓★ signal |
+| PM H/L lines | Orange, width 1 | Regular session, when Show Level Lines ON |
+| Yest H/L lines | Blue, width 1 | Regular session, when Show Level Lines ON |
+| Week H/L lines | Purple, width 1 | Regular session, when Show Level Lines ON |
+| ORB H/L lines | Teal, width 1 | Regular session, when Show Level Lines ON |
+| Zone fills | Same color as level line, 85% transparent | When Show Level Lines ON + Use Level Zones ON |
+
+SL line duration adapts to chart timeframe: 1800 seconds / timeframe-in-seconds = number of bars. On a 1m chart, SL lines extend 30 bars. Entry proxy is the confirming breakout's close price.
+
+### Label Modifiers
+
+| Condition | Visual Effect |
+|-----------|--------------|
+| Afternoon (after 11:00 ET) | Smaller size, more transparent |
+| Cooldown (within N signal bars of prior signal) | Gray, size.tiny |
+| Confluence (2+ levels on same bar) | size.large |
+| Big move (⚡, range ≥ 2× signal-TF ATR) | size.large |
+| Moderate vol ramp (1–2× ramp ratio) | Auto-dimmed: gray + `?` |
+| CONF ✓ / ✓★ | Resized to size.normal, color changed |
+| Volume-scaled opacity | Alpha = max(0, 60 − volRatio × 10), saturates at 6× |
+
+---
+
+## 8. Alerts
+
+### Programmatic Alerts (via "Any alert() function call")
+
+These fire through `alert()` calls. A single TradingView alert set to "Any alert() function call" catches all of them.
+
+| Alert Message Pattern | When |
+|-----------------------|------|
+| `Bullish breakout: PM H + Yest H 2.1x ^82` | Bull breakout fires |
+| `Bearish breakout: Yest L 1.5x v78` | Bear breakout fires |
+| `Bullish reversal: ~ PM L 1.9x ^75` | Bull reversal fires |
+| `Bearish reversal: ~ Yest H 2.0x v80` | Bear reversal fires |
+| `Retest: ◆³ ORB H 2.1x ^85` | Retest detected at broken level |
+| `Failed: ORB H + Yest H` | Breakout invalidated (CONF ✗) |
+| `5m HOLD ▲ +0.12 ATR` | 5-minute checkpoint positive |
+| `5m BAIL ▲ -0.05 ATR` | 5-minute checkpoint negative |
+| `VWAP exit ▼ — bull CONF position crossed below VWAP` | VWAP exit triggered |
+| `🔇 QBS Bull: vol drying → explosion 0.3x` | QBS signal fires |
+| `🔊 MC Bear: vol surging → continuation 6.2x` | MC signal fires |
+
+### alertcondition() Entries
+
+These appear in TradingView's alert condition dropdown for selective subscriptions.
+
+1. Any Bullish Breakout
+2. Any Bearish Breakout
+3. Any Breakout
+4. Any Bullish Reversal
+5. Any Bearish Reversal
+6. Any Reversal
+7. QBS — Quiet Before Storm
+8. MC — Momentum Cascade
+9. Any Setup
+10. VWAP Exit Signal
+
+---
+
+## 9. Settings Reference
+
+All `input.*` parameters, organized by group.
+
+| Setting | Default | Group |
+|---------|---------|-------|
+| Premarket High/Low | On | Level Toggles |
+| Yesterday High/Low | On | Level Toggles |
+| Last Week High/Low | On | Level Toggles |
+| ORB High/Low | On | Level Toggles |
+| Signal Timeframe | 5m | Signals |
+| Once Per Breakout | On | Signals |
+| QBS/MC Signals | On | Signals |
+| Show Runner Score ①–⑤ | On | Signals |
+| Signal Cooldown | 2 bars | Signals |
+| VWAP Zone Signals | On | Signals |
+| Retest-Only Mode | Off | Signals |
+| Show Reversal Setups | On | Setups |
+| Limit Reversal Window | Off | Setups |
+| Show Reclaim Setups | On | Setups |
+| Setup Active Window | 0930-1130 | Setups |
+| Post-Breakout Confirmation | On | Confirmation |
+| Retest Window | Session | Confirmation |
+| Retest Proximity | 3% ATR | Confirmation |
+| Require Above-Avg Volume | On | Filters |
+| Volume Baseline | Signal TF SMA | Filters |
+| Volume Multiplier | 1.5 | Filters |
+| Volume SMA Length | 20 | Filters |
+| Use ATR Buffer | On | Filters |
+| Breakout Buffer | 5% ATR | Filters |
+| Re-arm Buffer | 3% ATR | Filters |
+| VWAP Directional Filter | On | Filters |
+| 5m EMA Alignment Filter | On | Filters |
+| RS vs SPY Filter | On | Filters |
+| ADX Trend Strength Filter | On | Filters |
+| Candle Body Quality Filter | On | Filters |
+| Filter Mode | Suppress | Filters |
+| Show Close Position % | On | Quality |
+| Show Level Lines | Off | Visuals |
+| Show VWAP Line | On | Visuals |
+| Show SL Lines | On | Visuals |
+| Dim Afternoon Signals | On | Visuals |
+| Fade Old Labels | On | Visuals |
+| Fade After | 100 bars | Visuals |
+| Chop Day Warning | On | Signals |
+| Use Level Zones | On | Zones |
+| Zone Width PM/ORB | 3% ATR | Zones |
+| PM H/L Reversal/Reclaim | On | Reversal/Reclaim Toggles |
+| Yest H/L Reversal/Reclaim | On | Reversal/Reclaim Toggles |
+| Week H/L Reversal/Reclaim | On | Reversal/Reclaim Toggles |
+| ORB H/L Reversal/Reclaim | On | Reversal/Reclaim Toggles |
+| Show Signal Table | Off | Debug |
+| Log Signals (Pine Logs) | Off | Debug |
+| Table Position | bottom_right | Debug |
+| Max Table Rows | 20 | Debug |
+
+---
+
+## 10. Signal Timeframe
+
+Signal TF (default 5m) controls which candle closes are evaluated for breakout, reversal, reclaim, and QBS/MC signals. The chart can run on any lower timeframe (e.g. 1m) for visual detail — labels are identical regardless of chart TF.
+
+Level tracking uses chart-native data for granularity (premarket high/low updates every chart bar). Retest detection uses chart-TF bars for wick precision. SL line duration is computed in chart-TF bars (1800s / bar duration).
+
+All signal-TF data is fetched via `request.security()` with `lookahead = barmerge.lookahead_on` and `[1]` offset for non-repainting behavior.
+
+---
+
+## 11. Runner Score
+
+Five factors, each worth 1 point, displayed as ①–⑤ on labels.
+
+| Factor | Condition |
+|--------|-----------|
+| VWAP aligned | Close above VWAP (bull) or below VWAP (bear) |
+| Volume ≥ 5× | Volume ratio ≥ 5.0× SMA(20) baseline |
+| Time 9:30–10:00 | Signal fires in the first 30 minutes of regular session |
+| Not D-tier symbol | Symbol is not AMD, MSFT, GLD, or TSM |
+| Level quality | **Bear:** always +1 (bear breakouts are at LOW levels, which have higher follow-through). **Bull:** +1 only when 2+ levels break simultaneously (confluence). |
+
+Score is capped at ⑤. Only displayed when score ≥ 1 and Runner Score is enabled.
+
+---
+
+## 12. Debug
+
+### Signal Table
+
+Chart overlay table showing all session signals. Columns: Time, Dir, Type, Levels, Vol, Pos, Conf, OHLC. Color-coded by setup type. Configurable position and max rows (5–50).
+
+### Pine Logs
+
+`log.info()` output with `[KLB]` prefix, gated by `barstate.isconfirmed` to prevent duplicate entries on real-time ticks.
+
+Format:
 ```
-  Price at HIGH level (e.g. Yest H):
-
-       breaks above ──→ BREAKOUT (LONG) ──→ holds? ──→ ✓ auto-promoted
-            │                                    │
-            │                               pulls back to level
-            │                                    │
-            │                              ◆³ retest (per level)
-            │                              with PA quality
-            │                                 or
-            │                              ✗ failed ──→ hadBrk = true
-            │                                                │
-            └── rejected ──→ REVERSAL (SHORT)                │
-                                  │                          │
-                                  └── if hadBrk ──→ RECLAIM (SHORT)
-                                       (stronger conviction)
+[KLB] 9:40 ▲ BRK PM H vol=5.5x pos=^94 vwap=above ema=bull rs=+0.3% adx=28 body=72% O595.20 H596.10 L594.80 C596.05 ATR=1.25 SL=595.93/595.86 rawVol=1234567 volSMA=224000 buf=0.063 prices=596.10
 ```
 
-### Retest vs Reclaim
+Fields: time (ET), direction, type, levels, vol (ratio), pos (close position), vwap (above/below), ema (bull/bear trend), rs (% vs SPY), adx (5m value), body (candle body %), OHLC, ATR, SL (0.10/0.15 ATR), rawVol, volSMA, buf (ATR buffer), prices (level values).
 
-Both happen after a breakout — the difference is whether it held or failed:
-
-```
-  Breakout fires (e.g. bull break above Yest H)
-       │
-       ├── price pulls back to level, holds ABOVE
-       │   → ◆³ RETEST — confirms original direction (LONG)
-       │   per-level tracking with PA quality
-       │   "broken resistance is now support"
-       │
-       └── price closes back BELOW level (invalidation)
-           → ✗ FAILED — breakout is dead
-                │
-                └── price approaches level again, rejected
-                    → ~~ RECLAIM — opposite direction (SHORT)
-                    "breakout was a trap, fade it"
-```
-
-|  | Retest `◆` | Reclaim `~~` |
-|---|---|---|
-| Breakout outcome | Held (successful) | Failed (invalidated) |
-| Direction | Same as breakout | Opposite to breakout |
-| What it means | Level flipped role (resistance → support) | Trapped participants, fade them |
-| Tracking | Per-level with bar count + PA quality | New label at reclaim bar |
-| Visually | Appended as lines on breakout label | Creates a new label |
-
-These are **mutually exclusive** — at the same level, you either get a retest (breakout worked) or eventually a reclaim (breakout failed). Never both.
-
-## Alert Messages
-
-When using `Any alert() function call`, messages are merged per direction per bar:
-- `Bullish breakout: PM H 1.8x ^82` — single level (suppressed in Retest-Only Mode)
-- `Bearish breakout: Yest L 1.5x v78` — single level (suppressed in Retest-Only Mode)
-- `Bullish breakout: PM H + Yest H 2.1x ^82` — confluent (multiple levels on same bar)
-- `Retest: ◆³ ORB H 2.1x ^85` — retest detected (fires in all modes)
-- `Failed: ORB H + Yest H` — price closed back through level
-- `Bullish reversal: ~ PM L 1.9x ^75` — reversal detected
-- `Bearish reversal: ~ Yest H 2.0x v82` — reversal detected
-
-For directional filtering, use `alertcondition()` entries from the dropdown — "Any Bullish Breakout", "Any Bearish Breakout", or "Any Breakout".
-
-## Updating
-
-Edit the script in Pine Editor and click **Save** — all charts using the indicator update automatically. Don't click "Add to chart" again (that creates a duplicate).
-
-## Changelog
-
-- **v2.7** — Data-driven upgrades backed by multi-symbol fingerprint (1,841 signals) + big move fingerprint (9,596 bars, 13 symbols). **Body filter lowered** 50%→30% (body% has zero quality differentiation; body ≥80% is actually a fakeout indicator). **Runner Score vol factor** changed from 2-5x to ≥5x (10x+ = 32% CONF + 0.50 MFE; 2-5x = 20% CONF, no edge). **VWAP zone signals** — new 9th level type: reversal off VWAP ±0.1 ATR zone, full filter pipeline (ADX + Body), CONF tracking, Runner Score; solves "level desert" problem (data: moves at VWAP have 89% runner rate, 1.98 MFE). **5-minute checkpoint** — after CONF ✓/✓★, evaluates P&L 1 signal bar later; appends 5m✓ (hold) or 5m✗ (bail) to label + fires alert (data: >+0.05 ATR at 5min = 93% runner, 0% fakeout).
-- **v2.6d** — Signal quality fixes from TSLA Feb 25 analysis. **ORB same-bar reversal bug** fixed: ORB reversals no longer fire on the first signal bar after the ORB window (that bar's data defines the ORB — self-referencing); eliminated ~20 bogus ORB reversal signals per symbol per month. **CONF level tracking** changed from most-conservative to most-aggressive: bull breakouts now track the highest broken level (not lowest), so PM H + Week H tracks against Week H; catches meaningful failures when far-apart levels break on the same bar. **Reversal filter exemption**: EMA alignment and RS vs SPY filters no longer apply to reversals/reclaims (reversals are counter-trend by nature; these trend-following filters were incorrectly suppressing valid setups like ORB H rejections); ADX and Body Quality filters still apply to all signal types.
-- **v2.6** — Profitability features backed by bar-by-bar momentum analysis (1,697 signals, 5-second candle data). **VWAP line** plotted on chart (toggleable); **Runner Score ①-⑤** on labels: 5 factors (VWAP aligned, vol 2-5x, time 10-11, level quality, symbol tier) — bear signals get +1 for LOW level, bull signals get +1 for multi-level confluence; **SL reference lines** at 0.10 ATR (dashed orange) and 0.15 ATR (solid red) extending 5 minutes after each signal — auto-scales bar count by chart timeframe; **VWAP cross exit alert** fires after CONF ✓/✓★ when price crosses VWAP against position + dedicated alertcondition; **Multi-level size boost** renders 2+ level confluence as `size.large`; `max_lines_count=200` added to indicator declaration. Key data: GOOD signals peak at minute 23 (still climbing at 30m), BAD peak at 3.5 min; 85% of GOOD signals never reverse -0.10 ATR; Score 5 = +0.071 ATR avg, 1.4% BAD.
-- **v2.5** — Evidence Stack Filters: 4 toggleable signal quality filters backed by 1,748-signal backtest (5s candle data, 28 days, 13 symbols). **5m EMA Alignment** suppresses signals against the 5m EMA(20)/EMA(50) trend direction; **RS vs SPY** requires stock to outperform SPY for longs (auto-bypasses SPY, QQQ, GLD, SLV); **ADX Trend Strength** suppresses signals when 5m ADX < 20 (replaces CHOP? label when active); **Candle Body Quality** requires body > 50% of range and close in favorable 60% zone. Filter Mode: Suppress (hide entirely) or Dim (gray + ? suffix). All 4 combined keep ~30% of signals, improve GOOD:BAD from 3.0:1 to 3.8:1, BRK GOOD:BAD from 3.1:1 to 4.9:1. Pine Log output extended with ema/rs/adx/body fields. 3 new `request.security()` calls (total 8 of 40 max).
-- **v2.4** — Visual quality tiers: CONF ✓ labels turn lime green (regular) or gold with ✓★ (high-conviction: ≥5x volume + ≥80% close position); afternoon dimming reduces size/opacity for signals after 11:00 ET (toggleable); chop day warning shows orange "CHOP?" label after 3+ consecutive CONF failures at session start (toggleable); volume alpha range widened (35→60) for better visual differentiation of low vs high volume signals; VWAP position added to Pine Log output (`vwap=above/below`); dead code cleanup: removed window expiry promotion path (never fired in 6-week analysis — all CONF passes are auto-promotes)
-- **v2.3** — Signal quality fixes based on 3-day analysis (229 signals, 12 symbols): retest diamond bar count uses `bar_index` (1m accuracy) instead of `sigBarIdx` (display fix); reclaim (`~~`) gated behind CONF ✗ (only fires when preceding breakout's confirmation failed); VWAP directional filter default changed to ON (counter-trend reversals scored ~10% win rate); CONF race condition fix: `elapsed > 0` guard prevents immediate ✗ on same bar as CONF setup
-- **v2.2** — Retest timing fix: retest eligible from first chart bar after breakout (no multi-bar delay); self-retest guard aligned with label placement (`shapeOff`); early retests (1-2 bars) are stronger signals. Alert timing fix: breakout/reversal alerts now use `freq_once_per_bar` for immediate firing (data is from completed previous bar); retest/failure alerts stay `freq_once_per_bar_close` (current-bar data). Pine Logs fix: all 7 `log.info()` calls gated with `barstate.isconfirmed` to emit one entry per confirmed bar instead of 50-100+ duplicates on real-time ticks
-- **v2.1** — Debug Signal Table: togglable chart overlay table (8 columns: Time, Dir, Type, Levels, Vol, Pos, Conf, OHLC) with color-coded rows by setup type, configurable position and max rows; togglable Pine Logs output with full signal data (`[KLB]` prefix, extended fields: ATR, raw volume, volume SMA, buffer, level prices) plus confirmation state change entries (`[KLB] CONF`); both outputs independent, zero overhead when OFF
-- **v2.0** — Signal Quality: VWAP directional filter for reversals (suppress counter-trend signals); reversal time window now optional (default full session, toggle to limit); retest system overhaul with session-long tracking (Short/Extended/Session dropdown), chart-TF precision detection, configurable proximity (% of ATR), independent retest labels at the retest bar, ◆ diamond symbol, and alerts in all modes; label management with same-bar merge (breakout + reversal → one label), cooldown dimming for rapid signals, and vertical offset to prevent overlap
-- **v1.9** — Chart-TF independence: retest monitoring, failure detection, bar counts, and PA quality all evaluate on signal-TF data now (previously used chart-TF bars, causing different labels on 1m vs 5m charts); `sigQual()` replaces `chartQual()` for consistent retest metrics; `sigBarIdx` counter ensures bar counts are signal-TF bars regardless of chart timeframe; retest-only mode labels use consistent `shapeOff` placement; confirmation window input now in signal bars
-- **v1.8** — Zone Band Visualization + Per-Level Retest + Retest-Only Mode: shaded fill bands between wick and body-edge plots for all 8 levels (gated by Show Level Lines + Use Level Zones); per-level retest tracking with independent monitoring of each broken level, superscript bar count, and PA quality metrics on retest candle (volume + close position %); label format upgraded to line breaks (level names / quality / retest lines); Retest-Only Mode toggle suppresses breakout labels and alerts, fires own retest labels; breakout alert suppression in retest-only mode
-- **v1.7** — Reversal + Reclaim + Zones: wick-to-body zone detection for all levels (D/W from candle body, PM/ORB from ATR); reversal signals at level zones (~ prefix, blue/orange labels); reclaim signals when prior breakout invalidated (~~ prefix); configurable setup time window (default 9:30-11:30 ET); per-level reversal/reclaim toggles; 4 new alert conditions (Any Bullish/Bearish Reversal, Any Reversal, Any Setup)
-- **v1.6** — Directional volume + close position + post-breakout confirmation: volume borrowing now direction-aware (only borrows prior bar if same-direction momentum); ATR buffer uses wick for push, close for hold; close position % shows buying/selling pressure in labels; post-breakout monitoring with follow-through (✓), retest (◆✓), and failure (✗) markers plus confirmation alerts
-- **v1.5** — Fix cross-detection bug: 2-bar lookback prevents missed breakouts when a bearish candle crosses the level before a bullish confirmation (e.g., TSLA ORB High). Removed per-level alertcondition entries (duplicate alerts with "Any alert() function call")
-- **v1.4** — Volume Confirmation filter (toggleable, Signal TF SMA or Daily Average baseline, multiplier in labels, conviction coloring), ATR Buffer Zone (separate breakout/re-arm buffers as % of daily ATR), confluence merging (combined labels + alerts when multiple levels break same bar), fade old labels (toggle for clean chart vs analysis mode), labels replace plotshape for dynamic text
-- **v1.3** — Invalidation-based signal logic: re-arms after price closes back through the level (replaces first-cross-only-per-day)
-- **v1.2** — Signal Timeframe input: view 1m charts while only triggering on 5m closes; marker placed on last candle of signal-TF period
-- **v1.1** — Added `alert()` calls for single-alert setup (one alert covers all levels)
-- **v1.0** — Initial release: 4 level types, toggleable pairs, first-cross-only, visual markers, 11 alert conditions
+Confirmation state changes log separately with `[KLB] CONF` prefix.
