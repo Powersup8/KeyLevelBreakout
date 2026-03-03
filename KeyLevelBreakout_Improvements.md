@@ -459,3 +459,114 @@ bearBreak(float level) =>
 5. ~~**Tier G** — Dead code cleanup~~ ✅ Done in v2.4
 6. **Evidence Stack Filters** — ✅ Done in v2.5 (EMA, RS, ADX, Candle Body)
 7. **Runner Score + VWAP line + SL lines + VWAP exit alert** — ✅ Done in v2.6
+
+---
+
+## Multi-Symbol Fingerprint Analysis (March 2026)
+
+**Evidence base:** 1,841 signals across 13 symbols (AAPL, AMD, AMZN, GLD, GOOGL, META, MSFT, NVDA, QQQ, SLV, SPY, TSLA, TSM). 231 CONF ✓/✓★, 809 CONF ✗, 777 reversals. Period: Jan 20 – Mar 2, 2026. Indicators (ADX, EMA, Body%, RS, VWAP) computed from 5m IB cache data. MFE/MAE measured from 5s candles over 60 minutes.
+
+**Data files:** `debug/enriched-signals.csv` (1841 rows, 22 columns — pre-computed, ready for future analysis), `debug/multi-symbol-fingerprint.md` (full report), `debug/multi_symbol_fingerprint.py` (script).
+
+### Strongest Differentiators: Good vs Bad Breakouts
+
+| Rank | Metric | GOOD (n=231) | BAD (n=809) | Gap | Actionable? |
+|------|--------|-------------|------------|-----|-------------|
+| 1 | **LOW levels** (PM L, Yest L, ORB L, Week L) | 65% | 49% | **+17%** | Yes — Runner Score already gives bear +1 for LOW level |
+| 2 | **Bear direction** | 65% | 49% | **+17%** | Correlated with #1, inherent property |
+| 3 | **EMA aligned** (close on right side of 5m EMA20+EMA50) | 90% | 78% | **+13%** | Yes — v2.5 EMA filter **validated**, keep ON |
+| 4 | **Vol ≥ 5x** | 39% | 33% | **+6%** | Yes — vol factor in Runner Score |
+| 5 | Vol 2-5x | 38% | 43% | **-5%** | Mid-range vol slightly worse; 10x+ is better |
+| 6 | ADX ≥ 25 | 49% | 53% | **-4%** | Counterintuitive — see ADX section below |
+| 7 | Multi-level | 16% | 19% | **-3%** | NOT a positive signal (more levels ≠ better) |
+| 8 | VWAP aligned | 95% | 93% | **+2%** | Small gap but nearly universal in GOOD trades |
+
+### Filter Validation Results
+
+| Filter (v2.5) | Validated? | Evidence | Recommendation |
+|----------------|-----------|----------|----------------|
+| **EMA Alignment** | **YES** | 90% vs 78% (+13% gap) — strongest filter | Keep ON, threshold correct |
+| **VWAP Direction** | **YES** | 95% vs 93% — small gap but nearly universal | Keep ON for reversals |
+| **ADX > 20** | **PARTIAL** | 20-25 has best CONF rate (26%), <20 is worst (22%). But ADX 35-50 only 19% CONF | Threshold 20 is correct — removes weakest bucket |
+| **Body ≥ 50%** | **NO** | avg 49% (good) vs 48% (bad) — zero differentiation | **Consider lowering to 30% or removing** |
+| **RS vs SPY** | **WEAK** | -0.3% (good) vs 0.0% (bad) — small gap, bear-biased | Keep ON but low impact |
+
+### ADX Barbell Pattern (new finding)
+
+| ADX Range | CONF Rate | Avg MFE (good) | Interpretation |
+|-----------|-----------|----------------|----------------|
+| <20 | 22% | 0.36 | Low trend — filter removes these ✓ |
+| **20-25** | **26%** | 0.28 | **Sweet spot for hit rate** |
+| 25-30 | 23% | 0.29 | Solid |
+| 30-35 | 21% | 0.39 | Decent, better MFE |
+| 35-50 | 19% | 0.32 | Lower hit rate |
+| 50+ | 13% | **0.68** | Rare but explosive — few wins, big wins |
+
+**Implication:** ADX > 20 filter is correctly calibrated. Do NOT raise the threshold — 20-25 is the best bucket. High ADX (50+) has low CONF rate but highest MFE, suggesting a "barbell" strategy: the moderate-ADX trades win often, the rare extreme-ADX trades win big.
+
+### CONF Rate by Level Type
+
+| Level | CONF Rate | Avg MFE (good) | Tier |
+|-------|-----------|----------------|------|
+| **Yest L** | **30%** | **0.41** | A — Best overall |
+| **PM L** | **27%** | 0.35 | A |
+| **ORB L** | **27%** | 0.32 | A |
+| Week L | 22% | 0.28 | B |
+| Week H | 20% | 0.29 | B |
+| PM H | 18% | 0.36 | C |
+| Yest H | 15% | 0.33 | C |
+| **ORB H** | **14%** | 0.33 | C — Worst |
+
+**Implication:** LOW levels (PM L, Yest L, ORB L) have ~2x the CONF rate of HIGH levels (PM H, Yest H, ORB H). The Runner Score already accounts for this with the asymmetric level quality factor (bear gets +1 for LOW level). Consider whether HIGH-level breakouts deserve a visual penalty (dimming?).
+
+### Volume — 10x+ Is King
+
+| Volume | CONF Rate | Avg MFE (good) |
+|--------|-----------|----------------|
+| <2x | 21% | 0.22 |
+| 2-5x | 20% | 0.30 |
+| 5-10x | 20% | 0.34 |
+| **10x+** | **32%** | **0.50** |
+
+**Correction:** v2.4 finding that "2-5x is the sweet spot" was TSLA-specific. Across all 13 symbols, 10x+ volume has both the highest CONF rate (32%) and the best MFE (0.50 ATR). The relationship is monotonic: more volume = better. Runner Score currently gives +1 for 2-5x — consider revising to +1 for ≥5x or ≥10x.
+
+### Symbol Tiers (by CONF Rate)
+
+| Tier | Symbols | CONF Rate | Best MFE |
+|------|---------|-----------|----------|
+| **A** | GOOGL (35%), TSLA (32%), QQQ (28%) | 28-35% | QQQ 0.47, NVDA 0.45 |
+| **B** | SPY (24%), NVDA (23%), AMZN (23%), SLV (22%) | 22-24% | SPY 0.39, NVDA 0.45 |
+| **C** | META (21%), AMD (20%), MSFT (20%), TSM (19%) | 19-21% | AMD 0.39 |
+| **D** | AAPL (13%), GLD (6%) | 6-13% | AAPL 0.39 |
+
+**Note:** NVDA appears in B-tier by CONF rate but has the 2nd-best MFE (0.45) — it's a "when it works, it works big" symbol. GLD is an outlier at 6% CONF rate — consider excluding from breakout signals or flagging as low-probability.
+
+### Time of Day — MFE Tells a Different Story
+
+| Time | CONF Rate | Avg MFE (good) |
+|------|-----------|----------------|
+| 9:30-10:00 | 22% | **0.42** |
+| 10:00-11:00 | 22% | 0.31 |
+| 11:00-12:00 | 28% | 0.38 |
+| 12:00+ | 22% | 0.15 |
+
+CONF rate is flat across time buckets (22%), but MFE drops sharply after 12:00 (0.15 vs 0.42 for 9:30-10:00). The 11:00-12:00 bucket has the highest CONF rate (28%) but small sample. Afternoon dimming after 11:00 is validated — CONF may pass but follow-through is poor.
+
+### Actionable Recommendations
+
+| # | Change | Impact | Risk | Priority |
+|---|--------|--------|------|----------|
+| R1 | **Lower or remove Body% filter** (currently ≥50%) | Reduces false suppression — body% is not a differentiator | LOW | HIGH |
+| R2 | **Revise Runner Score vol factor**: change from 2-5x to ≥5x or ≥10x | Better aligns with data (10x+ = 32% CONF, 0.50 MFE) | LOW | MEDIUM |
+| R3 | **Consider HIGH-level dimming**: ORB H (14% CONF) vs Yest L (30%) | Reduces noise from weak HIGH-level signals | MEDIUM | MEDIUM |
+| R4 | **GLD special handling**: 6% CONF rate is extreme outlier | Could exclude or require extra filter | LOW | LOW |
+| R5 | Keep EMA filter ON, ADX > 20 ON, VWAP ON | All validated — especially EMA (+13% gap) | ZERO | DONE |
+
+### Corrections to Previous Findings
+
+| Previous Finding | Correction | Source |
+|-----------------|------------|--------|
+| "2-5x volume is the sweet spot" (v2.4) | **WRONG across all symbols.** 10x+ has 32% CONF and 0.50 MFE. 2-5x = 20% CONF. | Multi-symbol fingerprint (n=1841) |
+| "ADX 38 is better than 33" (TSLA-only) | **TSLA-specific.** Multi-symbol avg ADX is 26 (good) vs 27 (bad). 20-25 has best CONF rate. | Multi-symbol fingerprint |
+| "Body% matters" (TSLA 77% vs 76%) | **Noise.** Multi-symbol: 49% vs 48%, zero differentiation. | Multi-symbol fingerprint |
+| "10:00-11:00 is the best window" (v2.4) | **PARTIALLY confirmed.** CONF rate is flat (22%), but 9:30-10:00 has best MFE (0.42). 12:00+ MFE drops to 0.15. | Multi-symbol fingerprint |

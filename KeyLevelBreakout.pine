@@ -543,22 +543,23 @@ if i_firstOnly and newSigBar
         xOL := false
         hadBrkOL := true
         rOL := false                                 // re-arm bull reversal — new setup
-    // Reversal re-arm: price moved decisively away from the rejection zone
-    if rPMH and not na(pmHigh) and sigC > (pmHigh + rearmBuf)
+    // Reversal re-arm: price moved away from the rejection zone in either direction
+    // (above = rejection failed; below = pulled away, fresh approach is new setup)
+    if rPMH and not na(pmHigh) and (sigC > (pmHigh + rearmBuf) or sigC < (pmHigh - rearmBuf))
         rPMH := false
-    if rPML and not na(pmLow) and sigC < (pmLow - rearmBuf)
+    if rPML and not na(pmLow) and (sigC < (pmLow - rearmBuf) or sigC > (pmLow + rearmBuf))
         rPML := false
-    if rYH and not na(yestHigh) and sigC > (yestHigh + rearmBuf)
+    if rYH and not na(yestHigh) and (sigC > (yestHigh + rearmBuf) or sigC < (yestHigh - rearmBuf))
         rYH := false
-    if rYL and not na(yestLow) and sigC < (yestLow - rearmBuf)
+    if rYL and not na(yestLow) and (sigC < (yestLow - rearmBuf) or sigC > (yestLow + rearmBuf))
         rYL := false
-    if rWH and not na(weekHigh) and sigC > (weekHigh + rearmBuf)
+    if rWH and not na(weekHigh) and (sigC > (weekHigh + rearmBuf) or sigC < (weekHigh - rearmBuf))
         rWH := false
-    if rWL and not na(weekLow) and sigC < (weekLow - rearmBuf)
+    if rWL and not na(weekLow) and (sigC < (weekLow - rearmBuf) or sigC > (weekLow + rearmBuf))
         rWL := false
-    if rOH and not na(orbHigh) and sigC > (orbHigh + rearmBuf)
+    if rOH and not na(orbHigh) and (sigC > (orbHigh + rearmBuf) or sigC < (orbHigh - rearmBuf))
         rOH := false
-    if rOL and not na(orbLow) and sigC < (orbLow - rearmBuf)
+    if rOL and not na(orbLow) and (sigC < (orbLow - rearmBuf) or sigC > (orbLow + rearmBuf))
         rOL := false
 
 // ─── Breakout Helpers ─────────────────────────────────────
