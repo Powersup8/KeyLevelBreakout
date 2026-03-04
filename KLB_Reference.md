@@ -1,4 +1,4 @@
-# KeyLevelBreakout v2.8b — Reference
+# KeyLevelBreakout v2.9 — Reference
 
 | Doc | What's Inside |
 |-----|---------------|
@@ -30,7 +30,7 @@ Six signal types, each with a specific trigger and visual style.
 
 **QBS (🔇 Quiet Before Storm)** — Pre-move volume drying (ramp < 0.5×) followed by a big bar (range ≥ 1.5× signal-TF ATR). Cyan labels. Once per direction per session. Does not require a key-level breakout.
 
-**MC (🔊 Momentum Cascade)** — Pre-move volume surging (ramp > 5×) followed by a big bar (range ≥ 1.5× signal-TF ATR). Orange labels. Once per direction per session. Does not require a key-level breakout.
+**MC (🔊 Momentum Cascade)** — Pre-move volume surging (ramp > 5×) followed by a big bar (range ≥ 1.5× signal-TF ATR). Orange labels. Once per direction per session. Suppressed before 9:50 ET (opening auction is noise — 126 opposing pairs showed 45% coin flip; 9:50+ direction matches 30-min outcome 79%). Does not require a key-level breakout.
 
 ### Direction Reference
 
@@ -70,7 +70,7 @@ Line 4: `✓★` — Confirmation status.
 | `v85` | Bear close position (85% toward bar low) | — |
 | `◆³` | Retest, 3 signal bars after breakout | — |
 | `✓` | Confirmed (auto-promoted) | Solid green/red, white text |
-| `✓★` | High-conviction confirmed (≥5× vol + ≥80% pos) | Gold label, black text |
+| `✓★` | High-conviction confirmed (BRK: vol < 5× + hour ≤ 10:xx) | Gold label, black text |
 | `✗` | Failed (closed back through level) | Grayed out |
 | `~` | Reversal (rejection off zone) | Blue/orange label |
 | `~~` | Reclaim (reversal after failed breakout) | Blue/orange, brighter |
@@ -92,7 +92,7 @@ The CONF system tracks whether a breakout "survives" or fails.
 
 **CONF ✓** — Label turns solid green (bull) or solid red (bear) with white text. Label resizes to `size.normal`.
 
-**CONF ✓★** — Gold label with black text. Requires the original signal to have had ≥5× volume ratio AND ≥80% close position. Same resize to `size.normal`.
+**CONF ✓★** — Gold label with black text. BRK signals only: requires volume < 5× and confirmation before 11:00 ET (hour 9 or 10). QBS/MC signals always get plain ✓ (✓★ was net negative at -1.47 ATR in v2.8b analysis). Same resize to `size.normal`.
 
 **CONF ✗** — Label turns gray. Fires when price closes back through the most conservative level (lowest for bull breakouts, highest for bear) beyond the re-arm buffer. Resets the level for new signals.
 
@@ -288,7 +288,7 @@ Five factors, each worth 1 point, displayed as ①–⑤ on labels.
 | Factor | Condition |
 |--------|-----------|
 | VWAP aligned | Close above VWAP (bull) or below VWAP (bear) |
-| Volume ≥ 5× | Volume ratio ≥ 5.0× SMA(20) baseline |
+| Volume 2–5× | Volume ratio ≥ 2.0× and < 5.0× SMA(20) baseline |
 | Time 9:30–10:00 | Signal fires in the first 30 minutes of regular session |
 | Not D-tier symbol | Symbol is not AMD, MSFT, GLD, or TSM |
 | Level quality | **Bear:** always +1 (bear breakouts are at LOW levels, which have higher follow-through). **Bull:** +1 only when 2+ levels break simultaneously (confluence). |

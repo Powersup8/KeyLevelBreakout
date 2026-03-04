@@ -1,4 +1,4 @@
-# KeyLevelBreakout v2.8b — Design Journal
+# KeyLevelBreakout v2.9 — Design Journal
 
 | Doc | What's Inside |
 |-----|---------------|
@@ -88,7 +88,7 @@ This is why CONF ✓ gets the solid green/red color treatment and full-size labe
 
 The initial TSLA-only analysis suggested 2-5x volume was the "sweet spot." When we expanded to all 13 symbols (n=1,841), the relationship turned out to be monotonic: 10x+ volume = 32% CONF rate and 0.50 MFE, while 2-5x = only 20% CONF.
 
-The Runner Score volume factor was revised from the 2-5x bucket to >= 5x. This was an important lesson in single-symbol overfitting -- a pattern that looks clean on one stock may be an artifact of that stock's microstructure rather than a universal edge.
+The Runner Score volume factor was initially revised from 2-5x to >= 5x. However, the v2.8b audit (7,044 signals) revealed ⚡ contamination: 84% of 5-10x and 98% of 10x+ buckets were big-move exhaustion bars. For non-⚡ signals, 2-3x volume was the actual sweet spot (MFE 1.252, 54% win). The Runner Score vol factor was revised again to 2-5x in v2.9. This is a lesson in confounders -- the "monotonic more volume = better" finding was driven by a third variable (bar range/exhaustion), not volume itself.
 
 ---
 
@@ -193,4 +193,14 @@ These are data-justified improvements that were deferred due to scope constraint
 
 **v2.8b -- Big-move size correction.** ⚡ signals (bar range ≥ 2x ATR) had 48% lower MFE than normal signals (0.598 vs 1.152) -- entry at exhaustion. Removed `size.large` from ⚡ on BRK/REV labels and QBS/MC labels. The ⚡ glyph remains as an informational marker. Multi-level confluence (2+ levels) still gets `size.large`.
 
-*Last updated: 2026-03-04 | v2.8b | Data: Jan-Mar 2026*
+**v2.9 -- Audit-driven fixes from 7,044-signal analysis (Sep 2025–Mar 2026, 10 symbols, ~100 days).** Four data-validated changes:
+
+1. **MC 9:50 ET time gate.** 126 opposing MC pairs (both bull AND bear within 5-10 min at open) showed 45% accuracy -- a coin flip. No signal feature at fire time could distinguish correct from wrong. Direction from 9:50 onward matched 30-min outcome 79% of the time. Suppressing MC before 9:50 prevents the once-per-session slot from being burned on opening auction noise. Analysis: `debug/v28a-mc-analysis.md`, `debug/v28b-mc-smart-filter.md`.
+
+2. **Runner Score vol factor: ≥5x → 2-5x.** The v2.8b volume investigation found ⚡ contamination: 84% of 5-10x and 98% of 10x+ volume buckets were big-move bars (exhaustion, not conviction). Non-⚡ sweet spot: 2-3x volume (MFE 1.252, 54% win, MFE/MAE 1.42). Analysis: `debug/v28b-volume-investigation.md`.
+
+3. **✓★ gold criteria rework.** Both old criteria were broken: ≥5x vol = worst MFE bucket (0.859 vs 1.178 for <5x), ≥80% close position = overfitting (didn't replicate, cut 70% of signals). New definition: BRK source + vol < 5x + hour ≤ 10. Result: +23.10 ATR total (vs old +2.74), 42% win (vs 32%), 8/10 symbols profitable, max drawdown -1.95 ATR. Analysis: `debug/v28b-volume-investigation.md`.
+
+4. **QBS/MC ✓★ removal.** QBS/MC ✓★ was net negative (-1.47 ATR). The volume explosion that triggers these signals already implies high vol, so the ≥5x gate was meaningless. Always plain ✓ now.
+
+*Last updated: 2026-03-04 | v2.9 | Data: Sep 2025–Mar 2026*

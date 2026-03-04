@@ -1,4 +1,4 @@
-# KeyLevelBreakout v2.8 — Trading Playbook
+# KeyLevelBreakout v2.9 — Trading Playbook
 
 | Doc | What's Inside |
 |-----|---------------|
@@ -13,7 +13,7 @@
 
 | Rank | Signal | Look | Edge | Action |
 |------|--------|------|------|--------|
-| 1 | CONF ✓★ | Gold label, black text, ✓★ | 27% GOOD, 4.5% BAD | Full size, hold 30 min |
+| 1 | CONF ✓★ | Gold label, black text, ✓★ | BRK only, vol<5x, morning | Full size, hold 30 min |
 | 2 | CONF ✓ | Solid green/red, white text, ✓ | 0% BAD (110 signals) | Large size, hold 30 min |
 | 3 | 🔇 QBS | Cyan label, 🔇 | 68% runner, 3% fakeout | Wait for CONF, then trade |
 | 4 | 🔊 MC | Orange label, 🔊 | 64% runner, best MFE 2.66 | Wait for CONF, then trade |
@@ -129,7 +129,7 @@ Levels: Yest L > PM L > ORB L > Week L. Avoid HIGH levels.
 | ③ | +0.047 | 2.4% |
 | ①② | Weak | Higher |
 
-5 factors: VWAP aligned, vol ≥5x, time 9:30-10, level quality (LOW for bear, confluence for bull), not D-tier symbol.
+5 factors: VWAP aligned, vol 2-5x, time 9:30-10, level quality (LOW for bear, confluence for bull), not D-tier symbol.
 
 ---
 ## 9. Symbol Tiers

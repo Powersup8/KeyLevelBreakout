@@ -1,5 +1,5 @@
 // © Key Level Breakout Alert Indicator
-// Detects bullish/bearish 5m candle closes through key levels (v2.8b)
+// Detects bullish/bearish 5m candle closes through key levels (v2.9)
 // Designed for US stocks (NYSE/NASDAQ) on 5-min charts
 //@version=6
 indicator("Key Level Breakout", overlay=true, max_labels_count=500, max_lines_count=200)
@@ -35,7 +35,7 @@ i_retestProx   = input.float(3.0, "Retest Proximity (% of ATR)", minval=0.5, ste
 i_retestOnly  = input.bool(false, "Retest-Only Mode",                group="Signals")
 i_cooldownBars = input.int(2, "Signal Cooldown (signal bars)", minval=0, maxval=10, group="Signals")
 i_chopWarn     = input.bool(true, "Chop Day Warning (3+ CONF fails)", group="Signals")
-i_runnerScore  = input.bool(true, "Show Runner Score (①-⑤)",  tooltip="Score based on VWAP, vol ≥5x, time 10-11, level quality, symbol tier", group="Signals")
+i_runnerScore  = input.bool(true, "Show Runner Score (①-⑤)",  tooltip="Score based on VWAP, vol 2-5x, time 9:30-10, level quality, symbol tier", group="Signals")
 i_vwapSignal   = input.bool(true, "VWAP Zone Signals",  tooltip="Fire reversal signals when price rejects off VWAP ±0.1 ATR zone", group="Signals")
 i_qbsSignal    = input.bool(true, "QBS/MC Signals (Vol Ramp Patterns)",  tooltip="Fire signals when pre-move volume pattern matches high-probability fingerprint", group="Signals")
 
@@ -462,15 +462,15 @@ string volRampGlyph = isVolDrying ? "🔇" : isVolExplosive ? "🔊" : ""
 string bigMoveGlyph = isBigMove ? "⚡" : ""
 
 // ─── Runner Score (v2.6) ─────────────────────────────
-// 5 factors: VWAP aligned, vol ≥5x, time 9:30-10, level quality (bear=LOW), not D-tier symbol
+// 5 factors: VWAP aligned, vol 2-5x, time 9:30-10, level quality (bear=LOW), not D-tier symbol
 int etHour = hour(time, TZ)
 int etMin = minute(time, TZ)
 bool isScoreWindow = etHour == 9 and etMin >= 30
 bool isDTier = syminfo.ticker == "AMD" or syminfo.ticker == "MSFT" or syminfo.ticker == "GLD" or syminfo.ticker == "TSM"
 // Bull score: VWAP, vol, time, not-D-tier (level quality = bull at HIGH is weak, skip)
-int scoreBull = (sigC > vwapVal ? 1 : 0) + (not na(volRatioBull) and volRatioBull >= 5.0 ? 1 : 0) + (isScoreWindow ? 1 : 0) + (not isDTier ? 1 : 0)
+int scoreBull = (sigC > vwapVal ? 1 : 0) + (not na(volRatioBull) and volRatioBull >= 2.0 and volRatioBull < 5.0 ? 1 : 0) + (isScoreWindow ? 1 : 0) + (not isDTier ? 1 : 0)
 // Bear score: VWAP, vol, time, not-D-tier + bear at LOW level = +1 (computed after signals fire, added to label)
-int scoreBear = (sigC < vwapVal ? 1 : 0) + (not na(volRatioBear) and volRatioBear >= 5.0 ? 1 : 0) + (isScoreWindow ? 1 : 0) + (not isDTier ? 1 : 0)
+int scoreBear = (sigC < vwapVal ? 1 : 0) + (not na(volRatioBear) and volRatioBear >= 2.0 and volRatioBear < 5.0 ? 1 : 0) + (isScoreWindow ? 1 : 0) + (not isDTier ? 1 : 0)
 string[] SCORE_GLYPHS = array.from("", "①", "②", "③", "④", "⑤")
 
 // ─── SL Line Bars (5 min on any chart TF) ────────────
@@ -767,10 +767,11 @@ bool rQBS_bull = i_qbsSignal and isVolDrying and sigRangeATR >= 1.5
      and sigC > sigO and isRegular and newSigBar
 bool rQBS_bear = i_qbsSignal and isVolDrying and sigRangeATR >= 1.5
      and sigC < sigO and isRegular and newSigBar
+bool mcTimeOK = etHour >= 10 or (etHour == 9 and etMin >= 50)
 bool rMC_bull = i_qbsSignal and isVolExplosive and sigRangeATR >= 1.5
-     and sigC > sigO and isRegular and newSigBar
+     and sigC > sigO and isRegular and newSigBar and mcTimeOK
 bool rMC_bear = i_qbsSignal and isVolExplosive and sigRangeATR >= 1.5
-     and sigC < sigO and isRegular and newSigBar
+     and sigC < sigO and isRegular and newSigBar and mcTimeOK
 bool sigQBS_bull = rQBS_bull and not qbsBullFired and fGateBull_rev
 bool sigQBS_bear = rQBS_bear and not qbsBearFired and fGateBear_rev
 bool sigMC_bull  = rMC_bull  and not mcBullFired  and fGateBull_rev
@@ -1078,7 +1079,8 @@ if combinedBullText != ""
     if bullText != "" and i_confirm and not isOld
         // Auto-promote previous monitoring
         if bRTState == 1 and not i_retestOnly and not na(bRTLbl)
-            bool highConv = not na(bRTVolRatio) and bRTVolRatio >= 5.0 and not na(bRTClosePos) and bRTClosePos >= 80
+            int confHour = hour(time, TZ)
+            bool highConv = not na(bRTVolRatio) and bRTVolRatio < 5.0 and (confHour == 9 or confHour == 10)
             if highConv
                 label.set_text(bRTLbl, bRTBase + "\n✓★")
                 label.set_color(bRTLbl, color.new(#FFD700, 0))
@@ -1226,7 +1228,8 @@ if combinedBearText != ""
     if bearText != "" and i_confirm and not isOld
         // Auto-promote previous monitoring
         if sRTState == 1 and not i_retestOnly and not na(sRTLbl)
-            bool highConv = not na(sRTVolRatio) and sRTVolRatio >= 5.0 and not na(sRTClosePos) and sRTClosePos >= 80
+            int confHour = hour(time, TZ)
+            bool highConv = not na(sRTVolRatio) and sRTVolRatio < 5.0 and (confHour == 9 or confHour == 10)
             if highConv
                 label.set_text(sRTLbl, sRTBase + "\n✓★")
                 label.set_color(sRTLbl, color.new(#FFD700, 0))
@@ -1318,16 +1321,11 @@ if qmcRTState == 1 and newSigBar and isRegular
     if elapsed > 0
         bool continues = qmcRTDir == 1 ? sigC > qmcRTEntry : sigC < qmcRTEntry
         if continues
-            bool highConv = not na(qmcRTVolRatio) and qmcRTVolRatio >= 5.0 and not na(qmcRTClosePos) and qmcRTClosePos >= 80
+            bool highConv = false  // QBS/MC: always plain ✓ (✓★ was net negative per v2.8b analysis)
             if not na(qmcRTLbl)
-                if highConv
-                    label.set_text(qmcRTLbl, qmcRTBase + "\n✓★")
-                    label.set_color(qmcRTLbl, color.new(#FFD700, 0))
-                    label.set_textcolor(qmcRTLbl, color.black)
-                else
-                    label.set_text(qmcRTLbl, qmcRTBase + "\n✓")
-                    label.set_color(qmcRTLbl, qmcRTDir == 1 ? color.new(color.green, 0) : color.new(color.red, 0))
-                    label.set_textcolor(qmcRTLbl, color.white)
+                label.set_text(qmcRTLbl, qmcRTBase + "\n✓")
+                label.set_color(qmcRTLbl, qmcRTDir == 1 ? color.new(color.green, 0) : color.new(color.red, 0))
+                label.set_textcolor(qmcRTLbl, color.white)
             confPassCount  += 1
             confFailStreak := 0
             if i_debugLog and barstate.isconfirmed
