@@ -1,5 +1,5 @@
 // © Key Level Breakout Alert Indicator
-// Detects bullish/bearish 5m candle closes through key levels (v2.8a)
+// Detects bullish/bearish 5m candle closes through key levels (v2.8b)
 // Designed for US stocks (NYSE/NASDAQ) on 5-min charts
 //@version=6
 indicator("Key Level Breakout", overlay=true, max_labels_count=500, max_lines_count=200)
@@ -922,7 +922,7 @@ if sigQBS_bull or sigMC_bull
         qmText += "\n?"
     color qmColor = isDimQM or isModDim ? color.new(color.gray, 70) : isQBS ? color.new(color.teal, 0) : color.new(#FF6D00, 0)
     color qmTextColor = isDimQM or isModDim ? color.new(color.gray, 50) : color.black
-    string qmSize = isBigMove ? size.large : size.normal
+    string qmSize = size.normal
     label qmLbl = label.new(bar_index + shapeOff, na, qmText,
          yloc=yloc.belowbar, style=label.style_label_up,
          color=qmColor, textcolor=qmTextColor, size=qmSize)
@@ -959,7 +959,7 @@ if sigQBS_bear or sigMC_bear
         qmText += "\n?"
     color qmColor = isDimQM or isModDim ? color.new(color.gray, 70) : isQBS ? color.new(color.teal, 0) : color.new(#FF6D00, 0)
     color qmTextColor = isDimQM or isModDim ? color.new(color.gray, 50) : color.black
-    string qmSize = isBigMove ? size.large : size.normal
+    string qmSize = size.normal
     label qmLbl = label.new(bar_index + shapeOff, na, qmText,
          yloc=yloc.abovebar, style=label.style_label_down,
          color=qmColor, textcolor=qmTextColor, size=qmSize)
@@ -1021,7 +1021,7 @@ if combinedBullText != ""
     bool isAftn   = i_dimAfternoon and isAfternoon and not isOld and not isCooled
     color finalColor = isDimBull ? color.new(color.gray, 70) : isCooled ? color.new(color.gray, 70) : isAftn ? color.new(lblColor, 60) : (isOld ? color.new(color.gray, 90) : lblColor)
     color finalText  = isDimBull ? color.new(color.gray, 50) : isCooled ? color.new(color.gray, 50) : isAftn ? color.new(color.gray, 30) : (isOld ? color.new(color.gray, 70) : color.black)
-    string finalSize = isDimBull ? size.tiny : isCooled ? size.tiny : isAftn ? size.tiny : (isBigMove or totalCount >= 2 ? size.large : (totalCount == 1 ? size.small : size.small))
+    string finalSize = isDimBull ? size.tiny : isCooled ? size.tiny : isAftn ? size.tiny : (totalCount >= 2 ? size.large : size.small)
     // Vertical offset for adjacent labels
     bool needsOffset = (bar_index + shapeOff - lastBullLblBar) <= 1 and lastBullLblBar >= 0
 
@@ -1169,7 +1169,7 @@ if combinedBearText != ""
     bool isAftn   = i_dimAfternoon and isAfternoon and not isOld and not isCooled
     color finalColor = isDimBear ? color.new(color.gray, 70) : isCooled ? color.new(color.gray, 70) : isAftn ? color.new(lblColor, 60) : (isOld ? color.new(color.gray, 90) : lblColor)
     color finalText  = isDimBear ? color.new(color.gray, 50) : isCooled ? color.new(color.gray, 50) : isAftn ? color.new(color.gray, 30) : (isOld ? color.new(color.gray, 70) : color.black)
-    string finalSize = isDimBear ? size.tiny : isCooled ? size.tiny : isAftn ? size.tiny : (isBigMove or totalCount >= 2 ? size.large : (totalCount == 1 ? size.small : size.small))
+    string finalSize = isDimBear ? size.tiny : isCooled ? size.tiny : isAftn ? size.tiny : (totalCount >= 2 ? size.large : size.small)
     // Vertical offset for adjacent labels
     bool needsOffset = (bar_index + shapeOff - lastBearLblBar) <= 1 and lastBearLblBar >= 0
 

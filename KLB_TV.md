@@ -51,7 +51,7 @@ Line 1: level names (merged for confluence). Line 2: volume ratio + close positi
 - **CONF ✗** (gray) — failed confirmation
 - **Afternoon signals** — dimmed after 11:00 ET (near-zero follow-through)
 - **CHOP?** (orange) — warning after 3+ consecutive CONF failures at session start
-- **Multi-level confluence / Big move** — labels with 2+ levels or 2x ATR range use `size.large` (resized to `size.normal` on CONF)
+- **Multi-level confluence** — labels with 2+ levels use `size.large` (resized to `size.normal` on CONF)
 - **QBS/MC signals (v2.8)** — 🔇 Quiet Before Storm (volume drying → explosion) and 🔊 Momentum Cascade (volume surging → continuation). Standalone signals with cyan/orange labels, CONF tracking, dedicated alerts. Fire when pre-move volume fingerprint matches, even without key level breakout.
 - **Volume ramp glyphs (v2.8)** — 🔇/🔊 on labels showing pre-move volume ramp pattern
 - **Big-move flag (v2.8)** — ⚡ on labels when bar range ≥ 2x signal-TF ATR

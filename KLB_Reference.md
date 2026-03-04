@@ -1,4 +1,4 @@
-# KeyLevelBreakout v2.8 — Reference
+# KeyLevelBreakout v2.8b — Reference
 
 | Doc | What's Inside |
 |-----|---------------|
@@ -75,7 +75,7 @@ Line 4: `✓★` — Confirmation status.
 | `~` | Reversal (rejection off zone) | Blue/orange label |
 | `~~` | Reclaim (reversal after failed breakout) | Blue/orange, brighter |
 | `①`–`⑤` | Runner Score (5 factors) | Higher = more factors aligned |
-| `⚡` | Big move (bar range ≥ 2× signal-TF ATR) | Label upgrades to size.large |
+| `⚡` | Big move (bar range ≥ 2× signal-TF ATR) | Informational marker (no size change) |
 | `🔇` | Vol drying (ramp < 0.5×) — quiet before storm | Cyan label for standalone QBS |
 | `🔊` | Vol surging (ramp > 5×) — momentum cascade | Orange label for standalone MC |
 | `⚠` | Body ≥ 80% — fakeout warning | Appended to quality line |
@@ -169,7 +169,7 @@ SL line duration adapts to chart timeframe: 1800 seconds / timeframe-in-seconds 
 | Afternoon (after 11:00 ET) | Smaller size, more transparent |
 | Cooldown (within N signal bars of prior signal) | Gray, size.tiny |
 | Confluence (2+ levels on same bar) | size.large |
-| Big move (⚡, range ≥ 2× signal-TF ATR) | size.large |
+| Big move (⚡, range ≥ 2× signal-TF ATR) | Glyph only, no size change (v2.8b: data showed 48% lower MFE) |
 | Moderate vol ramp (1–2× ramp ratio) | Auto-dimmed: gray + `?` |
 | CONF ✓ / ✓★ | Resized to size.normal, color changed |
 | Volume-scaled opacity | Alpha = max(0, 60 − volRatio × 10), saturates at 6× |

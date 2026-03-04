@@ -1,4 +1,4 @@
-# KeyLevelBreakout v2.8 — Design Journal
+# KeyLevelBreakout v2.8b — Design Journal
 
 | Doc | What's Inside |
 |-----|---------------|
@@ -191,4 +191,6 @@ These are data-justified improvements that were deferred due to scope constraint
 
 ---
 
-*Last updated: 2026-03-03 | v2.8 | Data: Jan-Mar 2026*
+**v2.8b -- Big-move size correction.** ⚡ signals (bar range ≥ 2x ATR) had 48% lower MFE than normal signals (0.598 vs 1.152) -- entry at exhaustion. Removed `size.large` from ⚡ on BRK/REV labels and QBS/MC labels. The ⚡ glyph remains as an informational marker. Multi-level confluence (2+ levels) still gets `size.large`.
+
+*Last updated: 2026-03-04 | v2.8b | Data: Jan-Mar 2026*
