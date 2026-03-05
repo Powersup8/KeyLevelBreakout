@@ -1,8 +1,8 @@
 // © Key Level Breakout Alert Indicator
-// Detects bullish/bearish 5m candle closes through key levels (v3.0)
+// Detects bullish/bearish 5m candle closes through key levels (v3.0b)
 // Designed for US stocks (NYSE/NASDAQ) on 5-min charts
 //@version=6
-indicator("Key Level Breakout v3.0", overlay=true, max_labels_count=500, max_lines_count=200)
+indicator("Key Level Breakout v3.0b", overlay=true, max_labels_count=500, max_lines_count=200)
 
 // ─── Inputs ────────────────────────────────────────────────
 i_showPM    = input.bool(true,  "Premarket High/Low",         group="Level Toggles")
@@ -417,9 +417,10 @@ if newRegular
 [sigC, sigO, sigH, sigL, sigPC, sigPC2, sigVol, sigVolPrev, sigVolSma, sigVol2, sigVol3, sigVol4, sigVol5, sigATR14] = request.security(syminfo.tickerid, i_signalTF,
      [close[1], open[1], high[1], low[1], close[2], close[3], volume[1], volume[2], ta.sma(volume, i_volLen)[1], volume[3], volume[4], volume[5], volume[6], ta.atr(14)[1]], lookahead = barmerge.lookahead_on)
 
-// Range+Vol: 12-bar range on signal TF (v3.0)
+// Range+Vol: 12-bar range PRIOR to signal bar (v3.0)
+// [2] offset excludes signal bar — [1] caused impossible condition (high[1] >= close[1] always)
 [rngH12, rngL12] = request.security(syminfo.tickerid, i_signalTF,
-     [ta.highest(high, 13)[1], ta.lowest(low, 13)[1]], lookahead = barmerge.lookahead_on)
+     [ta.highest(high, 12)[2], ta.lowest(low, 12)[2]], lookahead = barmerge.lookahead_on)
 
 // Detect when a new signal-TF bar starts (previous one just closed)
 _sigT     = time(i_signalTF)
@@ -885,30 +886,35 @@ anyBreakout = anyBull or anyBear
 anyRevBull  = sigRevBullPML or sigRevBullYL or sigRevBullWL or sigRevBullOL or sigRevBullVWAP or sigRevBullPDLH or sigRevBullVWBL
 anyRevBear  = sigRevBearPMH or sigRevBearYH or sigRevBearWH or sigRevBearOH or sigRevBearVWAP
 anyReversal = anyRevBull or anyRevBear
-// Failed Breakout Fade signals (v3.0)
+// Failed Breakout Fade signals (v3.0b)
+// NO EMA gate — FADE is contrarian (fades INTO the failed direction, EMAs won't have flipped)
+// 60-min window (2x slBars) — wider than SL lines since fades develop slower
+int fadeWindow = slBars * 2
 bool sigFadeBull = not na(fadeBullLevel) and not fadeBullFired
      and newSigBar and isRegular
-     and sigC > fadeBullLevel + breakBuf
-     and (bar_index - fadeBullBar) <= slBars
-     and (emaGateBull or isPre950)
+     and sigC > fadeBullLevel
+     and (bar_index - fadeBullBar) <= fadeWindow
 bool sigFadeBear = not na(fadeBearLevel) and not fadeBearFired
      and newSigBar and isRegular
-     and sigC < fadeBearLevel - breakBuf
-     and (bar_index - fadeBearBar) <= slBars
-     and (emaGateBear or isPre950)
+     and sigC < fadeBearLevel
+     and (bar_index - fadeBearBar) <= fadeWindow
 if sigFadeBull
     fadeBullFired := true
 if sigFadeBear
     fadeBearFired := true
 bool anyFade = sigFadeBull or sigFadeBear
 
-// Range+Vol signals (v3.0): 12-bar range breakout + vol ≥ 3x. NO EMA requirement.
+// Range+Vol signals (v3.0b): 12-bar range breakout + vol ≥ 3x. NO EMA requirement.
+// Morning only (before 11:00 ET) — afternoon RNG: 16.7% win in data
 bool rngVolOK = not na(volBase) and volBase > 0 and nz(sigVol) >= volBase * 3.0
+bool rngTimeOK = etHour < 11
 bool sigRNG_bull = i_rngSignal and isRegular and newSigBar
+     and rngTimeOK
      and sigC > sigO and sigC > rngH12
      and rngVolOK
      and not rngBullFired
 bool sigRNG_bear = i_rngSignal and isRegular and newSigBar
+     and rngTimeOK
      and sigC < sigO and sigC < rngL12
      and rngVolOK
      and not rngBearFired
@@ -1314,8 +1320,8 @@ if combinedBullText != ""
         bRTState      := 1
         bRTVolRatio   := volRatioBull
         bRTClosePos   := bullClosePos
-        // Auto-Confirm R1 (v3.0): EMA aligned + before 10:30 → instant CONF pass
-        bool autoConfBull = fEMA_bull and (etHour == 9 or (etHour == 10 and etMin < 30))
+        // Auto-Confirm R1 (v3.0b): EMA aligned → instant CONF pass (no time mask — HOLD is the gatekeeper)
+        bool autoConfBull = fEMA_bull
         if autoConfBull
             label.set_text(bRTLbl, bRTBase + "\n✓")
             label.set_color(bRTLbl, color.new(color.green, 0))
@@ -1335,7 +1341,7 @@ if combinedBullText != ""
             if dbConfBullIdx >= 0 and dbConfBullIdx < array.size(dbConf)
                 array.set(dbConf, dbConfBullIdx, "✓")
                 if i_debugLog and barstate.isconfirmed
-                    log.info("[KLB] CONF {0} ▲ BRK → ✓ (auto-R1: EMA+morning)", fmtTime(time))
+                    log.info("[KLB] CONF {0} ▲ BRK → ✓ (auto-R1: EMA)", fmtTime(time))
             bRTState := 0  // skip monitoring — already confirmed
 
 // ─── Combined Bear Label ─────────────────────────────────
@@ -1486,8 +1492,8 @@ if combinedBearText != ""
         sRTState      := 1
         sRTVolRatio   := volRatioBear
         sRTClosePos   := bearClosePos
-        // Auto-Confirm R1 (v3.0): EMA aligned + before 10:30 → instant CONF pass
-        bool autoConfBear = fEMA_bear and (etHour == 9 or (etHour == 10 and etMin < 30))
+        // Auto-Confirm R1 (v3.0b): EMA aligned → instant CONF pass (no time mask — HOLD is the gatekeeper)
+        bool autoConfBear = fEMA_bear
         if autoConfBear
             label.set_text(sRTLbl, sRTBase + "\n✓")
             label.set_color(sRTLbl, color.new(color.red, 0))
@@ -1507,7 +1513,7 @@ if combinedBearText != ""
             if dbConfBearIdx >= 0 and dbConfBearIdx < array.size(dbConf)
                 array.set(dbConf, dbConfBearIdx, "✓")
                 if i_debugLog and barstate.isconfirmed
-                    log.info("[KLB] CONF {0} ▼ BRK → ✓ (auto-R1: EMA+morning)", fmtTime(time))
+                    log.info("[KLB] CONF {0} ▼ BRK → ✓ (auto-R1: EMA)", fmtTime(time))
             sRTState := 0  // skip monitoring — already confirmed
 
 // ─── 5-Minute Checkpoint ────────────────────────────────

@@ -7,6 +7,17 @@ after that: investigate each signal on the past if we fetch it right, how far it
   get creative and go smart ways. use the cache candle data you need to use.
   do this to all data(signals) avaible. make a detail report and a summary. compare to our other findings. And if we
   could use other findings we have but didnt use or in other circumstances.
+
+
+3/5/26
+TSLA signal 9:29 PD Mid
+TSLA signal 9:34 RNG up
+TSLA upmove 9:30
+TSLA downmove 10:01-10:31
+TSLA upmove 10:32
+TSLA downmove 12:06-?
+SPY/QQQ/AMD/NVDA downmove 12:06
+
   
 3/4/26 — INVESTIGATED → debug/investigation-2026-03-04.md
 AMZN upmove 9:45 on didnt fire

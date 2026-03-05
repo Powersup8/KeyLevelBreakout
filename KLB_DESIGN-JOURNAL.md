@@ -211,7 +211,7 @@ These are data-justified improvements that were deferred due to scope constraint
 
 2. *EMA Hard Gate all-day (+45.6 ATR recovered).* The dominant finding from factor ranking: EMA alignment accounts for 92% of all scoring edge. Non-EMA signals were net negative BOTH pre-9:50 (-32.3 ATR, N=283) AND post-9:50 (-13.3 ATR, N=208). After 9:50 ET, signals against EMA are now suppressed entirely. Before 9:50, they are dimmed only (EMA not fully established at open). This reduced signals from 1,841 to ~1,350 while increasing PnL from +70.3 to +115.9 ATR (+65%). Validated: 12/13 symbols positive, both time-halves positive.
 
-3. *Auto-Confirm R1 (EMA + time < 10:30 = instant CONF ✓).* N=389, +0.106 ATR/signal, 58.6% win, MFE/MAE 1.60. Replaces MC's two-step approach (MC fires → confirms later) with one-step (signal meets criteria → auto-confirmed). 12/13 symbols positive. This is a speed improvement — good morning signals no longer wait for a follow-through bar.
+3. *Auto-Confirm R1 (EMA = instant CONF ✓, no time restriction).* Originally gated to before 10:30 ET, but v3.0b research showed the 10:30 cliff caused 22 unnecessary CONF failures — 56% of which were profitable. HOLD/BAIL (83% win vs 51%) is the real gatekeeper, making the time restriction redundant. Now: EMA-aligned = auto-confirm all day. Recovers ~1.1 ATR/27 days from previously-rejected afternoon signals.
 
 **Phase 2 — New signals.** Four additions to cover gaps in the signal landscape:
 

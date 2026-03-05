@@ -15,7 +15,7 @@ Detects breakouts, reversals, reclaims, retests, fades, and range breakouts at k
 - **Evidence Stack:** 5m EMA Alignment, EMA Hard Gate (suppresses non-EMA after 9:50 ET, dims before), RS vs SPY, ADX > 20, Candle Body Quality
 - Filter Mode: Suppress (default) or Dim
 
-**CONF system:** 3 signal-TF bar window. Auto-Confirm R1: EMA aligned + before 10:30 ET = instant ✓. CONF ✗ triggers potential FADE. Auto-promotion ✓ on next breakout (green/red). High-conviction ✓★ (gold).
+**CONF system:** 3 signal-TF bar window. Auto-Confirm R1: EMA aligned = instant ✓ (no time restriction — HOLD is the gatekeeper). CONF ✗ triggers potential FADE. Auto-promotion ✓ on next breakout (green/red). High-conviction ✓★ (gold).
 
 **Visual elements:**
 - Regime Score R0/R1/R2 (EMA + VWAP alignment). R1 bulls dimmed.

@@ -93,7 +93,7 @@ Signal fires --> Is it dimmed/suppressed?
       '-- 13:00-16:00? --> Skip
 
 After BRK (3-bar CONF window = 15 min on 5m TF):
-  Auto-Confirm R1 --> EMA + before 10:30 = instant ✓
+  Auto-Confirm R1 --> EMA aligned = instant ✓
   CONF ✓  --> Size up (0% BAD)
   CONF ✓★ --> Full size (27% GOOD)
   CONF ✗  --> Watch for FADE (reverse within 30 min)

@@ -98,7 +98,7 @@ The CONF system tracks whether a breakout "survives" or fails.
 
 **Auto-promote (✓):** When a new breakout fires in the same direction, the previous breakout's label is promoted to ✓ — it survived long enough for another signal to follow.
 
-**Auto-Confirm R1:** Signals with EMA alignment firing before 10:30 ET receive instant CONF ✓. No waiting for a follow-through bar — the combination of EMA trend and morning timing has sufficient edge (N=389, +0.106/signal, 58.6% win, MFE/MAE 1.60, 12/13 symbols positive).
+**Auto-Confirm R1:** EMA-aligned signals receive instant CONF ✓ — no time restriction, no waiting for a follow-through bar. Originally gated to before 10:30 ET, but v3.0b research showed the time cutoff caused unnecessary failures on profitable signals. The 5-minute HOLD/BAIL check (83% win vs 51%) is the real quality gate downstream.
 
 **CONF ✓** — Label turns solid green (bull) or solid red (bear) with white text. Label resizes to `size.normal`.
 
