@@ -1,4 +1,4 @@
-# KeyLevelBreakout v2.9 — Design Journal
+# KeyLevelBreakout v3.0 — Design Journal
 
 | Doc | What's Inside |
 |-----|---------------|
@@ -203,4 +203,49 @@ These are data-justified improvements that were deferred due to scope constraint
 
 4. **QBS/MC ✓★ removal.** QBS/MC ✓★ was net negative (-1.47 ATR). The volume explosion that triggers these signals already implies high vol, so the ≥5x gate was meaningless. Always plain ✓ now.
 
-*Last updated: 2026-03-04 | v2.9 | Data: Sep 2025–Mar 2026*
+**v3.0 -- MC rethink, EMA gate, new signals from 8 rounds of optimization (1,841 signals, 25,304 significant moves, 9,596 big-move bars).** The largest structural change since v2.5. Three phases: cleanup, new signals, and display overhaul.
+
+**Phase 1 — Cleanup.** Three changes driven by the MC rethink analysis (8 optimization rounds, `debug/v29-mc-rounds678.md`):
+
+1. *Killed MC entirely (~30 lines removed).* 99.4% of MC signals fired on opening noise. Opposing bull+bear pairs within 5-10 minutes at open showed 45% accuracy — a coin flip. No signal feature at fire time could distinguish correct from wrong. Even with the 9:50 ET gate from v2.9, only 7 MC signals would have survived. The once-per-session slot was consistently burned on noise. QBS remains — its volume-drying pattern has genuine edge (68% runner, 3% fakeout).
+
+2. *EMA Hard Gate all-day (+45.6 ATR recovered).* The dominant finding from factor ranking: EMA alignment accounts for 92% of all scoring edge. Non-EMA signals were net negative BOTH pre-9:50 (-32.3 ATR, N=283) AND post-9:50 (-13.3 ATR, N=208). After 9:50 ET, signals against EMA are now suppressed entirely. Before 9:50, they are dimmed only (EMA not fully established at open). This reduced signals from 1,841 to ~1,350 while increasing PnL from +70.3 to +115.9 ATR (+65%). Validated: 12/13 symbols positive, both time-halves positive.
+
+3. *Auto-Confirm R1 (EMA + time < 10:30 = instant CONF ✓).* N=389, +0.106 ATR/signal, 58.6% win, MFE/MAE 1.60. Replaces MC's two-step approach (MC fires → confirms later) with one-step (signal meets criteria → auto-confirmed). 12/13 symbols positive. This is a speed improvement — good morning signals no longer wait for a follow-through bar.
+
+**Phase 2 — New signals.** Four additions to cover gaps in the signal landscape:
+
+4. *Three new levels: PD Last Hr Low (prior day 15:00-16:00 low), PD Mid ((PDH+PDL)/2), VWAP Lower Band (VWAP - ATR).* These levels provide midday coverage where the original 8 levels were sparse. All three participate in existing BRK/REV detection without new signal logic.
+
+5. *CONF window expanded 1→3 bars.* Signals now get 15 minutes (on 5m TF) to confirm instead of 5 minutes. This was the single highest-impact parameter change — many valid breakouts needed 2-3 bars to attract the follow-through signal that triggers auto-promote.
+
+6. *FADE signal.* After CONF ✗ (failed breakout), if price crosses back through the level in the opposite direction within 30 minutes, fire a reverse signal. Purple labels. Trades the failure — when a breakout fails, the trapped participants create fuel for the reversal.
+
+7. *RNG (Range+Vol) signal.* 12-bar range breakout combined with volume ≥ 3× SMA(20). Teal labels. The critical finding: this is the ONLY profitable non-EMA signal type. During the MC rethink analysis, 10 of 14 non-EMA signal designs lost money. RNG survived because range compression followed by volume expansion is a mechanical edge independent of trend alignment.
+
+**Phase 3 — Display overhaul.**
+
+8. *Regime Score R0/R1/R2.* Combines EMA alignment (+1) and VWAP alignment (+1) into a 0-2 score displayed on every label. R1 bull signals are dimmed — at 31.2% win rate, they actively harm performance. R1 bear and R2 signals display normally.
+
+9. *Runner Score redesign.* New 5 factors: EMA aligned, regime=2, vol ≥10x, morning (<11:00), CONF pass. Replaces the v2.9 factors (VWAP aligned, vol 2-5x, time 9:30-10, level quality, not D-tier). The redesign reflects the factor ranking analysis where EMA and regime dominated all other factors.
+
+**Key discoveries from the MC rethink:**
+
+- EMA alignment is the dominant factor — 92% of all scoring edge. Every other factor (ADX, VWAP, vol, time) is marginal by comparison.
+- Counter-VWAP signals have high per-signal quality but are too rare (N=52) to build a system around.
+- Volume surges after 9:50 are exhaustion, not continuation — the opening 20 minutes are the only window where volume surge has genuine directional signal.
+- 1HR H/L levels (tested as candidates) are traps despite coverage — they lose money because they fire in the afternoon noise zone.
+
+**Dead ends from this cycle:**
+- Complex 9-factor scoring system (marginal +4.4 ATR over EMA alone — not worth the complexity)
+- Smart filtering of opposing MC pairs at open (tested 6 approaches, nothing worked)
+- Consecutive bar streaks as a factor (no edge)
+- VWAP crosses after 9:50 as a signal (no edge)
+- A-tier symbol filter (TSLA/META — negative delta -0.026 when tested as a factor)
+- 11 AM window as a scoring factor (negative delta when properly tested)
+
+**Expected impact:** Fewer but higher-quality signals. Midday coverage from new levels. Target: +150 ATR (up from +70.3 in v2.9).
+
+Analysis files: `debug/v29-mc-rethink-knowledge.md`, `debug/v29-mc-rounds678.md`, `debug/v29-mc-factor-screen.md`, `debug/v29-mc-optimize.md`.
+
+*Last updated: 2026-03-05 | v3.0 | Data: Sep 2025–Mar 2026*

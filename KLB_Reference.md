@@ -1,4 +1,4 @@
-# KeyLevelBreakout v2.9 — Reference
+# KeyLevelBreakout v3.0 — Reference
 
 | Doc | What's Inside |
 |-----|---------------|
@@ -12,13 +12,13 @@
 
 1. **Paste** `KeyLevelBreakout.pine` into TradingView Pine Editor, click **Add to chart**. Works on any timeframe at or below Signal Timeframe (e.g. 1m chart with 5m signals).
 2. **Enable Extended Trading Hours** in chart settings (gear icon → Symbol → Extended Hours). Required for premarket level tracking.
-3. **Add alert** → Condition: `Key Level Breakout` → `Any alert() function call`. This single alert covers all signal types, confirmations, retests, failures, VWAP exits, and QBS/MC.
+3. **Add alert** → Condition: `Key Level Breakout` → `Any alert() function call`. This single alert covers all signal types, confirmations, retests, failures, VWAP exits, QBS, FADE, and RNG.
 
 ---
 
 ## 2. Signal Types
 
-Six signal types, each with a specific trigger and visual style.
+Eight signal types, each with a specific trigger and visual style.
 
 **Breakout** — Signal-TF bar closes through a key level as a directional candle (bullish or bearish), with prior bar(s) on the other side of the level. Green labels (bull) / red labels (bear).
 
@@ -30,7 +30,9 @@ Six signal types, each with a specific trigger and visual style.
 
 **QBS (🔇 Quiet Before Storm)** — Pre-move volume drying (ramp < 0.5×) followed by a big bar (range ≥ 1.5× signal-TF ATR). Cyan labels. Once per direction per session. Does not require a key-level breakout.
 
-**MC (🔊 Momentum Cascade)** — Pre-move volume surging (ramp > 5×) followed by a big bar (range ≥ 1.5× signal-TF ATR). Orange labels. Once per direction per session. Suppressed before 9:50 ET (opening auction is noise — 126 opposing pairs showed 45% coin flip; 9:50+ direction matches 30-min outcome 79%). Does not require a key-level breakout.
+**FADE** — Fires after a CONF ✗ (failed breakout) when price crosses back through the level in the opposite direction within 30 minutes. A contrarian signal that trades the failure. Purple labels.
+
+**RNG (Range+Vol)** — 12-bar range breakout combined with volume ≥ 3× SMA(20). The only profitable non-EMA signal type — does NOT require EMA alignment. Teal labels. Independent of key levels.
 
 ### Direction Reference
 
@@ -40,8 +42,10 @@ Six signal types, each with a specific trigger and visual style.
 | Reversal ~ | ▼ SHORT (orange) | ▲ LONG (blue) |
 | Reclaim ~~ | ▼ SHORT (orange, brighter) | ▲ LONG (blue, brighter) |
 | Retest ◆ | Confirms original break direction | Confirms original break direction |
+| FADE | ▼ SHORT (purple) after failed bull BRK | ▲ LONG (purple) after failed bear BRK |
+| RNG | ▲ LONG (teal) | ▼ SHORT (teal) |
 
-QBS and MC signals are direction-agnostic relative to levels — they fire based on candle direction (close > open = bull, close < open = bear).
+QBS, FADE, and RNG signals are direction-agnostic relative to levels — they fire based on candle direction (close > open = bull, close < open = bear).
 
 ---
 
@@ -77,7 +81,9 @@ Line 4: `✓★` — Confirmation status.
 | `①`–`⑤` | Runner Score (5 factors) | Higher = more factors aligned |
 | `⚡` | Big move (bar range ≥ 2× signal-TF ATR) | Informational marker (no size change) |
 | `🔇` | Vol drying (ramp < 0.5×) — quiet before storm | Cyan label for standalone QBS |
-| `🔊` | Vol surging (ramp > 5×) — momentum cascade | Orange label for standalone MC |
+| `R0`/`R1`/`R2` | Regime Score (EMA + VWAP alignment, 0-2) | R2 = best, R1 bull dimmed |
+| `FADE` | Reverse signal after CONF ✗ + price crosses back | Purple label |
+| `RNG` | Range+Vol breakout (12-bar range + vol ≥3x) | Teal label |
 | `⚠` | Body ≥ 80% — fakeout warning | Appended to quality line |
 | `?` | Dimmed signal (failed filter or moderate ramp) | Gray, size.tiny |
 | `CHOP?` | 3+ consecutive CONF failures at session open | Orange label, no passes yet |
@@ -88,11 +94,15 @@ Line 4: `✓★` — Confirmation status.
 
 The CONF system tracks whether a breakout "survives" or fails.
 
-**Auto-promote (✓):** When a new breakout fires in the same direction, the previous breakout's label is promoted to ✓ — it survived long enough for another signal to follow. 100% of CONF passes use this mechanism.
+**CONF window:** Signals get 3 signal-TF bars (15 min on 5m TF) to confirm, up from 1 bar in v2.9. Significantly increases CONF rate.
+
+**Auto-promote (✓):** When a new breakout fires in the same direction, the previous breakout's label is promoted to ✓ — it survived long enough for another signal to follow.
+
+**Auto-Confirm R1:** Signals with EMA alignment firing before 10:30 ET receive instant CONF ✓. No waiting for a follow-through bar — the combination of EMA trend and morning timing has sufficient edge (N=389, +0.106/signal, 58.6% win, MFE/MAE 1.60, 12/13 symbols positive).
 
 **CONF ✓** — Label turns solid green (bull) or solid red (bear) with white text. Label resizes to `size.normal`.
 
-**CONF ✓★** — Gold label with black text. BRK signals only: requires volume < 5× and confirmation before 11:00 ET (hour 9 or 10). QBS/MC signals always get plain ✓ (✓★ was net negative at -1.47 ATR in v2.8b analysis). Same resize to `size.normal`.
+**CONF ✓★** — Gold label with black text. BRK signals only: requires volume < 5× and confirmation before 11:00 ET (hour 9 or 10). QBS signals always get plain ✓ (✓★ was net negative at -1.47 ATR in v2.8b analysis). Same resize to `size.normal`.
 
 **CONF ✗** — Label turns gray. Fires when price closes back through the most conservative level (lowest for bull breakouts, highest for bear) beyond the re-arm buffer. Resets the level for new signals.
 
@@ -104,7 +114,7 @@ The CONF system tracks whether a breakout "survives" or fails.
 
 ## 5. Levels
 
-Nine level types across five sources.
+Twelve level types across eight sources.
 
 | Level Type | Source | Zone Width | Reset |
 |------------|--------|------------|-------|
@@ -113,6 +123,11 @@ Nine level types across five sources.
 | Last Week H/L | Prior week candle (non-repainting) | Wick-to-body range from weekly OHLC | Weekly |
 | ORB H/L | First signal-TF bar of regular session | ATR-derived (configurable, default 3%) | Daily |
 | VWAP zone | Session VWAP ± 0.1× daily ATR | ATR-derived, continuous | Continuous |
+| PD Last Hr Low | Prior day 15:00–16:00 ET low | ATR-derived | Daily |
+| PD Mid | (Yesterday H + Yesterday L) / 2 | ATR-derived | Daily |
+| VWAP Lower Band | VWAP − daily ATR | ATR-derived | Continuous |
+
+New levels (v3.0) participate in existing BRK/REV detection and provide midday coverage where prior levels were sparse.
 
 **Zones:** When "Use Level Zones" is ON, each level expands to a range:
 - Yesterday/Week: body edge (min/max of open, close) to wick edge (high/low). Wide zone = strong rejection area.
@@ -136,12 +151,13 @@ Nine configurable filters. Each can be independently toggled. Filter Mode contro
 | VWAP Direction | Suppresses counter-trend reversals: bear reversals above VWAP, bull reversals below VWAP. | ON |
 | Once Per Breakout | One signal per level per direction. Re-arms when price closes back through level (invalidation). | ON |
 | 5m EMA Alignment | Blocks signals against the 5m EMA(20)/EMA(50) trend direction. | ON |
+| EMA Hard Gate | After 9:50 ET: non-EMA signals suppressed entirely. Before 9:50: dimmed only (EMA not established at open). Recovers +45.6 ATR. | ON |
 | RS vs SPY | Blocks long signals when the symbol underperforms SPY (and vice versa for shorts). Auto-bypasses SPY, QQQ, GLD, SLV. | ON |
 | ADX > 20 | Blocks signals when 5m ADX(14) < 20 (choppy/trendless environment). | ON |
 | Candle Body Quality | Blocks wick-heavy candles: body < 30% of range, or close in the wrong 40% of the bar. | ON |
 | Filter Mode | **Suppress:** filtered signals are hidden entirely. **Dim:** filtered signals show as gray with `?` suffix, size.tiny. | Suppress |
 
-Breakout signals must pass both Volume and ATR Buffer. Reversal/reclaim signals must pass VWAP Direction but do not require the Volume gate. QBS/MC signals pass through the reversal filter gate (EMA, RS, ADX, Body).
+Breakout signals must pass both Volume and ATR Buffer. Reversal/reclaim signals must pass VWAP Direction but do not require the Volume gate. QBS signals pass through the reversal filter gate (EMA, RS, ADX, Body). RNG signals skip EMA requirement (the only profitable non-EMA signal type). FADE signals inherit context from the failed breakout.
 
 ---
 
@@ -162,10 +178,19 @@ Breakout signals must pass both Volume and ATR Buffer. Reversal/reclaim signals 
 
 SL line duration adapts to chart timeframe: 1800 seconds / timeframe-in-seconds = number of bars. On a 1m chart, SL lines extend 30 bars. Entry proxy is the confirming breakout's close price.
 
+### Regime Score
+
+| Score | Meaning | Visual |
+|-------|---------|--------|
+| R2 | EMA aligned + VWAP aligned | Best regime, normal display |
+| R1 | One of EMA/VWAP aligned | R1 bears normal; R1 bulls dimmed (31.2% win = harmful) |
+| R0 | Neither aligned | Weak, be selective |
+
 ### Label Modifiers
 
 | Condition | Visual Effect |
 |-----------|--------------|
+| R1 bull | Dimmed (31.2% win rate) |
 | Afternoon (after 11:00 ET) | Smaller size, more transparent |
 | Cooldown (within N signal bars of prior signal) | Gray, size.tiny |
 | Confluence (2+ levels on same bar) | size.large |
@@ -194,7 +219,8 @@ These fire through `alert()` calls. A single TradingView alert set to "Any alert
 | `5m BAIL ▲ -0.05 ATR` | 5-minute checkpoint negative |
 | `VWAP exit ▼ — bull CONF position crossed below VWAP` | VWAP exit triggered |
 | `🔇 QBS Bull: vol drying → explosion 0.3x` | QBS signal fires |
-| `🔊 MC Bear: vol surging → continuation 6.2x` | MC signal fires |
+| `FADE Bull: ✗ reversal at Yest H` | FADE signal fires |
+| `RNG Bear: 12-bar range break 3.5x` | RNG signal fires |
 
 ### alertcondition() Entries
 
@@ -207,9 +233,10 @@ These appear in TradingView's alert condition dropdown for selective subscriptio
 5. Any Bearish Reversal
 6. Any Reversal
 7. QBS — Quiet Before Storm
-8. MC — Momentum Cascade
-9. Any Setup
-10. VWAP Exit Signal
+8. FADE — Failed Breakout Reverse
+9. RNG — Range+Vol Breakout
+10. Any Setup
+11. VWAP Exit Signal
 
 ---
 
@@ -225,7 +252,9 @@ All `input.*` parameters, organized by group.
 | ORB High/Low | On | Level Toggles |
 | Signal Timeframe | 5m | Signals |
 | Once Per Breakout | On | Signals |
-| QBS/MC Signals | On | Signals |
+| QBS Signals | On | Signals |
+| FADE Signals | On | Signals |
+| RNG Signals | On | Signals |
 | Show Runner Score ①–⑤ | On | Signals |
 | Signal Cooldown | 2 bars | Signals |
 | VWAP Zone Signals | On | Signals |
@@ -246,6 +275,7 @@ All `input.*` parameters, organized by group.
 | Re-arm Buffer | 3% ATR | Filters |
 | VWAP Directional Filter | On | Filters |
 | 5m EMA Alignment Filter | On | Filters |
+| EMA Hard Gate | On | Filters |
 | RS vs SPY Filter | On | Filters |
 | ADX Trend Strength Filter | On | Filters |
 | Candle Body Quality Filter | On | Filters |
@@ -273,7 +303,7 @@ All `input.*` parameters, organized by group.
 
 ## 10. Signal Timeframe
 
-Signal TF (default 5m) controls which candle closes are evaluated for breakout, reversal, reclaim, and QBS/MC signals. The chart can run on any lower timeframe (e.g. 1m) for visual detail — labels are identical regardless of chart TF.
+Signal TF (default 5m) controls which candle closes are evaluated for breakout, reversal, reclaim, QBS, FADE, and RNG signals. The chart can run on any lower timeframe (e.g. 1m) for visual detail — labels are identical regardless of chart TF.
 
 Level tracking uses chart-native data for granularity (premarket high/low updates every chart bar). Retest detection uses chart-TF bars for wick precision. SL line duration is computed in chart-TF bars (1800s / bar duration).
 
@@ -283,15 +313,15 @@ All signal-TF data is fetched via `request.security()` with `lookahead = barmerg
 
 ## 11. Runner Score
 
-Five factors, each worth 1 point, displayed as ①–⑤ on labels.
+Five factors, each worth 1 point, displayed as ①–⑤ on labels. Redesigned in v3.0 based on factor ranking analysis.
 
 | Factor | Condition |
 |--------|-----------|
-| VWAP aligned | Close above VWAP (bull) or below VWAP (bear) |
-| Volume 2–5× | Volume ratio ≥ 2.0× and < 5.0× SMA(20) baseline |
-| Time 9:30–10:00 | Signal fires in the first 30 minutes of regular session |
-| Not D-tier symbol | Symbol is not AMD, MSFT, GLD, or TSM |
-| Level quality | **Bear:** always +1 (bear breakouts are at LOW levels, which have higher follow-through). **Bull:** +1 only when 2+ levels break simultaneously (confluence). |
+| EMA aligned | 5m EMA(20)/EMA(50) aligned with trade direction |
+| Regime = 2 | Both EMA and VWAP aligned (R2) |
+| Volume ≥ 10× | Volume ratio ≥ 10.0× SMA(20) baseline |
+| Morning | Signal fires before 11:00 ET |
+| CONF pass | Signal has been confirmed (✓ or ✓★) |
 
 Score is capped at ⑤. Only displayed when score ≥ 1 and Runner Score is enabled.
 

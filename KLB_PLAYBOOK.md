@@ -1,4 +1,4 @@
-# KeyLevelBreakout v2.9 — Trading Playbook
+# KeyLevelBreakout v3.0 — Trading Playbook
 
 | Doc | What's Inside |
 |-----|---------------|
@@ -6,7 +6,7 @@
 | [KLB_Reference.md](KLB_Reference.md) | Setup, Signal Types, Label Anatomy, CONF System, Levels, Filters, Visuals, Alerts, Settings |
 | [KLB_DESIGN-JOURNAL.md](KLB_DESIGN-JOURNAL.md) | The Idea, Data Foundation, Key Discoveries, Filter Validation, Evolution, Dead Ends |
 
-> Based on 1,841 signals, 9,596 big moves, 13 symbols, 28+ trading days
+> Based on 1,841 signals, 25,304 significant moves, 9,596 big-move bars, 13 symbols, 28+ trading days
 
 ---
 ## 1. Signal Catalog
@@ -16,16 +16,18 @@
 | 1 | CONF ✓★ | Gold label, black text, ✓★ | BRK only, vol<5x, morning | Full size, hold 30 min |
 | 2 | CONF ✓ | Solid green/red, white text, ✓ | 0% BAD (110 signals) | Large size, hold 30 min |
 | 3 | 🔇 QBS | Cyan label, 🔇 | 68% runner, 3% fakeout | Wait for CONF, then trade |
-| 4 | 🔊 MC | Orange label, 🔊 | 64% runner, best MFE 2.66 | Wait for CONF, then trade |
-| 5 | ⚡ Big Move | Any label with ⚡ | 65% runner across 13 symbols | Size up if CONF follows |
-| 6 | BRK Score ④-⑤ | Green/red label, ④ or ⑤ | Strong setup, low BAD | Standard size, wait for CONF |
-| 7 | Retest ◆ | ◆ + superscript bars | Early (1-2 bars) strongest | Add to winner |
-| 8 | BRK Score ①-③ | Green/red label, low score | Mixed | Small or skip |
-| 9 | Reversal ~ | Blue (bull) / orange (bear) | Level rejection | Selective — context matters |
-| 10 | Reclaim ~~ | Brighter blue/orange | False breakout rejection | Skip unless CONF ✓ follows |
-| 11 | ⚠ Body warn | Any label with ⚠ | 55% fakeout — INVERSE! | Reduce size or skip |
-| 12 | Gray ? (dimmed) | Gray, tiny, ? suffix | Filtered or moderate ramp | Do not trade |
-| 13 | CONF ✗ | Grayed out label | Failed breakout | Exit immediately |
+| 4 | FADE | Purple label | Reverse after CONF ✗ + price crosses back | Contrarian — trade the failure |
+| 5 | RNG (Range+Vol) | Teal label | 12-bar range breakout + vol ≥3x, no EMA req | Only profitable non-EMA signal |
+| 6 | ⚡ Big Move | Any label with ⚡ | 65% runner across 13 symbols | Size up if CONF follows |
+| 7 | BRK Score ④-⑤ | Green/red label, ④ or ⑤ | Strong setup, low BAD | Standard size, wait for CONF |
+| 8 | Retest ◆ | ◆ + superscript bars | Early (1-2 bars) strongest | Add to winner |
+| 9 | BRK Score ①-③ | Green/red label, low score | Mixed | Small or skip |
+| 10 | Reversal ~ | Blue (bull) / orange (bear) | Level rejection | Selective — context matters |
+| 11 | Reclaim ~~ | Brighter blue/orange | False breakout rejection | Skip unless CONF ✓ follows |
+| 12 | ⚠ Body warn | Any label with ⚠ | 55% fakeout — INVERSE! | Reduce size or skip |
+| 13 | R1 bull (dimmed) | Dimmed label | R1 regime bull = 31.2% win, harmful | Do not trade |
+| 14 | Gray ? (dimmed) | Gray, tiny, ? suffix | Filtered, moderate ramp, or no EMA after 9:50 | Do not trade |
+| 15 | CONF ✗ | Grayed out label | Failed breakout | Exit immediately |
 
 **The golden rule:** CONF ✓ has 0% BAD rate across 110 signals.
 
@@ -36,7 +38,7 @@
 |--------|-------|-------|---------|
 | 10:00-11:00 | 60% | 4.3% GOOD, 1.6% BAD | BEST -- trade any with-trend BRK |
 | 9:30-10:00 | High variance | Best MFE (0.42 ATR) | Trade 2-5x vol + VWAP aligned. Skip <2x |
-| 11:00-13:00 | ~49% | 0% GOOD | Skip -- breakeven at best |
+| 11:00-13:00 | ~49% | 0% GOOD | Mostly skip — new levels (PD Mid, PD Last Hr Low) provide some midday coverage |
 | 13:00-16:00 | ~49% | 0% GOOD, negative MFE/MAE | SKIP -- looks fine, loses money |
 
 ---
@@ -64,6 +66,8 @@
 | CONF ✗ | Failed breakout | Exit immediately |
 | ORB H breakouts | Worst level | 3.5% GOOD, 8.5% BAD |
 | <2x volume | No conviction | 1.5% GOOD, 1.2% BAD |
+| Against EMA after 9:50 | Non-EMA net negative both halves of day | -32.3 ATR pre-9:50, -13.3 ATR post-9:50 |
+| R1 bull signals | 31.2% win rate = harmful | Dimmed automatically |
 | HIGH levels generally | Higher BAD rates | ORB H 8.5% BAD vs ORB L 3.4% |
 | AMD, MSFT, GLD, TSM | Lowest CONF, poor edge | AMD: 0.81 MFE/MAE |
 | Wednesday / Friday | Worst CONF days | 35%, 34% vs Mon 56% |
@@ -76,19 +80,25 @@
 
 ```
 Signal fires --> Is it dimmed/suppressed?
-  |-- Gray with ? --> Skip
-  '-- Normal color --> Check time:
+  |-- Gray with ? --> Skip (includes non-EMA after 9:50)
+  |-- R1 bull (dimmed) --> Skip (31.2% win)
+  '-- Normal color --> Check regime:
+      |-- R2 (EMA + VWAP) --> Best. Check time:
+      |-- R1 bear --> Good. Check time:
+      |-- R0 --> Weak. Skip unless FADE or RNG.
+      Check time:
       |-- 9:30-10:00? --> Vol 2-5x + VWAP? --> Trade. <2x? --> Skip
       |-- 10:00-11:00? --> BEST WINDOW. Any with-trend BRK --> Trade
-      |-- 11:00-13:00? --> Skip
+      |-- 11:00-13:00? --> Skip (unless FADE/RNG at new levels)
       '-- 13:00-16:00? --> Skip
 
-After BRK:
+After BRK (3-bar CONF window = 15 min on 5m TF):
+  Auto-Confirm R1 --> EMA + before 10:30 = instant ✓
   CONF ✓  --> Size up (0% BAD)
   CONF ✓★ --> Full size (27% GOOD)
-  CONF ✗  --> Exit immediately
+  CONF ✗  --> Watch for FADE (reverse within 30 min)
 
-Levels: Yest L > PM L > ORB L > Week L. Avoid HIGH levels.
+Levels: Yest L > PM L > ORB L > Week L > PD Last Hr L > PD Mid. Avoid HIGH levels.
 ```
 
 ---
@@ -129,7 +139,7 @@ Levels: Yest L > PM L > ORB L > Week L. Avoid HIGH levels.
 | ③ | +0.047 | 2.4% |
 | ①② | Weak | Higher |
 
-5 factors: VWAP aligned, vol 2-5x, time 9:30-10, level quality (LOW for bear, confluence for bull), not D-tier symbol.
+5 factors: EMA aligned, regime=2 (EMA+VWAP), vol ≥10x, morning (<11:00), CONF pass.
 
 ---
 ## 9. Symbol Tiers
@@ -149,6 +159,35 @@ Levels: Yest L > PM L > ORB L > Week L. Avoid HIGH levels.
 | D | AMD | 41% | -- |
 | D | MSFT | 40% | -- |
 | D | GLD | 40% | -- |
+
+---
+## 🔴 TODO: Open Call Management Setup
+
+**Research (2026-03-04/05):** Comprehensive TSLA open analysis across 271-476 days, validated on 4 symbols.
+
+### Call Holder's 5-Minute Rule (ready to use)
+
+| At 9:35 | % Bull | Avg Day Close | Action |
+|---------|--------|---------------|--------|
+| Price above open | 67% | +$3.22 | **HOLD** |
+| Price below open | 32% | -$3.64 | **BAIL** |
+| 1m down → 5m up (reversal) | 72% | +$3.67 | **HOLD** (strongest) |
+| 5m > +$2 | 75% | +$4.71 | **HOLD with confidence** |
+| Not recovered by 5m | 18% | -$7.71 | **BAIL immediately** |
+
+### Level Bounce (validated multi-symbol)
+- **$1-2 dips at 5d+ level:** +12-21pp edge (NVDA/AMZN/SPY)
+- **HIGH-turned-support > LOW levels** across all 4 symbols
+- **Prev-day levels** barely beat baseline — not worth trading alone
+
+### Next steps
+1. ~~Validate on NVDA, AMZN, SPY~~ ✅ Done
+2. ~~HOLD/BAIL decision framework~~ ✅ Done
+3. Design pre-market checklist: identify 5d+ levels within $1-2 of expected open
+4. Integrate with KLB indicator: pre-market level proximity alert?
+5. Test: can the 5-minute rule improve KLB signal exits? (hold CONF ✓ if 5m up, bail if 5m down)
+
+**Data:** `debug/open-scalp-learnings.md` (master findings), `debug/open-hold-or-bail.md`, `debug/open-level-multi.md`
 
 ---
 ## 10. Day of Week

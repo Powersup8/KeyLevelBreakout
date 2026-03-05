@@ -196,6 +196,8 @@ def main():
     out.append(f"Entry: wait_30s or wait_60s. TP=$2.00, SL=$1.00. Hard exit 9:35.\n")
 
     configs = [
+        ('wait_15s', 15),
+        ('wait_20s', 20),
         ('wait_30s (original)', 30),
         ('wait_60s (1m close)', 60),
     ]

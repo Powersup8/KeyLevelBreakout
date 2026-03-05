@@ -1,85 +1,241 @@
-# TSLA Open Scalp — Research Findings
+# TSLA Open — Complete Research Findings
 
-**Date:** 2026-03-03
-**Data:** 45 trading days (2025-12-22 to 2026-03-02), 5-second IB candles
-**Script:** `debug/open_scalp_analysis.py`
-**Full results:** `debug/open-scalp-results.md`
+**Dates:** 2026-03-03 to 2026-03-05
+**Data:** 5s (47 days), 1m (271 days), 5m (525 days) — IB candles
+**Multi-symbol:** TSLA, NVDA, AMZN, SPY (1m + 5m)
 
-## Strategy
+---
 
-Buy ATM call or put within the first 120 seconds of market open, actively manage with TP/SL, must exit by 9:35:00.
+## Part A: Open Scalp Strategy — DEAD END (47 days, 5s data)
 
-**Entry rule:** Wait 30 seconds. At 9:30:30, compare bar close to 9:30:00 open price.
-- Close ≥ open → buy **Call**
-- Close < open → buy **Put**
+Buy ATM call or put within 120s of open, TP/SL management, hard exit 9:35.
+Entry: wait 30s, compare bar close to 9:30 open. Close ≥ open → Call, Close < open → Put.
 
-**Assumptions:** Delta 0.50, spread $0.15/contract, 1 contract, 100 multiplier.
+### Best configs
 
-## Key Numbers
+| Config | Trades | Win% | Total P&L | Sharpe |
+|--------|--------|------|-----------|--------|
+| **Puts only** (TP=$2, SL=$1) | **30** | **53%** | **+$515** | **3.6** |
+| Both directions (TP=$2, SL=$1) | 44 | 48% | +$355 | 1.7 |
+| Calls only (best) | 14 | 43% | -$85 | -3.8 |
 
-| Config | Trades | Win% | Avg P&L | Total P&L | Sharpe |
-|--------|--------|------|---------|-----------|--------|
-| **Puts only** (TP=$2, SL=$1) | **30** | **53%** | **+$17** | **+$515** | **3.6** |
-| Both directions (TP=$2, SL=$1) | 44 | 48% | +$8 | +$355 | 1.7 |
-| Calls only (TP=$2, SL=$1) | 14 | 36% | -$11 | -$160 | -2.4 |
-| Calls only (best: TP=$0.75, SL=$0.25) | 14 | 43% | -$6 | -$85 | -3.8 |
+### What we tested and ruled out
 
-**Per-trade risk:** $50/contract (SL $1.00 × 0.50 delta × 100)
+1. **13 entry triggers** → `wait_30s` best. 15s/20s = too noisy, 60s = move already done.
+2. **Tight stops** get clipped by 5s noise. Only TP≥$1.50 / SL≥$0.75 works.
+3. **Trailing stops** → best +$17. Fixed TP beats trailing at the open.
+4. **Indicator exits** (EMA9/20, VWAP, reversal, stall) → all worse than TP/SL.
+5. **Buy-the-dip** (always long, enter on 35% recovery) → all negative (-$100 to -$1312).
+6. **1m close as direction** → catastrophically worse. Wait_60s: -$582 vs wait_30s: +$454.
+7. **Always-call with dip recovery** → only TP=$1.00/SL=$0.25 positive (+$172, 50% win). Not tradeable.
 
-## Findings
+**Verdict:** The puts-only edge was regime-dependent (47-day TSLA downtrend). Over 271+ days direction is 50/50. Real spreads wipe all profit.
 
-### 1. TSLA opens DOWN 64% of days
-29 of 45 days, the 9:30:30 close was below the 9:30:00 open. Strong bearish bias at the open in this sample period (Dec 2025 – Mar 2026, TSLA trending $490 → $390).
+---
 
-### 2. Puts have edge, calls don't
-Every TP/SL combination tested for calls-only was negative. Puts-only was positive at wider TP/SL settings. The asymmetry is large: puts +$515 vs calls -$160 at the same TP/SL.
+## Part B: Direction Study (271 days 1m, 525 days 5m)
 
-### 3. Best entry: wait 30 seconds
-Tested: first bar, first up/down bar, consecutive bars, wait 5/10/15/30/60/90/120/180/240/300s, biggest bar, price-cross-open. Winner: `wait_30s` — let the opening chaos settle, then read direction. Sharpe -3.7 (with TP=$0.75/SL=$0.50 baseline) was the least-bad trigger; all triggers were negative at tight TP/SL.
+### Opening direction is a coin flip (except AMZN)
 
-### 4. Wide TP/SL required
-Tight stops ($0.25-$0.50) get clipped by TSLA's 5-second noise at the open. The only profitable configs use TP≥$1.50 and SL≥$0.75. Best: TP=$2.00, SL=$1.00 (2:1 R:R).
+| Symbol | TF | Days | 30s Below | 1m Below | 5m Below | Day Close |
+|--------|-----|------|-----------|----------|----------|-----------|
+| TSLA | 1m | 221 | 49% | 52% | 51% | 50/50 |
+| TSLA | 5m | 476 | 49% | 49% | 50% | 49/50 |
+| NVDA | 5m | 476 | 53% | 53% | 49% | 51/48 |
+| **AMZN** | **5m** | **476** | **57%** | **57%** | **55%** | **49/49** |
+| SPY | 5m | 476 | 47% | 47% | 44% | 52/46 |
 
-### 5. Extending exit window to 9:35 adds +$255
-Old 120s hard exit: +$100 total. New 9:35 hard exit: +$355 total. Five trades that had the move but needed 130-245 seconds to reach TP now convert from TIME-stop (flat) to TP (winner).
+AMZN has a persistent bearish opening bias (55-57% below open). SPY has mild bullish bias.
 
-### 6. Trailing stops underperform fixed TP/SL here
-Best trailing config: +$17 total (SL=$1.00, trail start=$0.75, offset=$0.40). The open moves fast — a firm take-profit captures more than a trailing mechanism that gives back gains.
+### All symbols trade above open during the day
 
-### 7. Opportunity ceiling is $4,598 (perfect exit)
-With perfect timing within the 9:30-9:35 window: avg MFE $2.39, 80% of days reach ≥$1.00 MFE. Best config captures ~8% of this ceiling. There's theoretical edge, but noise prevents capture.
+| Symbol | Day High Above Open | Avg Day High |
+|--------|--------------------|----|
+| TSLA | 99% | +$7.45 |
+| NVDA | 96-97% | +$2.25 |
+| AMZN | 97-98% | +$2.20 |
+| SPY | 97-99% | +$2.97 |
 
-### 8. No data gaps
-5-second data is gap-free at the open — 48 bars per day in 9:30-9:34, every day. Initial analysis had a bug (TIME-stop read end-of-day price instead of last bar within window) that inflated results by ~$492. Fixed.
+---
 
-### 9. Indicator-based exits underperform simple TP/SL
-Tested EMA9, EMA20, VWAP cross, reversal bars, momentum stall, and combos (e.g., VWAP+TP$2, EMA9+trail). **None beat the simple TP=$2/SL=$1 baseline** for puts-only:
+## Part C: Day High Timing (271 days 1m)
 
-| Exit Strategy (Puts Only) | Total P&L | Win% | Sharpe |
+### U-shaped distribution
+
+| Time Window | TSLA (1m) | TSLA (5m) |
+|---|---|---|
+| 9:30-10:00 | **41%** | **42%** |
+| 10:00-11:00 | 15% | 16% |
+| 11:00-15:00 | 26% | 25% |
+| 15:00-16:00 | **17%** | **15%** |
+
+### Bull vs bear days — completely different profiles
+
+| Metric | Bull Days (136) | Bear Days (135) |
+|---|---|---|
+| High in first 5m | 2% | 52% |
+| High in first 30m | 10% | 73% |
+| High in last hour | 36% | 0% |
+| Median high time | 12:57 | 9:34 |
+
+Descriptive, not predictive — you only know which type of day it is after the fact.
+
+---
+
+## Part D: Bull/Bear Day Prediction (271 days, 1m)
+
+### What DOESN'T predict direction
+- 1st bar range, volume, day range — identical for bull/bear
+- Overnight gap — useless (+6pp for gap up, -0pp for gap down)
+- Day of week — zero signal
+
+### Prediction accuracy scales linearly with time
+
+| Signal | → Bull% | n | Edge |
 |---|---|---|---|
-| **Baseline TP=$2/SL=$1** | **+$454** | **55%** | **3.1** |
-| VWAP or TP$2 + $1 SL | +$287 | 42% | 2.2 |
-| 3-bar stall + $1 SL | +$137 | 48% | 1.1 |
-| EMA9 or TP$2 + $1 SL | -$242 | 26% | -2.5 |
+| 1st bar green | 56% | 131 | +13pp |
+| 5m above open | 60% | 138 | +21pp |
+| 15m above open | 72% | 128 | +42pp |
+| 30m above open | 77% | 127 | +51pp |
 
-**Why:** EMA9 on 5-second bars is hyper-reactive — 94% of exits trigger as EMA9 crosses at avg 33s hold time, pulling you out before the TP can be reached. VWAP cross is more patient but still exits profitable trades prematurely. The open is too fast and noisy for indicator-based management — a firm take-profit at $2.00 simply captures more than any reactive mechanism.
+No early shortcut. Best combos: "30m up + 5m up" = 76% bull (n=89), "30m up >$2 + gap up" = 85% (n=47).
 
-**Script:** `debug/open_scalp_exits.py` | **Full results:** `debug/open-scalp-exits.md`
+---
 
-## Caveats / Why This May Not Work Live
+## Part E: Level Bounce Study (271-476 days, 4 symbols)
 
-1. **Regime-dependent:** TSLA was in a sustained downtrend ($490→$390). The put bias may flip in a bull trend.
-2. **Spread underestimated:** Modeled $0.15, real TSLA 0DTE ATM spreads at 9:30 are $0.30-0.50+. Doubling spread to $0.30 cuts total P&L by ~$660 (wipes out all profit).
-3. **Slippage:** Fast market at the open, fills may be worse than modeled.
-4. **IV crush:** 0DTE options lose IV rapidly in the first minutes — delta-only model doesn't capture this.
-5. **Sample size:** 45 days is small. Need 200+ for statistical confidence.
-6. **Commission:** $0.65/contract/side = $1.30/round trip = $57 over 44 trades.
+When the opening dip (first 5m) touches a known key level (prev day, 2d-50d lookback), does it bounce better?
 
-## Verdict
+### Cross-symbol summary
 
-**Not tradeable as-is.** The put-direction edge (+$515) is real in-sample but:
-- Gets wiped by realistic spread costs ($0.30+)
-- Is regime-dependent (bearish TSLA sample)
-- Has only 45 data points
+| Symbol | TF | Days | Level% | Lvl 5m Win% | No-Lvl 5m Win% | Edge |
+|--------|----|----- |--------|-------------|----------------|------|
+| TSLA | 1m | 221 | 30% | 84% | 81% | +3pp |
+| NVDA | 1m | 221 | 67% | 82% | 75% | +7pp |
+| AMZN | 1m | 322 | 69% | 85% | 83% | +2pp |
+| SPY | 1m | 221 | 63% | 90% | 83% | +7pp |
 
-If TSLA stays in a downtrend and you can get tight fills, the puts-only variant is marginally interesting. But this is not a reliable daily strategy.
+### The real edge: $1-2 dips + level touch
+
+| Symbol | $1-2 Dip + Level Win% | $1-2 No-Level Win% | Edge |
+|--------|-----------------------|---------------------|------|
+| NVDA | 83% | 62% | **+21pp** |
+| AMZN | 78% | 67% | **+12pp** |
+| SPY | 90% | 71% | **+19pp** |
+| TSLA | 85% | 90% | -5pp |
+
+$1-2 dip Goldilocks zone: big enough to reach a level, small enough to bounce reliably.
+
+### 5-day+ lookback = sweet spot
+
+| Depth | TSLA 5m Win% | NVDA | SPY |
+|-------|-------------|------|-----|
+| prev_day | 79% | 83% | 90% |
+| **5d level** | **100%** | **95%** | **91%** |
+| 50d level | 100% (n=2) | 100% (n=12) | 94% (n=32) |
+
+### HIGH levels > LOW levels (consistent across symbols)
+
+| Symbol | HIGH 5m Win% | LOW 5m Win% |
+|--------|-------------|-------------|
+| TSLA | 94% | 87% |
+| NVDA | 86% | 79% |
+| AMZN | 88% | 81% |
+| SPY | 90% | 88% |
+
+Touching a previous high (now support) = bullish structure. Touching a previous low = bearish extending.
+
+---
+
+## Part F: HOLD or BAIL — Call Holder's Playbook (271 days, 1m)
+
+**Setup:** You hold TSLA calls at market open. What tells you to hold or sell?
+
+### Baseline
+
+- Avg day high above open: **$7.45** (median $5.68)
+- Avg day close: **$-0.09** (coin flip)
+- 89% of days reach ≥$1 above open, 55% reach ≥$5
+
+### The 5-Minute Rule
+
+| 5m Signal | Days | % Bull Close | Avg Day Close | Avg Day High | 30m MFE |
+|-----------|------|-------------|---------------|-------------|---------|
+| **Above open** | 134 | **67%** | **+$3.22** | $9.99 | $6.24 |
+| **Below open** | 133 | **32%** | **-$3.64** | $4.83 | $2.13 |
+
+**$6.87 expected value gap.** This is the single most powerful signal.
+
+### The Decision Matrix (best combos)
+
+| Signal | Days | % Bull | Avg Day Close | Action |
+|--------|------|--------|---------------|--------|
+| **5m > +$2** | **76** | **75%** | **+$4.71** | **HOLD** |
+| **5m UP + big dip recovered** | **73** | **67%** | **+$3.32** | **HOLD** |
+| **1m DOWN → 5m UP (reversal)** | **32** | **72%** | **+$3.67** | **HOLD** (strongest!) |
+| 5m DOWN + small dip (<$1) | 9 | 11% | -$7.70 | **BAIL FAST** |
+| 5m DOWN + not recovered | 97 | 29% | -$4.34 | **BAIL** |
+| 1m UP → 5m DOWN (fakeout) | 30 | 30% | -$3.11 | **BAIL** |
+
+### Recovery speed matters
+
+| Recovery After Dip | Days | % Bull | Avg Day Close |
+|--------------------|------|--------|---------------|
+| 1-2 minutes | 87 | 55% | +$1.78 |
+| 2-5 minutes | 51 | **67%** | **+$2.54** |
+| Never recovered | 62 | **18%** | **-$7.71** |
+
+**If not recovered by 5m → 82% chance of losing day. BAIL.**
+
+### Bear day escape window
+
+Even on bear days, 77% reach ≥$1 above open — but avg bear day high is at **0:29 after open**.
+- By 5m: only 32% still above open
+- By 30m: only 21% above open
+
+On a bad day you have **seconds, not minutes** to exit near breakeven.
+
+### When to take profit (bull days)
+
+- Avg bull day high: **$11.73**
+- Avg time of high: **3:36 after open** (median 3:34)
+- At 30m: 73% still above open, avg +$2.96
+
+Bull days trend all day. No rush to sell in the first hour.
+
+---
+
+## The Three Rules
+
+1. **Wait until 9:35.** Price above open = HOLD (67% bull, +$3.22 avg). Below = BAIL (32% bull, -$3.64 avg).
+
+2. **Dip-then-recovery is the STRONGEST hold signal.** 1m down → 5m up = 72% bull, +$3.67 avg. Recovery proves buying pressure.
+
+3. **No recovery by 5m = exit.** 82% chance of losing day, avg -$7.71. Don't hope.
+
+---
+
+## Files
+
+| File | Description |
+|---|---|
+| `open_scalp_analysis.py` | Main scalp sim (triggers, TP/SL grid, trailing, direction filter) |
+| `open_scalp_exits.py` | Indicator-based exit comparison |
+| `open_scalp_dip_buy.py` | Buy-the-dip strategy (always long) |
+| `open_scalp_1m_direction.py` | 30s vs 1m direction + wait time comparison |
+| `open_scalp_call30s.py` | Always-call strategy, dip recovery + hold/momentum/TP-SL |
+| `open_direction_study.py` | Above/below open at 30s intervals, 3 timeframes |
+| `day_high_timing.py` | Day high timing analysis, bull/bear split |
+| `open_level_bounce.py` | Level bounce study (TSLA, extended lookbacks) |
+| `open_level_multi.py` | Multi-symbol level bounce + direction (TSLA/NVDA/AMZN/SPY) |
+| `open_hold_or_bail.py` | Call holder HOLD/BAIL decision framework |
+| `open-scalp-results.md` | Full scalp numerical results |
+| `open-scalp-exits.md` | Indicator exit results |
+| `open-scalp-dip-buy.md` | Dip-buy results |
+| `open-scalp-1m-direction.md` | 30s vs 1m direction results |
+| `open-scalp-call30s.md` | Always-call results |
+| `open-direction-study.md` | Direction study results |
+| `open-level-bounce.md` | TSLA level bounce results |
+| `open-level-multi.md` | Multi-symbol level bounce + direction |
+| `open-hold-or-bail.md` | Call holder HOLD/BAIL results |
+| `day-high-timing.md` | Day high timing results |
