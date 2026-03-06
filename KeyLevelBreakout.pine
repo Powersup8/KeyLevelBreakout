@@ -832,7 +832,7 @@ if not isORBwin and newSigBar
 sigRevBullPML = rRevBullPML and (not i_firstOnly or not rPML) and fGateBull_rev and (emaGateBull or isPre950)
 sigRevBullYL  = rRevBullYL  and (not i_firstOnly or not rYL)  and fGateBull_rev and (emaGateBull or isPre950)
 sigRevBullWL  = rRevBullWL  and (not i_firstOnly or not rWL)  and fGateBull_rev and (emaGateBull or isPre950)
-sigRevBullOL  = rRevBullOL  and (not i_firstOnly or not rOL)  and fGateBull_rev and (emaGateBull or isPre950)
+sigRevBullOL  = false  // v3.2: ORB L bull REV suppressed — 27% win, -12.5 ATR net negative
 
 sigRevBearPMH = rRevBearPMH and (not i_firstOnly or not rPMH) and fGateBear_rev and (emaGateBear or isPre950)
 sigRevBearYH  = rRevBearYH  and (not i_firstOnly or not rYH)  and fGateBear_rev and (emaGateBear or isPre950)
