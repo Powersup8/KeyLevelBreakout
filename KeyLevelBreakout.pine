@@ -1,8 +1,8 @@
 // © Key Level Breakout Alert Indicator
-// Detects bullish/bearish 5m candle closes through key levels (v3.0b)
+// Detects bullish/bearish 5m candle closes through key levels (v3.1)
 // Designed for US stocks (NYSE/NASDAQ) on 5-min charts
 //@version=6
-indicator("Key Level Breakout v3.0b", overlay=true, max_labels_count=500, max_lines_count=200)
+indicator("Key Level Breakout v3.1", overlay=true, max_labels_count=500, max_lines_count=200)
 
 // ─── Inputs ────────────────────────────────────────────────
 i_showPM    = input.bool(true,  "Premarket High/Low",         group="Level Toggles")
@@ -169,6 +169,7 @@ weekLBody = i_useZones ? weekLow  + zoneWidth : weekLow
 orbHBody  = i_useZones ? orbHigh - zoneWidth : orbHigh
 orbLBody  = i_useZones ? orbLow  + zoneWidth : orbLow
 pdMidBody   = i_useZones ? (not na(pdMid) ? pdMid - zoneWidth : na) : pdMid
+pdMidBodyHi = i_useZones ? (not na(pdMid) ? pdMid + zoneWidth : na) : pdMid
 pdLHBody    = i_useZones ? (not na(pdLastHrLow) ? pdLastHrLow + zoneWidth : na) : pdLastHrLow
 
 // ─── Breakout Flags (reset each regular session) ────────
@@ -464,6 +465,8 @@ int regimeBear = (fEMA_bear ? 1 : 0) + (not na(vwapVal) and sigC < vwapVal ? 1 :
 bool rsSkip = syminfo.ticker == "SPY" or syminfo.ticker == "QQQ" or syminfo.ticker == "GLD" or syminfo.ticker == "SLV"
 stockChg = not na(todayOpen) and todayOpen > 0 ? (sigC - todayOpen) / todayOpen : 0.0
 spyChg   = not na(spyDayOpen) and spyDayOpen > 0 ? (spyClose - spyDayOpen) / spyDayOpen : 0.0
+// v3.1: SPY Market Regime (BULL/NEUTRAL/BEAR) — drives BAIL modifier
+int spyRegime = spyChg > 0.003 ? 1 : spyChg < -0.003 ? -1 : 0
 rsVsSpy  = stockChg - spyChg
 fRS_bull = rsSkip or rsVsSpy > 0
 fRS_bear = rsSkip or rsVsSpy < 0
@@ -532,14 +535,14 @@ string volRampGlyph = isVolDrying ? "🔇" : ""
 string bigMoveGlyph = isBigMove ? "⚡" : ""
 
 // ─── Runner Score (v3.0 redesign) ─────────────────────
-// 5 validated factors: EMA aligned, regime=2, vol≥10x, morning, CONF pass (added later)
+// 6 validated factors: EMA aligned, regime=2, vol≥10x, morning, SPY-aligned, CONF pass (added later)
 int etHour = hour(time, TZ)
 int etMin = minute(time, TZ)
 bool isMorning = etHour < 11
-// Factor 5 (CONF pass) added after CONF evaluation — max 4 at signal time
-int scoreBull = (fEMA_bull ? 1 : 0) + (regimeBull == 2 ? 1 : 0) + (not na(volRatioBull) and volRatioBull >= 10.0 ? 1 : 0) + (isMorning ? 1 : 0)
-int scoreBear = (fEMA_bear ? 1 : 0) + (regimeBear == 2 ? 1 : 0) + (not na(volRatioBear) and volRatioBear >= 10.0 ? 1 : 0) + (isMorning ? 1 : 0)
-string[] SCORE_GLYPHS = array.from("", "①", "②", "③", "④", "⑤")
+// Factor 6 (CONF pass) added after CONF evaluation — max 5 at signal time
+int scoreBull = (fEMA_bull ? 1 : 0) + (regimeBull == 2 ? 1 : 0) + (not na(volRatioBull) and volRatioBull >= 10.0 ? 1 : 0) + (isMorning ? 1 : 0) + (spyRegime == 1 ? 1 : 0)
+int scoreBear = (fEMA_bear ? 1 : 0) + (regimeBear == 2 ? 1 : 0) + (not na(volRatioBear) and volRatioBear >= 10.0 ? 1 : 0) + (isMorning ? 1 : 0) + (spyRegime == -1 ? 1 : 0)
+string[] SCORE_GLYPHS = array.from("", "①", "②", "③", "④", "⑤", "⑥")
 
 // ─── SL Line Bars (5 min on any chart TF) ────────────
 int slBars = math.max(1, math.round(1800 / timeframe.in_seconds()))
@@ -746,9 +749,9 @@ rBearWL  = i_showWeek  and bearBreak(weekLow)
 rBullOH  = i_showORB   and not isORBwin and orbFirstDone and bullBreak(orbHigh)
 rBearOL  = i_showORB   and not isORBwin and orbFirstDone and bearBreak(orbLow)
 
-// New level breakouts (v3.0)
-rBullPDMid = i_showPDMid and bullBreak(pdMid)
-rBearPDMid = i_showPDMid and bearBreak(pdMid)
+// New level signals (v3.0; PD Mid → REV in v3.1 — magnet level, not barrier)
+rRevBullPDMid = i_showPDMid and bullRev(pdMid, pdMidBody)
+rRevBearPDMid = i_showPDMid and bearRev(pdMid, pdMidBodyHi)
 rBearPDLH  = i_showPDMid and bearBreak(pdLastHrLow)
 rBearVWBL  = i_showVWBand and bearBreak(vwapLowerBand)
 
@@ -761,8 +764,6 @@ sigBullWH  = rBullWH  and (not i_firstOnly or not xWH)  and fGateBull and (emaGa
 sigBearWL  = rBearWL  and (not i_firstOnly or not xWL)  and fGateBear and (emaGateBear or isPre950)
 sigBullOH  = rBullOH  and (not i_firstOnly or not xOH)  and fGateBull and (emaGateBull or isPre950)
 sigBearOL  = rBearOL  and (not i_firstOnly or not xOL)  and fGateBear and (emaGateBear or isPre950)
-sigBullPDMid = rBullPDMid and (not i_firstOnly or not xPDMid) and fGateBull and (emaGateBull or isPre950)
-sigBearPDMid = rBearPDMid and (not i_firstOnly or not xPDMid) and fGateBear and (emaGateBear or isPre950)
 sigBearPDLH  = rBearPDLH  and (not i_firstOnly or not xPDLH)  and fGateBear and (emaGateBear or isPre950)
 sigBearVWBL  = rBearVWBL  and (not i_firstOnly or not xVWBL)  and fGateBear and (emaGateBear or isPre950)
 
@@ -783,7 +784,7 @@ if rBullOH
     xOH := true
 if rBearOL
     xOL := true
-if rBullPDMid or rBearPDMid
+if rRevBullPDMid or rRevBearPDMid
     xPDMid := true
 if rBearPDLH
     xPDLH := true
@@ -821,7 +822,8 @@ rRevBearVWAP = i_vwapSignal and not na(vwapZoneLo) and isRegular and newSigBar
 if not isORBwin and newSigBar
     orbFirstDone := true
 
-// ─── Filtered Reversal Signals (use reversal gate: ADX + Body only) ──
+// ─── Filtered Reversal Signals (reversal gate + EMA gate) ──────────
+// v3.1: EMA gate KEPT on REVs — backtest showed counter-EMA REVs = -11.8 ATR (35% win)
 sigRevBullPML = rRevBullPML and (not i_firstOnly or not rPML) and fGateBull_rev and (emaGateBull or isPre950)
 sigRevBullYL  = rRevBullYL  and (not i_firstOnly or not rYL)  and fGateBull_rev and (emaGateBull or isPre950)
 sigRevBullWL  = rRevBullWL  and (not i_firstOnly or not rWL)  and fGateBull_rev and (emaGateBull or isPre950)
@@ -832,12 +834,15 @@ sigRevBearYH  = rRevBearYH  and (not i_firstOnly or not rYH)  and fGateBear_rev 
 sigRevBearWH  = rRevBearWH  and (not i_firstOnly or not rWH)  and fGateBear_rev and (emaGateBear or isPre950)
 sigRevBearOH  = rRevBearOH  and (not i_firstOnly or not rOH)  and fGateBear_rev and (emaGateBear or isPre950)
 
-// VWAP filtered signals (reversal stack: ADX + Body)
+// VWAP filtered signals (reversal stack + EMA gate)
 sigRevBullVWAP = rRevBullVWAP and not xVWAPBull and fGateBull_rev and (emaGateBull or isPre950)
 sigRevBearVWAP = rRevBearVWAP and not xVWAPBear and fGateBear_rev and (emaGateBear or isPre950)
 
 sigRevBullPDLH = rRevBullPDLH and (not i_firstOnly or not rPDLH) and fGateBull_rev and (emaGateBull or isPre950)
 sigRevBullVWBL = rRevBullVWBL and (not i_firstOnly or not rVWBL) and fGateBull_rev and (emaGateBull or isPre950)
+// PD Mid REV: no EMA gate — magnet level, reversal is the correct signal type
+sigRevBullPDMid = rRevBullPDMid and (not i_firstOnly or not xPDMid) and fGateBull_rev
+sigRevBearPDMid = rRevBearPDMid and (not i_firstOnly or not xPDMid) and fGateBear_rev
 
 // Update reversal flags
 if rRevBullPML
@@ -879,12 +884,12 @@ if sigQBS_bear
     qbsBearFired := true
 
 // ─── Combined Signals ────────────────────────────────────
-anyBull     = sigBullPMH or sigBullYH or sigBullWH or sigBullOH or sigBullPDMid
-anyBear     = sigBearPML or sigBearYL or sigBearWL or sigBearOL or sigBearPDMid or sigBearPDLH or sigBearVWBL
+anyBull     = sigBullPMH or sigBullYH or sigBullWH or sigBullOH
+anyBear     = sigBearPML or sigBearYL or sigBearWL or sigBearOL or sigBearPDLH or sigBearVWBL
 anyBreakout = anyBull or anyBear
 
-anyRevBull  = sigRevBullPML or sigRevBullYL or sigRevBullWL or sigRevBullOL or sigRevBullVWAP or sigRevBullPDLH or sigRevBullVWBL
-anyRevBear  = sigRevBearPMH or sigRevBearYH or sigRevBearWH or sigRevBearOH or sigRevBearVWAP
+anyRevBull  = sigRevBullPML or sigRevBullYL or sigRevBullWL or sigRevBullOL or sigRevBullVWAP or sigRevBullPDLH or sigRevBullVWBL or sigRevBullPDMid
+anyRevBear  = sigRevBearPMH or sigRevBearYH or sigRevBearWH or sigRevBearOH or sigRevBearVWAP or sigRevBearPDMid
 anyReversal = anyRevBull or anyRevBear
 // Failed Breakout Fade signals (v3.0b)
 // NO EMA gate — FADE is contrarian (fades INTO the failed direction, EMAs won't have flipped)
@@ -936,8 +941,6 @@ if sigBullWH
     bullText := bullText + (bullText != "" ? " + " : "") + "Week H"
 if sigBullOH
     bullText := bullText + (bullText != "" ? " + " : "") + "ORB H"
-if sigBullPDMid
-    bullText := bullText + (bullText != "" ? " + " : "") + "PD Mid"
 
 bearText = ""
 if sigBearPML
@@ -948,8 +951,6 @@ if sigBearWL
     bearText := bearText + (bearText != "" ? " + " : "") + "Week L"
 if sigBearOL
     bearText := bearText + (bearText != "" ? " + " : "") + "ORB L"
-if sigBearPDMid
-    bearText := bearText + (bearText != "" ? " + " : "") + "PD Mid"
 if sigBearPDLH
     bearText := bearText + (bearText != "" ? " + " : "") + "PD LH L"
 if sigBearVWBL
@@ -964,12 +965,12 @@ bearVolTrim = i_volFilter and not na(volRatioBear) ? str.tostring(volRatioBear, 
 bearPosTrim = i_closePos and not na(bearClosePos) ? "v" + str.tostring(bearClosePos) : ""
 bearQualLine = bearVolTrim + (bearVolTrim != "" and bearPosTrim != "" ? " " : "") + bearPosTrim
 
-bullCount = (sigBullPMH ? 1 : 0) + (sigBullYH ? 1 : 0) + (sigBullWH ? 1 : 0) + (sigBullOH ? 1 : 0) + (sigBullPDMid ? 1 : 0)
-bearCount = (sigBearPML ? 1 : 0) + (sigBearYL ? 1 : 0) + (sigBearWL ? 1 : 0) + (sigBearOL ? 1 : 0) + (sigBearPDMid ? 1 : 0) + (sigBearPDLH ? 1 : 0) + (sigBearVWBL ? 1 : 0)
+bullCount = (sigBullPMH ? 1 : 0) + (sigBullYH ? 1 : 0) + (sigBullWH ? 1 : 0) + (sigBullOH ? 1 : 0)
+bearCount = (sigBearPML ? 1 : 0) + (sigBearYL ? 1 : 0) + (sigBearWL ? 1 : 0) + (sigBearOL ? 1 : 0) + (sigBearPDLH ? 1 : 0) + (sigBearVWBL ? 1 : 0)
 
-// Runner Score: max 4 at signal time (5th factor = CONF pass, added later)
-int finalScoreBull = math.min(scoreBull, 5)
-int finalScoreBear = math.min(scoreBear, 5)
+// Runner Score: max 5 at signal time (6th factor = CONF pass, added later)
+int finalScoreBull = math.min(scoreBull, 6)
+int finalScoreBear = math.min(scoreBear, 6)
 if i_runnerScore and finalScoreBull >= 1 and bullQualLine != ""
     bullQualLine += " " + array.get(SCORE_GLYPHS, finalScoreBull)
 if i_runnerScore and finalScoreBear >= 1 and bearQualLine != ""
@@ -1013,6 +1014,8 @@ if sigRevBullPDLH
     revBullText := revBullText + (revBullText != "" ? " + " : "") + "~ PD LH L"
 if sigRevBullVWBL
     revBullText := revBullText + (revBullText != "" ? " + " : "") + "~ VW Band"
+if sigRevBullPDMid
+    revBullText := revBullText + (revBullText != "" ? " + " : "") + "~ PD Mid"
 
 revBearText = ""
 revBearHasReclaim = false
@@ -1038,9 +1041,11 @@ if sigRevBearOH
         revBearHasReclaim := true
 if sigRevBearVWAP
     revBearText := revBearText + (revBearText != "" ? "\n" : "") + "~ VWAP"
+if sigRevBearPDMid
+    revBearText := revBearText + (revBearText != "" ? " + " : "") + "~ PD Mid"
 
-revBullCount = (sigRevBullPML ? 1 : 0) + (sigRevBullYL ? 1 : 0) + (sigRevBullWL ? 1 : 0) + (sigRevBullOL ? 1 : 0) + (sigRevBullVWAP ? 1 : 0) + (sigRevBullPDLH ? 1 : 0) + (sigRevBullVWBL ? 1 : 0)
-revBearCount = (sigRevBearPMH ? 1 : 0) + (sigRevBearYH ? 1 : 0) + (sigRevBearWH ? 1 : 0) + (sigRevBearOH ? 1 : 0) + (sigRevBearVWAP ? 1 : 0)
+revBullCount = (sigRevBullPML ? 1 : 0) + (sigRevBullYL ? 1 : 0) + (sigRevBullWL ? 1 : 0) + (sigRevBullOL ? 1 : 0) + (sigRevBullVWAP ? 1 : 0) + (sigRevBullPDLH ? 1 : 0) + (sigRevBullVWBL ? 1 : 0) + (sigRevBullPDMid ? 1 : 0)
+revBearCount = (sigRevBearPMH ? 1 : 0) + (sigRevBearYH ? 1 : 0) + (sigRevBearWH ? 1 : 0) + (sigRevBearOH ? 1 : 0) + (sigRevBearVWAP ? 1 : 0) + (sigRevBearPDMid ? 1 : 0)
 
 var int lastBullSigBar = -999
 var int lastBearSigBar = -999
@@ -1061,7 +1066,7 @@ if sigQBS_bull
     string qmType = "🔇 QBS"
     string rampStr = str.tostring(preVolRamp, "#.#") + "x"
     int score = finalScoreBull
-    string scoreStr = i_runnerScore and score >= 1 ? " " + array.get(SCORE_GLYPHS, math.min(score, 5)) : ""
+    string scoreStr = i_runnerScore and score >= 1 ? " " + array.get(SCORE_GLYPHS, math.min(score, 6)) : ""
     string qmText = qmType + "\nBull " + rampStr + scoreStr
     bool isDimQM = i_fMode == "Dim" and not evStackBull_rev
     bool isModDim = isVolModerate
@@ -1097,7 +1102,7 @@ if sigQBS_bear
     string qmType = "🔇 QBS"
     string rampStr = str.tostring(preVolRamp, "#.#") + "x"
     int score = finalScoreBear
-    string scoreStr = i_runnerScore and score >= 1 ? " " + array.get(SCORE_GLYPHS, math.min(score, 5)) : ""
+    string scoreStr = i_runnerScore and score >= 1 ? " " + array.get(SCORE_GLYPHS, math.min(score, 6)) : ""
     string qmText = qmType + "\nBear " + rampStr + scoreStr
     bool isDimQM = i_fMode == "Dim" and not evStackBear_rev
     bool isModDim = isVolModerate
@@ -1523,12 +1528,20 @@ if not na(checkpointBar) and newSigBar and bar_index > checkpointBar
          ? (sigC - checkpointEntry) / dailyATR
          : (checkpointEntry - sigC) / dailyATR
 
-    bool hold = not na(pnl) and pnl > 0.05
+    // v3.1: SPY regime-aware BAIL threshold
+    // Signal matches SPY direction → never BAIL (let it run)
+    // SPY neutral → loose BAIL (only cut if losing > 0.10 ATR)
+    // Signal opposes SPY → strict BAIL (must be positive)
+    bool spyAligned = (checkpointDir == 1 and spyRegime == 1) or (checkpointDir == -1 and spyRegime == -1)
+    bool spyOpposed = (checkpointDir == 1 and spyRegime == -1) or (checkpointDir == -1 and spyRegime == 1)
+    float bailThresh = spyAligned ? na : spyOpposed ? 0.05 : -0.10
+    bool hold = spyAligned or (not na(pnl) and not na(bailThresh) and pnl > bailThresh)
 
     // Update existing CONF label
     if not na(checkpointLbl)
         string curText = label.get_text(checkpointLbl)
-        label.set_text(checkpointLbl, curText + (hold ? "\n5m✓" : "\n5m✗"))
+        string regTag = spyAligned ? "✓" : spyOpposed ? "✗" : "~"
+        label.set_text(checkpointLbl, curText + (hold ? "\n5m✓ " + regTag : "\n5m✗ " + regTag))
 
     // Alert
     string dir = checkpointDir == 1 ? "▲" : "▼"
@@ -1539,9 +1552,10 @@ if not na(checkpointBar) and newSigBar and bar_index > checkpointBar
         alert("5m BAIL " + dir + " " + pnlStr + " ATR", alert.freq_once_per_bar)
 
     // Log
+    string regStr = spyAligned ? "SPY✓" : spyOpposed ? "SPY✗" : "SPY~"
     if i_debugLog and barstate.isconfirmed
-        log.info("[KLB] 5m CHECK {0} {1} pnl={2} → {3}",
-            fmtTime(time), dir, pnlStr, hold ? "HOLD" : "BAIL")
+        log.info("[KLB] 5m CHECK {0} {1} pnl={2} {3} → {4}",
+            fmtTime(time), dir, pnlStr, regStr, hold ? "HOLD" : "BAIL")
 
     // Reset
     checkpointEntry := na
