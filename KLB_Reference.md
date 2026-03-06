@@ -1,4 +1,4 @@
-# KeyLevelBreakout v3.1 — Reference
+# KeyLevelBreakout v3.2 — Reference
 
 | Doc | What's Inside |
 |-----|---------------|
@@ -18,11 +18,13 @@
 
 ## 2. Signal Types
 
-Eight signal types, each with a specific trigger and visual style.
+Nine signal types, each with a specific trigger and visual style.
 
 **Breakout** — Signal-TF bar closes through a key level as a directional candle (bullish or bearish), with prior bar(s) on the other side of the level. Green labels (bull) / red labels (bear).
 
-**Reversal (~)** — Wick enters a level zone, close rejects back out. Bullish reversals fire at LOW levels (blue labels), bearish reversals at HIGH levels (orange labels). No volume gate — reversals are judged by rejection quality, not volume.
+**Reversal (~)** — Wick enters a level zone, close rejects back out. Bullish reversals fire at LOW levels (blue labels), bearish reversals at HIGH levels (orange labels). No volume gate — reversals are judged by rejection quality, not volume. **v3.2:** HIGH levels (PM H, Yest H, ORB H, Week H) moved from BRK to REV — data shows HIGH levels are price magnets (touch-and-bounce), not barriers.
+
+**EXREV (x~)** — Bear reversal with body < 30% (wick-heavy rejection) that bypasses both the candle quality filter AND the EMA hard gate. Orange color (#FF6600), `x~` prefix on labels. Only bear direction — bull EXREV was not profitable. N=31, 45.2% win rate, +4.3 ATR. Targets extended reversals at HIGH levels where strong rejections occur against the prevailing EMA trend.
 
 **Reclaim (~~)** — Reversal after a prior breakout at that level was invalidated (CONF ✗). "False breakout then rejection." Same color scheme as reversals, brighter hue. Requires CONF system to be ON for the invalidation context.
 
@@ -30,7 +32,7 @@ Eight signal types, each with a specific trigger and visual style.
 
 **QBS (🔇 Quiet Before Storm)** — Pre-move volume drying (ramp < 0.5×) followed by a big bar (range ≥ 1.5× signal-TF ATR). Cyan labels. Once per direction per session. Does not require a key-level breakout.
 
-**FADE** — Fires after a CONF ✗ (failed breakout) when price crosses back through the level in the opposite direction within 30 minutes. A contrarian signal that trades the failure. Purple labels.
+**FADE** — Counter-EMA signal fires → 6-bar watch window → price crosses back through level = FADE with-EMA. Decoupled from CONF failure in v3.2 (old CONF ✗ trigger removed). N=327, 52.9% win rate, +7.8 ATR. Purple labels. The trigger ensures the FADE always fires WITH the prevailing EMA trend.
 
 **RNG (Range+Vol)** — 12-bar range breakout combined with volume ≥ 3× SMA(20). The only profitable non-EMA signal type — does NOT require EMA alignment. Teal labels. Independent of key levels.
 
@@ -40,6 +42,7 @@ Eight signal types, each with a specific trigger and visual style.
 |-------|--------------|-------------|
 | Breakout | ▲ LONG (green) | ▼ SHORT (red) |
 | Reversal ~ | ▼ SHORT (orange) | ▲ LONG (blue) |
+| EXREV x~ | ▼ SHORT (orange #FF6600) | — (bear only) |
 | Reclaim ~~ | ▼ SHORT (orange, brighter) | ▲ LONG (blue, brighter) |
 | Retest ◆ | Confirms original break direction | Confirms original break direction |
 | FADE | ▼ SHORT (purple) after failed bull BRK | ▲ LONG (purple) after failed bear BRK |
@@ -82,8 +85,9 @@ Line 4: `✓★` — Confirmation status.
 | `⚡` | Big move (bar range ≥ 2× signal-TF ATR) | Informational marker (no size change) |
 | `🔇` | Vol drying (ramp < 0.5×) — quiet before storm | Cyan label for standalone QBS |
 | `R0`/`R1`/`R2` | Regime Score (EMA + VWAP alignment, 0-2) | R2 = best, R1 bull dimmed |
-| `FADE` | Reverse signal after CONF ✗ + price crosses back | Purple label |
+| `FADE` | Counter-EMA → 6-bar watch → price crosses back with-EMA | Purple label |
 | `RNG` | Range+Vol breakout (12-bar range + vol ≥3x) | Teal label |
+| `x~` | EXREV: bear REV with body <30%, bypasses EMA gate + body filter | Orange (#FF6600) label |
 | `⚠` | Body ≥ 80% — fakeout warning | Appended to quality line |
 | `?` | Dimmed signal (failed filter or moderate ramp) | Gray, size.tiny |
 | `CHOP?` | 3+ consecutive CONF failures at session open | Orange label, no passes yet |
@@ -114,20 +118,28 @@ The CONF system tracks whether a breakout "survives" or fails.
 
 ## 5. Levels
 
-Twelve level types across eight sources.
+Sixteen level types across twelve sources.
 
-| Level Type | Source | Zone Width | Reset |
-|------------|--------|------------|-------|
-| Premarket H/L | 04:00–09:30 ET live bars | ATR-derived (configurable, default 3%) | Daily |
-| Yesterday H/L | Prior day candle (non-repainting) | Wick-to-body range from daily OHLC | Daily |
-| Last Week H/L | Prior week candle (non-repainting) | Wick-to-body range from weekly OHLC | Weekly |
-| ORB H/L | First signal-TF bar of regular session | ATR-derived (configurable, default 3%) | Daily |
-| VWAP zone | Session VWAP ± 0.1× daily ATR | ATR-derived, continuous | Continuous |
-| PD Last Hr Low | Prior day 15:00–16:00 ET low | ATR-derived | Daily |
-| PD Mid | (Yesterday H + Yesterday L) / 2 | ATR-derived | Daily |
-| VWAP Lower Band | VWAP − daily ATR | ATR-derived | Continuous |
+| Level Type | Source | Signal Type | Zone Width | Reset |
+|------------|--------|-------------|------------|-------|
+| Premarket H | 04:00–09:30 ET live bars | **REV** (v3.2) | ATR-derived (default 3%) | Daily |
+| Premarket L | 04:00–09:30 ET live bars | BRK | ATR-derived (default 3%) | Daily |
+| Yesterday H | Prior day candle (non-repainting) | **REV** (v3.2) | Wick-to-body range | Daily |
+| Yesterday L | Prior day candle (non-repainting) | BRK | Wick-to-body range | Daily |
+| Last Week H | Prior week candle (non-repainting) | **REV** (v3.2) | Wick-to-body range | Weekly |
+| Last Week L | Prior week candle (non-repainting) | BRK | Wick-to-body range | Weekly |
+| ORB H | First signal-TF bar of regular session | **REV** (v3.2) | ATR-derived (default 3%) | Daily |
+| ORB L | First signal-TF bar of regular session | BRK (bear only, bull REV suppressed) | ATR-derived (default 3%) | Daily |
+| VWAP zone | Session VWAP ± 0.1× daily ATR | BRK + REV | ATR-derived, continuous | Continuous |
+| PD Last Hr Low | Prior day 15:00–16:00 ET low | BRK + REV | ATR-derived | Daily |
+| PD Mid | (Yesterday H + Yesterday L) / 2 | **REV only** | ATR-derived | Daily |
+| VWAP Lower Band | VWAP − daily ATR | BRK + REV | ATR-derived | Continuous |
+| Today's Open | Current session open price | **REV only**, no EMA gate (lime) | ATR-derived | Daily |
+| PD Close | Prior day close price | **REV only**, no EMA gate (lime) | ATR-derived | Daily |
+| Week Open | Current week's Monday open | BRK, full filter gates (fuchsia) | ATR-derived | Weekly |
+| Month Open | Current month's first open | BRK, full filter gates (fuchsia) | ATR-derived | Monthly |
 
-New levels (v3.0) provide midday coverage. PD Mid fires as **REV only** (v3.1) — it's a magnet level where touch-and-turn is the correct signal type, not breakout. PD Last Hr Low and VWAP Lower Band participate in both BRK and REV detection.
+**v3.2 level philosophy:** HIGH levels (PM H, Yest H, ORB H, Week H) are price magnets — data shows touch-and-bounce, not break-through. Moved from BRK to REV signal type. LOW levels remain BRK (barriers where panic selling creates decisive breaks). New midday levels cover the afternoon desert. Today's Open and PD Close use lime color and skip the EMA gate (REV-only, no historical EMA data). Week Open and Month Open use fuchsia and pass through full BRK filter gates.
 
 **Zones:** When "Use Level Zones" is ON, each level expands to a range:
 - Yesterday/Week: body edge (min/max of open, close) to wick edge (high/low). Wide zone = strong rejection area.
@@ -157,7 +169,7 @@ Nine configurable filters. Each can be independently toggled. Filter Mode contro
 | Candle Body Quality | Blocks wick-heavy candles: body < 30% of range, or close in the wrong 40% of the bar. | ON |
 | Filter Mode | **Suppress:** filtered signals are hidden entirely. **Dim:** filtered signals show as gray with `?` suffix, size.tiny. | Suppress |
 
-Breakout signals must pass both Volume and ATR Buffer. Reversal/reclaim signals must pass VWAP Direction but do not require the Volume gate. QBS signals pass through the reversal filter gate (EMA, RS, ADX, Body). RNG signals skip EMA requirement (the only profitable non-EMA signal type). FADE signals inherit context from the failed breakout.
+Breakout signals must pass both Volume and ATR Buffer. Reversal/reclaim signals must pass VWAP Direction but do not require the Volume gate. QBS signals pass through the reversal filter gate (EMA, RS, ADX, Body). RNG signals skip EMA requirement (the only profitable non-EMA signal type). FADE signals fire with-EMA by design (counter-EMA trigger ensures the fade is trend-aligned). EXREV signals bypass both EMA gate and candle body filter (bear only, body < 30%). Today's Open and PD Close REV signals skip the EMA gate.
 
 ---
 
@@ -219,7 +231,7 @@ These fire through `alert()` calls. A single TradingView alert set to "Any alert
 | `5m BAIL ▲ -0.05 ATR` | 5-minute checkpoint negative |
 | `VWAP exit ▼ — bull CONF position crossed below VWAP` | VWAP exit triggered |
 | `🔇 QBS Bull: vol drying → explosion 0.3x` | QBS signal fires |
-| `FADE Bull: ✗ reversal at Yest H` | FADE signal fires |
+| `FADE Bull: reversal at Yest H` | FADE signal fires |
 | `RNG Bear: 12-bar range break 3.5x` | RNG signal fires |
 
 ### alertcondition() Entries

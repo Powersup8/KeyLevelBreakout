@@ -1,4 +1,4 @@
-# KeyLevelBreakout v3.1 — Trading Playbook
+# KeyLevelBreakout v3.2 — Trading Playbook
 
 | Doc | What's Inside |
 |-----|---------------|
@@ -16,8 +16,9 @@
 | 1 | CONF ✓★ | Gold label, black text, ✓★ | BRK only, vol<5x, morning | Full size, hold 30 min |
 | 2 | CONF ✓ | Solid green/red, white text, ✓ | 0% BAD (110 signals) | Large size, hold 30 min |
 | 3 | 🔇 QBS | Cyan label, 🔇 | 68% runner, 3% fakeout | Wait for CONF, then trade |
-| 4 | FADE | Purple label | Reverse after CONF ✗ + price crosses back | Contrarian — trade the failure |
+| 4 | FADE | Purple label | Counter-EMA → 6-bar watch → price crosses back with-EMA. N=327, 52.9% win | Trade the fade, always with-EMA |
 | 5 | RNG (Range+Vol) | Teal label | 12-bar range breakout + vol ≥3x, no EMA req | Only profitable non-EMA signal |
+| 5b | EXREV (x~) | Orange #FF6600 | Bear REV, body<30%, bypasses EMA+body filter. N=31, 45.2% win | Extended reversal — bear only |
 | 6 | ⚡ Big Move | Any label with ⚡ | 65% runner across 13 symbols | Size up if CONF follows |
 | 7 | BRK Score ④-⑥ | Green/red label, ④-⑥ | Strong setup, low BAD | Standard size, wait for CONF |
 | 8 | Retest ◆ | ◆ + superscript bars | Early (1-2 bars) strongest | Add to winner |
@@ -44,18 +45,22 @@
 ---
 ## 3. Levels
 
-| Level | CONF% | GOOD% | BAD% | Verdict |
-|-------|-------|-------|------|---------|
-| Yest L | 60% | 12.7% | 3.3% | #1 -- trade every time |
-| Week L | 55% | 10.8% | 1.5% | Rare but excellent |
-| PM L | 47% | 10.7% | 3.4% | #2 for follow-through |
-| ORB L | 45% | 9.0% | 3.4% | Solid, frequent |
-| Yest H | 59% | 4.3% | 6.9% | High CONF, weak follow-through |
-| PM H | 53% | 6.2% | 8.4% | Risky -- high BAD |
-| Week H | 43% | 5.2% | 8.6% | Risky |
-| ORB H | 43% | 3.5% | 8.5% | Worst -- avoid |
+| Level | Type (v3.2) | CONF% | GOOD% | BAD% | Verdict |
+|-------|-------------|-------|-------|------|---------|
+| Yest L | BRK | 60% | 12.7% | 3.3% | #1 -- trade every time |
+| Week L | BRK | 55% | 10.8% | 1.5% | Rare but excellent |
+| PM L | BRK | 47% | 10.7% | 3.4% | #2 for follow-through |
+| ORB L | BRK (bear only) | 45% | 9.0% | 3.4% | Solid, frequent. Bull REV suppressed (27% win) |
+| Yest H | **REV** | 59% | 4.3% | 6.9% | Magnet — touch-and-bounce, not breakout |
+| PM H | **REV** | 53% | 6.2% | 8.4% | Magnet — REV is the right signal type |
+| Week H | **REV** | 43% | 5.2% | 8.6% | Magnet |
+| ORB H | **REV** | 43% | 3.5% | 8.5% | Magnet — was worst BRK level, better as REV |
+| Today's Open | **REV** (lime) | — | — | — | New v3.2, no EMA gate, midday coverage |
+| PD Close | **REV** (lime) | — | — | — | New v3.2, no EMA gate, midday coverage |
+| Week Open | BRK (fuchsia) | — | — | — | New v3.2, full filter gates |
+| Month Open | BRK (fuchsia) | — | — | — | New v3.2, full filter gates |
 
-**Rule: LOW levels >> HIGH levels.**
+**Rule: LOW levels = barriers (BRK). HIGH levels = magnets (REV). New midday levels fill afternoon gaps.**
 
 ---
 ## 4. Avoid List
@@ -64,11 +69,12 @@
 |------|-----|------|
 | After 11:00 | 0% GOOD follow-through | MFE/MAE = 0.90 |
 | CONF ✗ | Failed breakout | Exit immediately |
-| ORB H breakouts | Worst level | 3.5% GOOD, 8.5% BAD |
+| ORB H breakouts | Now REV only (v3.2) | Was worst BRK level, 3.5% GOOD |
 | <2x volume | No conviction | 1.5% GOOD, 1.2% BAD |
 | Against EMA after 9:50 | Non-EMA net negative both halves of day | -32.3 ATR pre-9:50, -13.3 ATR post-9:50 |
 | R1 bull signals | 31.2% win rate = harmful | Dimmed automatically |
-| HIGH levels generally | Higher BAD rates | ORB H 8.5% BAD vs ORB L 3.4% |
+| HIGH level BRK (now suppressed) | Magnets, not barriers | v3.2: all HIGH moved to REV |
+| ORB L bull REV | Biggest ATR drain | 143 signals, 27% win, suppressed in v3.2 |
 | AMD, MSFT, GLD, TSM | Lowest CONF, poor edge | AMD: 0.81 MFE/MAE |
 | Wednesday / Friday | Worst CONF days | 35%, 34% vs Mon 56% |
 | Reclaims ~~ | Noise | 3% GOOD -- skip unless CONF ✓ |
@@ -96,14 +102,16 @@ After BRK (3-bar CONF window = 15 min on 5m TF):
   Auto-Confirm R1 --> EMA aligned = instant ✓
   CONF ✓  --> Size up (0% BAD)
   CONF ✓★ --> Full size (27% GOOD)
-  CONF ✗  --> Watch for FADE (reverse within 30 min)
+  CONF ✗  --> Watch for FADE (counter-EMA → 6-bar watch → price crosses back)
+
+EXREV (x~): Bear REV + body <30% → bypasses EMA gate + body filter. Orange.
 
 5-Min Checkpoint (v3.1 regime-aware BAIL):
   SPY aligned (>0.3% same direction) --> HOLD always (never BAIL)
   SPY neutral (±0.3%) --> HOLD if pnl > -0.10 ATR
   SPY opposed (>0.3% against) --> HOLD only if pnl > 0.05 ATR
 
-Levels: Yest L > PM L > ORB L > Week L > PD Last Hr L. PD Mid = REV only (magnet). Avoid HIGH levels.
+Levels: Yest L > PM L > ORB L > Week L > PD Last Hr L (BRK). HIGH levels = REV only (magnets). New: Today's Open, PD Close (REV/lime), Week Open, Month Open (BRK/fuchsia).
 ```
 
 ---

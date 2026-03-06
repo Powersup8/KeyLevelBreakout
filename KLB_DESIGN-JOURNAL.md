@@ -1,4 +1,4 @@
-# KeyLevelBreakout v3.1 — Design Journal
+# KeyLevelBreakout v3.2 — Design Journal
 
 | Doc | What's Inside |
 |-----|---------------|
@@ -178,12 +178,12 @@ What traditional technical analysis emphasizes -- full-body candles as "strong,"
 
 These are data-justified improvements that were deferred due to scope constraints or because they need more validation. Listed roughly by expected impact.
 
-- HIGH-level dimming: ORB H has 14% CONF vs Yest L at 30% -- a visual penalty for weak levels would reduce false confidence
+- ~~HIGH-level dimming~~ → DONE in v3.2: HIGH levels moved from BRK to REV (magnets, not barriers)
 - GLD special handling: 6% CONF is an extreme outlier; may warrant exclusion or separate parameterization
 - FVG-based retest quality: treat the retest zone as a Fair Value Gap for more precise zone targeting
 - 15m-based weekly zones: derive zone width from the 15m candle that made the weekly extreme, instead of fixed ATR width
 - Level proximity warning: alert when price approaches a key level before the break happens
-- Current Week H/L as a level type: intraweek extremes are actively watched by swing traders
+- ~~Current Week H/L as a level type~~ → DONE in v3.2: Week Open added (BRK, full gates)
 - Backtest strategy version: validate P&L with systematic TP/SL rules against 5-second data
 - Scanner upgrade: add reversals, retests, and volume ramp signals to KeyLevelScanner.pine
 - Volume ramp as filter (not just signal): dim or suppress any BRK/REV with moderate (1-2x) ramp
@@ -258,4 +258,18 @@ Analysis files: `debug/v29-mc-rethink-knowledge.md`, `debug/v29-mc-rounds678.md`
 
 Analysis files: `debug/v30b-bail-investigation.md`, `debug/v31-backtest-results.md`, `debug/investigation-2026-03-05.md`, `debug/v30b-move-scanner-research.md`, `docs/plans/2026-03-06-v31-regime-rev-fade-design.md`.
 
-*Last updated: 2026-03-06 | v3.1 | Data: Sep 2025–Mar 2026*
+**v3.2 -- Signal type surgery, midday levels, and two new bypass mechanisms (1,841 signals + v3.1 backtest data).** Five targeted changes driven by level-behavior analysis and signal-type matching research.
+
+1. *ORB L Bull REV suppress (+12.5 ATR).* Bull reversal at ORB Low was the single biggest ATR drain: 143 signals, 27% win rate, net negative across all time windows. Set `sigRevBullOL = false`. One boolean flip, largest per-change ATR recovery in v3.2.
+
+2. *Four new midday levels (+72 lines).* Today's Open (REV only, no EMA gate, lime), PD Close (REV only, no EMA gate, lime), Week Open (BRK, full filter gates, fuchsia), Month Open (BRK, full filter gates, fuchsia). Covers the midday desert where the original levels go sparse. REV-only levels use lime to distinguish from standard BRK levels.
+
+3. *EXREV bypass (+4.3 ATR).* Bear REV with body < 30% (wick-heavy rejection) bypasses BOTH candle quality filter AND EMA gate. Labels show `x~` prefix, orange color (#FF6600). N=31, 45.2% win rate. Only bear direction — bull EXREV was not profitable. Targets extended reversals at HIGH levels where strong rejections occur against the prevailing EMA trend.
+
+4. *FADE resurrection (+7.8 ATR).* New trigger: counter-EMA signal fires → 6-bar watch window → price crosses back through level = FADE with-EMA. Decoupled from CONF failure (old trigger removed). N=327, 52.9% win rate. Purple labels. The old CONF-failure trigger from v3.0 was removed because it conflated "failed breakout" with "tradeable reversal" — the new trigger requires the initial signal to be counter-EMA, ensuring the FADE fires WITH the trend.
+
+5. *HIGH→REV reassignment.* PM H, Yest H, ORB H, Week H moved from BRK to REV signal type. Data showed HIGH levels are price magnets (touch-and-bounce), not barriers (break-through). LOW levels remain BRK. Bull BRK at HIGH levels disabled; bull REV at HIGH levels added. Extends the PD Mid→REV finding from v3.1 to all HIGH levels.
+
+Analysis files: `docs/plans/2026-03-06-v32-design.md`, `debug/v32-backtest-results.md`.
+
+*Last updated: 2026-03-06 | v3.2 | Data: Sep 2025–Mar 2026*
