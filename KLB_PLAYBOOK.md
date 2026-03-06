@@ -1,4 +1,4 @@
-# KeyLevelBreakout v3.0 — Trading Playbook
+# KeyLevelBreakout v3.1 — Trading Playbook
 
 | Doc | What's Inside |
 |-----|---------------|
@@ -19,7 +19,7 @@
 | 4 | FADE | Purple label | Reverse after CONF ✗ + price crosses back | Contrarian — trade the failure |
 | 5 | RNG (Range+Vol) | Teal label | 12-bar range breakout + vol ≥3x, no EMA req | Only profitable non-EMA signal |
 | 6 | ⚡ Big Move | Any label with ⚡ | 65% runner across 13 symbols | Size up if CONF follows |
-| 7 | BRK Score ④-⑤ | Green/red label, ④ or ⑤ | Strong setup, low BAD | Standard size, wait for CONF |
+| 7 | BRK Score ④-⑥ | Green/red label, ④-⑥ | Strong setup, low BAD | Standard size, wait for CONF |
 | 8 | Retest ◆ | ◆ + superscript bars | Early (1-2 bars) strongest | Add to winner |
 | 9 | BRK Score ①-③ | Green/red label, low score | Mixed | Small or skip |
 | 10 | Reversal ~ | Blue (bull) / orange (bear) | Level rejection | Selective — context matters |
@@ -98,7 +98,12 @@ After BRK (3-bar CONF window = 15 min on 5m TF):
   CONF ✓★ --> Full size (27% GOOD)
   CONF ✗  --> Watch for FADE (reverse within 30 min)
 
-Levels: Yest L > PM L > ORB L > Week L > PD Last Hr L > PD Mid. Avoid HIGH levels.
+5-Min Checkpoint (v3.1 regime-aware BAIL):
+  SPY aligned (>0.3% same direction) --> HOLD always (never BAIL)
+  SPY neutral (±0.3%) --> HOLD if pnl > -0.10 ATR
+  SPY opposed (>0.3% against) --> HOLD only if pnl > 0.05 ATR
+
+Levels: Yest L > PM L > ORB L > Week L > PD Last Hr L. PD Mid = REV only (magnet). Avoid HIGH levels.
 ```
 
 ---
@@ -115,7 +120,7 @@ Levels: Yest L > PM L > ORB L > Week L > PD Last Hr L > PD Mid. Avoid HIGH level
 
 **VWAP Exit:** After CONF ✓/✓★, alert fires when price crosses VWAP against position. Momentum death signal.
 
-**5-Min Checkpoint:** Label updates with 5m✓ (hold) or 5m✗ (bail).
+**5-Min Checkpoint (v3.1 regime-aware):** SPY-aligned signals → never BAIL. SPY neutral → loose BAIL (pnl > -0.10 ATR). SPY opposed → strict BAIL (pnl > 0.05 ATR). Label shows `5m✓/✗` + regime tag (✓/✗/~).
 
 ---
 ## 7. Sizing
@@ -130,16 +135,16 @@ Levels: Yest L > PM L > ORB L > Week L > PD Last Hr L > PD Mid. Avoid HIGH level
 | CONF ✗ | Exit |
 
 ---
-## 8. Runner Score ①-⑤
+## 8. Runner Score ①-⑥
 
 | Score | Avg ATR | BAD% |
 |-------|---------|------|
-| ⑤ | +0.071 | 1.4% |
+| ⑤⑥ | +0.071 | 1.4% |
 | ④ | +0.050 | 2.3% |
 | ③ | +0.047 | 2.4% |
 | ①② | Weak | Higher |
 
-5 factors: EMA aligned, regime=2 (EMA+VWAP), vol ≥10x, morning (<11:00), CONF pass.
+6 factors: EMA aligned, regime=2 (EMA+VWAP), vol ≥10x, morning (<11:00), SPY-aligned (v3.1), CONF pass.
 
 ---
 ## 9. Symbol Tiers

@@ -46,14 +46,15 @@ Key findings 3/5:
 
 ---
 🔴 NEXT ACTIONS:
-1. ⚠ IMPLEMENT: Exempt REV signals from EMA Hard Gate (TSLA 10:16 miss = documented false negative)
-2. ⚠ IMPLEMENT: PD Mid → FADE signal instead of BRK (4/4 BRK BAIL + new-levels research: FADE = +0.396/touch)
-3. INVESTIGATE: BAIL too aggressive on trending days? (91.7% BAIL rate on March 5)
+1. ✅ DONE (v3.1): REV EMA exemption — TESTED & REVERTED. -11.8 ATR, 35% win. Data > intuition. EMA gate stays.
+   → OPEN: Investigate alternate trigger for high-quality extended reversals (TSLA 10:16 type). Agent running.
+2. ✅ DONE (v3.1): PD Mid → REV signal (touch-and-turn, no EMA gate). Magnet level, BRK was wrong type.
+3. ✅ DONE (v3.1): BAIL fixed via SPY Market Regime. +15.5 ATR. Aligned=never BAIL, neutral=loose, opposed=strict.
 4. INVESTIGATE: TSM total suppression — is the filter combination too restrictive?
-5. CONSIDER: Afternoon full suppression after 11:30 (would save ~38 ATR/5 days)
-6. CONSIDER: Cross-symbol market regime (SPY direction → alert correlated symbols)
-7. DATA: Need v3.0b pine logs for GOOGL, GLD, SLV (add TradingView charts)
-8. DATA: BATS vs IB price offset — update analysis scripts to handle correctly
+5. ~~CONSIDER: Afternoon full suppression~~ — DROPPED. Problem is signal TYPE not TIME. Fix signal types first.
+6. ✅ DONE (v3.1): SPY regime implemented as BAIL modifier + Runner Score factor.
+7. ✅ DONE: GOOGL/GLD/SLV charts added to TradingView.
+8. LOW PRIORITY: BATS vs IB price offset — calibration fix for analysis scripts only.
 
 ---
 3/4/26 — INVESTIGATED → debug/investigation-2026-03-04.md

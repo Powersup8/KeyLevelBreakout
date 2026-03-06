@@ -1,4 +1,4 @@
-# KeyLevelBreakout v3.0 — Reference
+# KeyLevelBreakout v3.1 — Reference
 
 | Doc | What's Inside |
 |-----|---------------|
@@ -78,7 +78,7 @@ Line 4: `✓★` — Confirmation status.
 | `✗` | Failed (closed back through level) | Grayed out |
 | `~` | Reversal (rejection off zone) | Blue/orange label |
 | `~~` | Reclaim (reversal after failed breakout) | Blue/orange, brighter |
-| `①`–`⑤` | Runner Score (5 factors) | Higher = more factors aligned |
+| `①`–`⑥` | Runner Score (6 factors) | Higher = more factors aligned |
 | `⚡` | Big move (bar range ≥ 2× signal-TF ATR) | Informational marker (no size change) |
 | `🔇` | Vol drying (ramp < 0.5×) — quiet before storm | Cyan label for standalone QBS |
 | `R0`/`R1`/`R2` | Regime Score (EMA + VWAP alignment, 0-2) | R2 = best, R1 bull dimmed |
@@ -106,7 +106,7 @@ The CONF system tracks whether a breakout "survives" or fails.
 
 **CONF ✗** — Label turns gray. Fires when price closes back through the most conservative level (lowest for bull breakouts, highest for bear) beyond the re-arm buffer. Resets the level for new signals.
 
-**5-minute checkpoint** — One signal-TF bar after CONF ✓/✓★, evaluates P&L relative to the confirming breakout's close. Appends `5m✓` (positive P&L = hold) or `5m✗` (negative P&L = bail) to the confirmed label. Fires a HOLD or BAIL alert.
+**5-minute checkpoint** — One signal-TF bar after CONF ✓/✓★, evaluates P&L relative to the confirming breakout's close. Regime-aware BAIL (v3.1): signal aligned with SPY direction (>0.3%) → never BAIL; SPY neutral → loose BAIL (pnl > -0.10 ATR); signal opposes SPY → strict BAIL (pnl > 0.05 ATR). Appends `5m✓` or `5m✗` plus regime tag (✓/✗/~) to the label. Fires a HOLD or BAIL alert.
 
 **VWAP exit alert** — After CONF ✓/✓★, monitors for price crossing VWAP against the confirmed direction. Fires an alert when a bull position crosses below VWAP, or a bear position crosses above VWAP. Resets at session start.
 
@@ -127,7 +127,7 @@ Twelve level types across eight sources.
 | PD Mid | (Yesterday H + Yesterday L) / 2 | ATR-derived | Daily |
 | VWAP Lower Band | VWAP − daily ATR | ATR-derived | Continuous |
 
-New levels (v3.0) participate in existing BRK/REV detection and provide midday coverage where prior levels were sparse.
+New levels (v3.0) provide midday coverage. PD Mid fires as **REV only** (v3.1) — it's a magnet level where touch-and-turn is the correct signal type, not breakout. PD Last Hr Low and VWAP Lower Band participate in both BRK and REV detection.
 
 **Zones:** When "Use Level Zones" is ON, each level expands to a range:
 - Yesterday/Week: body edge (min/max of open, close) to wick edge (high/low). Wide zone = strong rejection area.
@@ -255,7 +255,7 @@ All `input.*` parameters, organized by group.
 | QBS Signals | On | Signals |
 | FADE Signals | On | Signals |
 | RNG Signals | On | Signals |
-| Show Runner Score ①–⑤ | On | Signals |
+| Show Runner Score ①–⑥ | On | Signals |
 | Signal Cooldown | 2 bars | Signals |
 | VWAP Zone Signals | On | Signals |
 | Retest-Only Mode | Off | Signals |
@@ -313,7 +313,7 @@ All signal-TF data is fetched via `request.security()` with `lookahead = barmerg
 
 ## 11. Runner Score
 
-Five factors, each worth 1 point, displayed as ①–⑤ on labels. Redesigned in v3.0 based on factor ranking analysis.
+Six factors, each worth 1 point, displayed as ①–⑥ on labels. Redesigned in v3.0, SPY-aligned added in v3.1.
 
 | Factor | Condition |
 |--------|-----------|
@@ -321,9 +321,10 @@ Five factors, each worth 1 point, displayed as ①–⑤ on labels. Redesigned i
 | Regime = 2 | Both EMA and VWAP aligned (R2) |
 | Volume ≥ 10× | Volume ratio ≥ 10.0× SMA(20) baseline |
 | Morning | Signal fires before 11:00 ET |
+| SPY-aligned | Signal direction matches SPY market regime (>±0.3% from open) |
 | CONF pass | Signal has been confirmed (✓ or ✓★) |
 
-Score is capped at ⑤. Only displayed when score ≥ 1 and Runner Score is enabled.
+Score is capped at ⑥. Only displayed when score ≥ 1 and Runner Score is enabled.
 
 ---
 

@@ -1,4 +1,4 @@
-# KeyLevelBreakout v3.0 — Design Journal
+# KeyLevelBreakout v3.1 — Design Journal
 
 | Doc | What's Inside |
 |-----|---------------|
@@ -248,4 +248,14 @@ These are data-justified improvements that were deferred due to scope constraint
 
 Analysis files: `debug/v29-mc-rethink-knowledge.md`, `debug/v29-mc-rounds678.md`, `debug/v29-mc-factor-screen.md`, `debug/v29-mc-optimize.md`.
 
-*Last updated: 2026-03-05 | v3.0 | Data: Sep 2025–Mar 2026*
+**v3.1 -- SPY Market Regime, PD Mid REV conversion, and the REV EMA experiment (231 CONF signals, 99 counter-EMA REVs).** Two validated changes and one reverted experiment, all driven by the March 5 investigation and BAIL analysis.
+
+1. *SPY Market Regime → BAIL Modifier (+15.5 ATR).* The BAIL system (5-minute checkpoint after CONF pass) was a flat `pnl > 0.05 ATR` threshold. Analysis showed BAIL was net NEGATIVE by -10.6 ATR — 64% of BAILed signals would have been profitable at 30 minutes. The fix: use SPY's intraday change as regime context. Three states: SPY up >0.3% = BULL, down >0.3% = BEAR, else NEUTRAL. Signal aligned with SPY → never BAIL (hold always). SPY neutral → loose BAIL (pnl > -0.10 ATR). Signal opposes SPY → strict BAIL (pnl > 0.05 ATR, unchanged). Result: 104 signals change from BAIL to HOLD, total PnL +36.5 → +52.0 ATR, win rate 63.6% → 74.0%. SPY-aligned signals gained +8.1 ATR, neutral signals +7.4 ATR. No new `request.security()` calls — SPY data already existed. Runner Score: SPY-aligned added as 6th factor (max score ⑥).
+
+2. *PD Mid → REV signal type.* PD Mid was firing as BRK (breakout) in v3.0. Research showed it's a magnet level — 63% of crosses return to the level. BRK at a magnet = wrong signal type (4/4 BAILed in March 5 data). Changed detection from `bullBreak`/`bearBreak` to `bullRev`/`bearRev` (touch-and-turn). Moved from BRK filtered section to REV section. No EMA gate on PD Mid REV — this is a new signal type with no historical EMA gate data.
+
+3. *REV EMA exemption — TESTED AND REVERTED (-11.8 ATR).* The TSLA 10:16 miss (March 5) was a compelling case: EMA Hard Gate killed a bearish REV at Yesterday's High after a 7-point rally flipped EMAs to bull. The hypothesis was that reversals are counter-trend by nature, so the EMA gate is logically contradictory for REVs. Backtest: 99 counter-EMA REV signals had -11.8 ATR total, 35.4% win rate. Bears especially bad: 27.5% win, -7.0 ATR. The EMA gate catches more bad REVs than good ones. **Data > intuition.** EMA gate stays on all REV signals. Separate investigation launched into what alternate trigger could catch high-quality extended reversals like TSLA 10:16.
+
+Analysis files: `debug/v30b-bail-investigation.md`, `debug/v31-backtest-results.md`, `debug/investigation-2026-03-05.md`, `debug/v30b-move-scanner-research.md`, `docs/plans/2026-03-06-v31-regime-rev-fade-design.md`.
+
+*Last updated: 2026-03-06 | v3.1 | Data: Sep 2025–Mar 2026*

@@ -19,7 +19,7 @@ Detects breakouts, reversals, reclaims, retests, fades, and range breakouts at k
 
 **Visual elements:**
 - Regime Score R0/R1/R2 (EMA + VWAP alignment). R1 bulls dimmed.
-- Runner Score ①-⑤: EMA, regime=2, vol ≥10×, morning, CONF pass.
+- Runner Score ①-⑥: EMA, regime=2, vol ≥10×, morning, SPY-aligned, CONF pass.
 - Glyphs: 🔇 vol drying, ⚡ big move (≥2x ATR), ⚠ body ≥80%.
 - QBS (cyan), FADE (purple), RNG (teal) standalone signals.
 - CHOP? warning after 3+ consecutive failures.
