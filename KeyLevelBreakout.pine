@@ -11,6 +11,10 @@ i_showWeek  = input.bool(true,  "Last Week High/Low",         group="Level Toggl
 i_showORB   = input.bool(true,  "ORB High/Low",               group="Level Toggles")
 i_showPDMid  = input.bool(true,  "Prior Day Mid/Last Hr Low",    group="Level Toggles")
 i_showVWBand = input.bool(true,  "VWAP Lower Band",              group="Level Toggles")
+i_showTodayOpen = input.bool(true, "Today's Open",       group="Level Toggles")
+i_showPDClose   = input.bool(true, "PD Close",           group="Level Toggles")
+i_showWeekOpen  = input.bool(true, "Week Open",          group="Level Toggles")
+i_showMonthOpen = input.bool(true, "Month Open",         group="Level Toggles")
 i_firstOnly = input.bool(true,  "Once Per Breakout", group="Signals")
 i_signalTF  = input.timeframe("5", "Signal Timeframe",        group="Signals")
 i_showLines = input.bool(false, "Show Level Lines",           group="Visuals")
@@ -109,6 +113,9 @@ f_adx() =>
 [weekHigh, weekLow, weekOpen, weekClose] = request.security(syminfo.tickerid, "W",
      [high[1], low[1], open[1], close[1]], lookahead = barmerge.lookahead_on)
 
+// Month Open (non-repainting)
+monthOpen = request.security(syminfo.tickerid, "M", open, lookahead = barmerge.lookahead_on)
+
 // Daily ATR + Average Volume (non-repainting)
 dailyATR    = request.security(syminfo.tickerid, "D", ta.atr(14)[1], lookahead = barmerge.lookahead_on)
 dailyVolSma = request.security(syminfo.tickerid, "D", ta.sma(volume, i_volLen)[1], lookahead = barmerge.lookahead_on)
@@ -186,6 +193,8 @@ var bool xVWAPBear = false
 var bool xPDMid = false
 var bool xPDLH  = false
 var bool xVWBL  = false
+var bool xWO  = false   // Week Open
+var bool xMO  = false   // Month Open
 
 // ─── Reversal Flags (reset each regular session) ──────
 var bool rPMH = false
@@ -198,6 +207,8 @@ var bool rOH  = false
 var bool rOL  = false
 var bool rPDLH  = false
 var bool rVWBL  = false
+var bool rTodayOpen = false
+var bool rPDClose   = false
 
 // ─── Reclaim Context (was this level broken + invalidated?) ──
 var bool hadBrkPMH = false
@@ -353,6 +364,8 @@ if newRegular
     xPDMid := false
     xPDLH  := false
     xVWBL  := false
+    xWO  := false
+    xMO  := false
     // Reset reversal flags
     rPMH := false
     rPML := false
@@ -364,6 +377,8 @@ if newRegular
     rOL  := false
     rPDLH  := false
     rVWBL  := false
+    rTodayOpen := false
+    rPDClose   := false
     // Reset ORB signal guard
     orbFirstDone := false
     // Reset reclaim context
@@ -748,6 +763,10 @@ rBullWH  = i_showWeek  and bullBreak(weekHigh)
 rBearWL  = i_showWeek  and bearBreak(weekLow)
 rBullOH  = i_showORB   and not isORBwin and orbFirstDone and bullBreak(orbHigh)
 rBearOL  = i_showORB   and not isORBwin and orbFirstDone and bearBreak(orbLow)
+rBullWO = i_showWeekOpen  and bullBreak(weekOpen)
+rBearWO = i_showWeekOpen  and bearBreak(weekOpen)
+rBullMO = i_showMonthOpen and bullBreak(monthOpen)
+rBearMO = i_showMonthOpen and bearBreak(monthOpen)
 
 // New level signals (v3.0; PD Mid → REV in v3.1 — magnet level, not barrier)
 // PD Mid REV: inline (no VWAP filter — midrange level; use pdMid directly — not zone edges)
@@ -760,6 +779,22 @@ rRevBearPDMid = i_showPDMid and not na(pdMid) and isRegular and newSigBar
 rBearPDLH  = i_showPDMid and bearBreak(pdLastHrLow)
 rBearVWBL  = i_showVWBand and bearBreak(vwapLowerBand)
 
+// Today's Open REV: inline touch-and-turn (magnet level, no VWAP filter)
+rRevBullTodayOpen = i_showTodayOpen and not na(todayOpen) and isRegular and newSigBar
+     and (not i_limitRevWin or isSetupWindow)
+     and sigC > sigO and sigL <= todayOpen and sigC > todayOpen
+rRevBearTodayOpen = i_showTodayOpen and not na(todayOpen) and isRegular and newSigBar
+     and (not i_limitRevWin or isSetupWindow)
+     and sigC < sigO and sigH >= todayOpen and sigC < todayOpen
+
+// PD Close REV: inline touch-and-turn (magnet level, no VWAP filter)
+rRevBullPDClose = i_showPDClose and not na(yestClose) and isRegular and newSigBar
+     and (not i_limitRevWin or isSetupWindow)
+     and sigC > sigO and sigL <= yestClose and sigC > yestClose
+rRevBearPDClose = i_showPDClose and not na(yestClose) and isRegular and newSigBar
+     and (not i_limitRevWin or isSetupWindow)
+     and sigC < sigO and sigH >= yestClose and sigC < yestClose
+
 // ─── Filtered Signals (suppressed when flag active) ──────
 sigBullPMH = rBullPMH and (not i_firstOnly or not xPMH) and fGateBull and (emaGateBull or isPre950)
 sigBearPML = rBearPML and (not i_firstOnly or not xPML) and fGateBear and (emaGateBear or isPre950)
@@ -771,6 +806,10 @@ sigBullOH  = rBullOH  and (not i_firstOnly or not xOH)  and fGateBull and (emaGa
 sigBearOL  = rBearOL  and (not i_firstOnly or not xOL)  and fGateBear and (emaGateBear or isPre950)
 sigBearPDLH  = rBearPDLH  and (not i_firstOnly or not xPDLH)  and fGateBear and (emaGateBear or isPre950)
 sigBearVWBL  = rBearVWBL  and (not i_firstOnly or not xVWBL)  and fGateBear and (emaGateBear or isPre950)
+sigBullWO = rBullWO and (not i_firstOnly or not xWO) and fGateBull and (emaGateBull or isPre950)
+sigBearWO = rBearWO and (not i_firstOnly or not xWO) and fGateBear and (emaGateBear or isPre950)
+sigBullMO = rBullMO and (not i_firstOnly or not xMO) and fGateBull and (emaGateBull or isPre950)
+sigBearMO = rBearMO and (not i_firstOnly or not xMO) and fGateBear and (emaGateBear or isPre950)
 
 // Update flags after signal evaluation
 if rBullPMH
@@ -795,6 +834,10 @@ if rBearPDLH
     xPDLH := true
 if rBearVWBL
     xVWBL := true
+if rBullWO or rBearWO
+    xWO := true
+if rBullMO or rBearMO
+    xMO := true
 
 // ─── Raw Reversal Signals ──────────────────────────────
 // Bull reversal fires at LOW levels (rejection = buy). Bear at HIGH (rejection = sell).
@@ -848,6 +891,11 @@ sigRevBullVWBL = rRevBullVWBL and (not i_firstOnly or not rVWBL) and fGateBull_r
 // PD Mid REV: no EMA gate — magnet level, reversal is the correct signal type
 sigRevBullPDMid = rRevBullPDMid and (not i_firstOnly or not xPDMid) and fGateBull_rev
 sigRevBearPDMid = rRevBearPDMid and (not i_firstOnly or not xPDMid) and fGateBear_rev
+// Today's Open + PD Close REV: no EMA gate — magnet levels (same pattern as PD Mid)
+sigRevBullTodayOpen = rRevBullTodayOpen and (not i_firstOnly or not rTodayOpen) and fGateBull_rev
+sigRevBearTodayOpen = rRevBearTodayOpen and (not i_firstOnly or not rTodayOpen) and fGateBear_rev
+sigRevBullPDClose   = rRevBullPDClose   and (not i_firstOnly or not rPDClose)   and fGateBull_rev
+sigRevBearPDClose   = rRevBearPDClose   and (not i_firstOnly or not rPDClose)   and fGateBear_rev
 
 // Update reversal flags
 if rRevBullPML
@@ -874,6 +922,10 @@ if rRevBullPDLH
     rPDLH := true
 if rRevBullVWBL
     rVWBL := true
+if rRevBullTodayOpen or rRevBearTodayOpen
+    rTodayOpen := true
+if rRevBullPDClose or rRevBearPDClose
+    rPDClose := true
 
 // ─── QBS Volume Ramp Signals (v2.8, MC removed v3.0) ──────────────────
 bool rQBS_bull = i_qbsSignal and isVolDrying and sigRangeATR >= 1.5
@@ -889,12 +941,12 @@ if sigQBS_bear
     qbsBearFired := true
 
 // ─── Combined Signals ────────────────────────────────────
-anyBull     = sigBullPMH or sigBullYH or sigBullWH or sigBullOH
-anyBear     = sigBearPML or sigBearYL or sigBearWL or sigBearOL or sigBearPDLH or sigBearVWBL
+anyBull     = sigBullPMH or sigBullYH or sigBullWH or sigBullOH or sigBullWO or sigBullMO
+anyBear     = sigBearPML or sigBearYL or sigBearWL or sigBearOL or sigBearPDLH or sigBearVWBL or sigBearWO or sigBearMO
 anyBreakout = anyBull or anyBear
 
-anyRevBull  = sigRevBullPML or sigRevBullYL or sigRevBullWL or sigRevBullOL or sigRevBullVWAP or sigRevBullPDLH or sigRevBullVWBL or sigRevBullPDMid
-anyRevBear  = sigRevBearPMH or sigRevBearYH or sigRevBearWH or sigRevBearOH or sigRevBearVWAP or sigRevBearPDMid
+anyRevBull  = sigRevBullPML or sigRevBullYL or sigRevBullWL or sigRevBullOL or sigRevBullVWAP or sigRevBullPDLH or sigRevBullVWBL or sigRevBullPDMid or sigRevBullTodayOpen or sigRevBullPDClose
+anyRevBear  = sigRevBearPMH or sigRevBearYH or sigRevBearWH or sigRevBearOH or sigRevBearVWAP or sigRevBearPDMid or sigRevBearTodayOpen or sigRevBearPDClose
 anyReversal = anyRevBull or anyRevBear
 // Failed Breakout Fade signals (v3.0b)
 // NO EMA gate — FADE is contrarian (fades INTO the failed direction, EMAs won't have flipped)
@@ -946,6 +998,10 @@ if sigBullWH
     bullText := bullText + (bullText != "" ? " + " : "") + "Week H"
 if sigBullOH
     bullText := bullText + (bullText != "" ? " + " : "") + "ORB H"
+if sigBullWO
+    bullText := bullText + (bullText != "" ? " + " : "") + "Week O"
+if sigBullMO
+    bullText := bullText + (bullText != "" ? " + " : "") + "Month O"
 
 bearText = ""
 if sigBearPML
@@ -960,6 +1016,10 @@ if sigBearPDLH
     bearText := bearText + (bearText != "" ? " + " : "") + "PD LH L"
 if sigBearVWBL
     bearText := bearText + (bearText != "" ? " + " : "") + "VW Band"
+if sigBearWO
+    bearText := bearText + (bearText != "" ? " + " : "") + "Week O"
+if sigBearMO
+    bearText := bearText + (bearText != "" ? " + " : "") + "Month O"
 
 // Quality line: volume + close position on separate line
 bullVolTrim = i_volFilter and not na(volRatioBull) ? str.tostring(volRatioBull, "#.#") + "x" : ""
@@ -970,8 +1030,8 @@ bearVolTrim = i_volFilter and not na(volRatioBear) ? str.tostring(volRatioBear, 
 bearPosTrim = i_closePos and not na(bearClosePos) ? "v" + str.tostring(bearClosePos) : ""
 bearQualLine = bearVolTrim + (bearVolTrim != "" and bearPosTrim != "" ? " " : "") + bearPosTrim
 
-bullCount = (sigBullPMH ? 1 : 0) + (sigBullYH ? 1 : 0) + (sigBullWH ? 1 : 0) + (sigBullOH ? 1 : 0)
-bearCount = (sigBearPML ? 1 : 0) + (sigBearYL ? 1 : 0) + (sigBearWL ? 1 : 0) + (sigBearOL ? 1 : 0) + (sigBearPDLH ? 1 : 0) + (sigBearVWBL ? 1 : 0)
+bullCount = (sigBullPMH ? 1 : 0) + (sigBullYH ? 1 : 0) + (sigBullWH ? 1 : 0) + (sigBullOH ? 1 : 0) + (sigBullWO ? 1 : 0) + (sigBullMO ? 1 : 0)
+bearCount = (sigBearPML ? 1 : 0) + (sigBearYL ? 1 : 0) + (sigBearWL ? 1 : 0) + (sigBearOL ? 1 : 0) + (sigBearPDLH ? 1 : 0) + (sigBearVWBL ? 1 : 0) + (sigBearWO ? 1 : 0) + (sigBearMO ? 1 : 0)
 
 // Runner Score: max 5 at signal time (6th factor = CONF pass, added later)
 int finalScoreBull = math.min(scoreBull, 6)
@@ -1021,6 +1081,10 @@ if sigRevBullVWBL
     revBullText := revBullText + (revBullText != "" ? " + " : "") + "~ VW Band"
 if sigRevBullPDMid
     revBullText := revBullText + (revBullText != "" ? " + " : "") + "~ PD Mid"
+if sigRevBullTodayOpen
+    revBullText := revBullText + (revBullText != "" ? " + " : "") + "~ Today O"
+if sigRevBullPDClose
+    revBullText := revBullText + (revBullText != "" ? " + " : "") + "~ PD Cls"
 
 revBearText = ""
 revBearHasReclaim = false
@@ -1048,9 +1112,13 @@ if sigRevBearVWAP
     revBearText := revBearText + (revBearText != "" ? "\n" : "") + "~ VWAP"
 if sigRevBearPDMid
     revBearText := revBearText + (revBearText != "" ? " + " : "") + "~ PD Mid"
+if sigRevBearTodayOpen
+    revBearText := revBearText + (revBearText != "" ? " + " : "") + "~ Today O"
+if sigRevBearPDClose
+    revBearText := revBearText + (revBearText != "" ? " + " : "") + "~ PD Cls"
 
-revBullCount = (sigRevBullPML ? 1 : 0) + (sigRevBullYL ? 1 : 0) + (sigRevBullWL ? 1 : 0) + (sigRevBullOL ? 1 : 0) + (sigRevBullVWAP ? 1 : 0) + (sigRevBullPDLH ? 1 : 0) + (sigRevBullVWBL ? 1 : 0) + (sigRevBullPDMid ? 1 : 0)
-revBearCount = (sigRevBearPMH ? 1 : 0) + (sigRevBearYH ? 1 : 0) + (sigRevBearWH ? 1 : 0) + (sigRevBearOH ? 1 : 0) + (sigRevBearVWAP ? 1 : 0) + (sigRevBearPDMid ? 1 : 0)
+revBullCount = (sigRevBullPML ? 1 : 0) + (sigRevBullYL ? 1 : 0) + (sigRevBullWL ? 1 : 0) + (sigRevBullOL ? 1 : 0) + (sigRevBullVWAP ? 1 : 0) + (sigRevBullPDLH ? 1 : 0) + (sigRevBullVWBL ? 1 : 0) + (sigRevBullPDMid ? 1 : 0) + (sigRevBullTodayOpen ? 1 : 0) + (sigRevBullPDClose ? 1 : 0)
+revBearCount = (sigRevBearPMH ? 1 : 0) + (sigRevBearYH ? 1 : 0) + (sigRevBearWH ? 1 : 0) + (sigRevBearOH ? 1 : 0) + (sigRevBearVWAP ? 1 : 0) + (sigRevBearPDMid ? 1 : 0) + (sigRevBearTodayOpen ? 1 : 0) + (sigRevBearPDClose ? 1 : 0)
 
 var int lastBullSigBar = -999
 var int lastBearSigBar = -999
@@ -1818,6 +1886,10 @@ pOL   = plot(i_showLines and i_showORB  and isRegular ? orbLow   : na, "ORB Low"
 plot(i_showLines and i_showPDMid  and isRegular ? pdMid : na, "PD Mid", color.new(color.yellow, 40), 1, plot.style_linebr)
 plot(i_showLines and i_showPDMid  and isRegular ? pdLastHrLow : na, "PD Last Hr L", color.new(color.yellow, 40), 1, plot.style_linebr)
 plot(i_showLines and i_showVWBand and isRegular ? vwapLowerBand : na, "VWAP Lower", color.new(#FF6D00, 40), 1, plot.style_linebr)
+plot(i_showLines and i_showTodayOpen and isRegular ? todayOpen : na, "Today Open", color.new(color.lime, 40), 1, plot.style_linebr)
+plot(i_showLines and i_showPDClose   and isRegular ? yestClose : na, "PD Close",   color.new(color.lime, 40), 1, plot.style_linebr)
+plot(i_showLines and i_showWeekOpen  and isRegular ? weekOpen  : na, "Week Open",  color.new(color.fuchsia, 40), 1, plot.style_linebr)
+plot(i_showLines and i_showMonthOpen and isRegular ? monthOpen : na, "Month Open", color.new(color.fuchsia, 40), 1, plot.style_linebr)
 
 // ─── Zone Band Visualization ──────────────────────────────
 // Body-edge plots (hidden lines used as fill boundary)
