@@ -9,6 +9,17 @@ after that: investigate each signal on the past if we fetch it right, how far it
   could use other findings we have but didnt use or in other circumstances.
 
 
+3/6/26
+NVDA 15:50 alert "RNG up Range+Vol" but no label → INVESTIGATED: NOT a code bug.
+  Code: alert() and label.new() are in the SAME `if sigRNG_bull` block (lines 1164-1172).
+  Time gate: `rngTimeOK = etHour < 11` — at 15:50 ET, signal cannot fire.
+  Root cause: **FIFO label eviction** — `max_labels_count=500`, RNG fired in the morning,
+  label was created then. By 15:50, enough new labels pushed it out of the 500-label queue.
+  Alert persists in TV alert log but label is gone from chart.
+  → VERIFY: Check TV Alerts Log for actual fire time (should be before 11 AM).
+  → CONSIDER: Reduce label count or add label.delete() for old/dimmed labels to extend FIFO life.
+
+
 3/5/26 — INVESTIGATED → debug/investigation-2026-03-05.md + debug/v30b-move-scanner-research.md
 TSLA signal 9:29 PD Mid → ✅ BRK ▼ PD Mid, CONF ✓ auto-R1, BAIL at 9:35 (pnl=-0.25 ATR). Wrong direction — price went UP.
 TSLA signal 9:34 RNG up → ✅ 3 RNG ▲ fired (vol 3.9x-13.5x). Suppressed as BRK by EMA Gate (bull sig, bear EMA)

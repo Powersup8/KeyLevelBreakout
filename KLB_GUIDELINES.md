@@ -166,9 +166,29 @@ Load IB 5m candle data for all 13 symbols for today's date.
 
 ---
 
+## Validation Protocol — Every Change Must Pass This
+
+1. **Backtest the change** against enriched-signals.csv / IB cache data. Net positive ATR required.
+2. **Regression check** — verify existing signals are NOT degraded. Compare before/after:
+   - Signal count (did we lose good ones?)
+   - Win rate per signal type (did quality drop?)
+   - ATR per signal type (did profitability shift?)
+   - CONF rate, BAIL rate, HOLD rate
+3. **Cross-symbol check** — must be positive across multiple symbols, not just one.
+4. **Side-effect scan** — every filter/gate change can cascade. Check:
+   - Does this interact with EMA gate, candle filter, evidence stack, CONF logic, BAIL logic?
+   - Does it change which signals get dimmed/suppressed?
+   - Does it affect Runner Score or label display?
+5. **Document the result** — pass or fail, record in design journal with data.
+
+Only implement if steps 1-4 pass. If any step shows regression, investigate before proceeding.
+
+---
+
 ## Red Lines — Never Do This
 
 - Never add a feature without backtesting it first
+- Never implement without regression-checking existing signals
 - Never optimize for one symbol (must work across 13)
 - Never trust anecdotes over aggregate data
 - Never add complexity that doesn't pay for itself in ATR
