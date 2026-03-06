@@ -1,8 +1,8 @@
 // © Key Level Breakout Alert Indicator
-// Detects bullish/bearish 5m candle closes through key levels (v3.1a)
+// Detects bullish/bearish 5m candle closes through key levels (v3.2)
 // Designed for US stocks (NYSE/NASDAQ) on 5-min charts
 //@version=6
-indicator("Key Level Breakout v3.1a", overlay=true, max_labels_count=500, max_lines_count=200)
+indicator("Key Level Breakout v3.2", overlay=true, max_labels_count=500, max_lines_count=200)
 
 // ─── Inputs ────────────────────────────────────────────────
 i_showPM    = input.bool(true,  "Premarket High/Low",         group="Level Toggles")
