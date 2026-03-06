@@ -759,13 +759,13 @@ bearRev(float wick, float body) =>
      and (not i_vwapFilter or not na(vwapVal) and sigC < vwapVal)
 
 // ─── Raw Signals ──────────────────────────────────────────
-rBullPMH = i_showPM   and bullBreak(pmHigh)
+rBullPMH = false  // v3.2: PM H moved to REV (magnet, not barrier)
 rBearPML = i_showPM   and bearBreak(pmLow)
-rBullYH  = i_showYest  and bullBreak(yestHigh)
+rBullYH  = false  // v3.2: Yest H moved to REV
 rBearYL  = i_showYest  and bearBreak(yestLow)
-rBullWH  = i_showWeek  and bullBreak(weekHigh)
+rBullWH  = false  // v3.2: Week H moved to REV
 rBearWL  = i_showWeek  and bearBreak(weekLow)
-rBullOH  = i_showORB   and not isORBwin and orbFirstDone and bullBreak(orbHigh)
+rBullOH  = false  // v3.2: ORB H moved to REV
 rBearOL  = i_showORB   and not isORBwin and orbFirstDone and bearBreak(orbLow)
 rBullWO = i_showWeekOpen  and bullBreak(weekOpen)
 rBearWO = i_showWeekOpen  and bearBreak(weekOpen)
@@ -855,6 +855,12 @@ rRevBearYH  = i_showReversal and i_showYest  and i_revYest and bearRev(yestHigh,
 rRevBearWH  = i_showReversal and i_showWeek  and i_revWeek and bearRev(weekHigh, weekHBody)
 rRevBearOH  = i_showReversal and i_showORB   and i_revORB  and not isORBwin and orbFirstDone and bearRev(orbHigh, orbHBody)
 
+// Bull REV at HIGH levels (v3.2: HIGH = magnet, price bounces up from resistance)
+rRevBullPMH = i_showReversal and i_showPM   and i_revPM   and bullRev(pmHigh,  pmHBody)
+rRevBullYH  = i_showReversal and i_showYest  and i_revYest and bullRev(yestHigh, yestHBody)
+rRevBullWH  = i_showReversal and i_showWeek  and i_revWeek and bullRev(weekHigh, weekHBody)
+rRevBullOH  = i_showReversal and i_showORB   and i_revORB  and not isORBwin and orbFirstDone and bullRev(orbHigh, orbHBody)
+
 // Bull reversal at new LOW levels (v3.0)
 rRevBullPDLH = i_showReversal and i_showPDMid and bullRev(pdLastHrLow, pdLHBody)
 rRevBullVWBL = i_showReversal and i_showVWBand and bullRev(vwapLowerBand, not na(vwapLowerBand) ? vwapLowerBand + zoneWidth : na)
@@ -885,6 +891,12 @@ sigRevBearPMH = rRevBearPMH and (not i_firstOnly or not rPMH) and (fGateBear_rev
 sigRevBearYH  = rRevBearYH  and (not i_firstOnly or not rYH)  and (fGateBear_rev or exrevBypass) and (emaGateBear or isPre950 or exrevBypass)
 sigRevBearWH  = rRevBearWH  and (not i_firstOnly or not rWH)  and (fGateBear_rev or exrevBypass) and (emaGateBear or isPre950 or exrevBypass)
 sigRevBearOH  = rRevBearOH  and (not i_firstOnly or not rOH)  and (fGateBear_rev or exrevBypass) and (emaGateBear or isPre950 or exrevBypass)
+
+// Bull REV at HIGH levels (v3.2)
+sigRevBullPMH = rRevBullPMH and (not i_firstOnly or not rPMH) and fGateBull_rev and (emaGateBull or isPre950)
+sigRevBullYH  = rRevBullYH  and (not i_firstOnly or not rYH)  and fGateBull_rev and (emaGateBull or isPre950)
+sigRevBullWH  = rRevBullWH  and (not i_firstOnly or not rWH)  and fGateBull_rev and (emaGateBull or isPre950)
+sigRevBullOH  = rRevBullOH  and (not i_firstOnly or not rOH)  and fGateBull_rev and (emaGateBull or isPre950)
 
 // VWAP filtered signals (reversal stack + EMA gate)
 sigRevBullVWAP = rRevBullVWAP and not xVWAPBull and fGateBull_rev and (emaGateBull or isPre950)
@@ -918,6 +930,14 @@ if rRevBearWH
     rWH := true
 if rRevBearOH
     rOH := true
+if rRevBullPMH
+    rPMH := true
+if rRevBullYH
+    rYH := true
+if rRevBullWH
+    rWH := true
+if rRevBullOH
+    rOH := true
 if sigRevBullVWAP
     xVWAPBull := true
 if sigRevBearVWAP
@@ -945,11 +965,11 @@ if sigQBS_bear
     qbsBearFired := true
 
 // ─── Combined Signals ────────────────────────────────────
-anyBull     = sigBullPMH or sigBullYH or sigBullWH or sigBullOH or sigBullWO or sigBullMO
+anyBull     = sigBullWO or sigBullMO  // v3.2: HIGH levels moved to REV
 anyBear     = sigBearPML or sigBearYL or sigBearWL or sigBearOL or sigBearPDLH or sigBearVWBL or sigBearWO or sigBearMO
 anyBreakout = anyBull or anyBear
 
-anyRevBull  = sigRevBullPML or sigRevBullYL or sigRevBullWL or sigRevBullOL or sigRevBullVWAP or sigRevBullPDLH or sigRevBullVWBL or sigRevBullPDMid or sigRevBullTodayOpen or sigRevBullPDClose
+anyRevBull  = sigRevBullPML or sigRevBullYL or sigRevBullWL or sigRevBullOL or sigRevBullVWAP or sigRevBullPDLH or sigRevBullVWBL or sigRevBullPDMid or sigRevBullTodayOpen or sigRevBullPDClose or sigRevBullPMH or sigRevBullYH or sigRevBullWH or sigRevBullOH
 anyRevBear  = sigRevBearPMH or sigRevBearYH or sigRevBearWH or sigRevBearOH or sigRevBearVWAP or sigRevBearPDMid or sigRevBearTodayOpen or sigRevBearPDClose
 anyReversal = anyRevBull or anyRevBear
 // FADE signal detection (v3.2): counter-EMA crossback
@@ -1055,7 +1075,7 @@ bearVolTrim = i_volFilter and not na(volRatioBear) ? str.tostring(volRatioBear, 
 bearPosTrim = i_closePos and not na(bearClosePos) ? "v" + str.tostring(bearClosePos) : ""
 bearQualLine = bearVolTrim + (bearVolTrim != "" and bearPosTrim != "" ? " " : "") + bearPosTrim
 
-bullCount = (sigBullPMH ? 1 : 0) + (sigBullYH ? 1 : 0) + (sigBullWH ? 1 : 0) + (sigBullOH ? 1 : 0) + (sigBullWO ? 1 : 0) + (sigBullMO ? 1 : 0)
+bullCount = (sigBullWO ? 1 : 0) + (sigBullMO ? 1 : 0)  // v3.2: HIGH levels moved to REV
 bearCount = (sigBearPML ? 1 : 0) + (sigBearYL ? 1 : 0) + (sigBearWL ? 1 : 0) + (sigBearOL ? 1 : 0) + (sigBearPDLH ? 1 : 0) + (sigBearVWBL ? 1 : 0) + (sigBearWO ? 1 : 0) + (sigBearMO ? 1 : 0)
 
 // Runner Score: max 5 at signal time (6th factor = CONF pass, added later)
@@ -1110,6 +1130,14 @@ if sigRevBullTodayOpen
     revBullText := revBullText + (revBullText != "" ? " + " : "") + "~ Today O"
 if sigRevBullPDClose
     revBullText := revBullText + (revBullText != "" ? " + " : "") + "~ PD Cls"
+if sigRevBullPMH
+    revBullText := revBullText + (revBullText != "" ? " + " : "") + "~ PM H"
+if sigRevBullYH
+    revBullText := revBullText + (revBullText != "" ? " + " : "") + "~ Yest H"
+if sigRevBullWH
+    revBullText := revBullText + (revBullText != "" ? " + " : "") + "~ Week H"
+if sigRevBullOH
+    revBullText := revBullText + (revBullText != "" ? " + " : "") + "~ ORB H"
 
 revBearText = ""
 revBearHasReclaim = false
@@ -1142,7 +1170,7 @@ if sigRevBearTodayOpen
 if sigRevBearPDClose
     revBearText := revBearText + (revBearText != "" ? " + " : "") + "~ PD Cls"
 
-revBullCount = (sigRevBullPML ? 1 : 0) + (sigRevBullYL ? 1 : 0) + (sigRevBullWL ? 1 : 0) + (sigRevBullOL ? 1 : 0) + (sigRevBullVWAP ? 1 : 0) + (sigRevBullPDLH ? 1 : 0) + (sigRevBullVWBL ? 1 : 0) + (sigRevBullPDMid ? 1 : 0) + (sigRevBullTodayOpen ? 1 : 0) + (sigRevBullPDClose ? 1 : 0)
+revBullCount = (sigRevBullPML ? 1 : 0) + (sigRevBullYL ? 1 : 0) + (sigRevBullWL ? 1 : 0) + (sigRevBullOL ? 1 : 0) + (sigRevBullVWAP ? 1 : 0) + (sigRevBullPDLH ? 1 : 0) + (sigRevBullVWBL ? 1 : 0) + (sigRevBullPDMid ? 1 : 0) + (sigRevBullTodayOpen ? 1 : 0) + (sigRevBullPDClose ? 1 : 0) + (sigRevBullPMH ? 1 : 0) + (sigRevBullYH ? 1 : 0) + (sigRevBullWH ? 1 : 0) + (sigRevBullOH ? 1 : 0)
 revBearCount = (sigRevBearPMH ? 1 : 0) + (sigRevBearYH ? 1 : 0) + (sigRevBearWH ? 1 : 0) + (sigRevBearOH ? 1 : 0) + (sigRevBearVWAP ? 1 : 0) + (sigRevBearPDMid ? 1 : 0) + (sigRevBearTodayOpen ? 1 : 0) + (sigRevBearPDClose ? 1 : 0)
 
 var int lastBullSigBar = -999
