@@ -750,8 +750,13 @@ rBullOH  = i_showORB   and not isORBwin and orbFirstDone and bullBreak(orbHigh)
 rBearOL  = i_showORB   and not isORBwin and orbFirstDone and bearBreak(orbLow)
 
 // New level signals (v3.0; PD Mid → REV in v3.1 — magnet level, not barrier)
-rRevBullPDMid = i_showPDMid and bullRev(pdMid, pdMidBody)
-rRevBearPDMid = i_showPDMid and bearRev(pdMid, pdMidBodyHi)
+// PD Mid REV: inline (no VWAP filter — midrange level; use pdMid directly — not zone edges)
+rRevBullPDMid = i_showPDMid and not na(pdMid) and isRegular and newSigBar
+     and (not i_limitRevWin or isSetupWindow)
+     and sigC > sigO and sigL <= pdMid and sigC > pdMid
+rRevBearPDMid = i_showPDMid and not na(pdMid) and isRegular and newSigBar
+     and (not i_limitRevWin or isSetupWindow)
+     and sigC < sigO and sigH >= pdMid and sigC < pdMid
 rBearPDLH  = i_showPDMid and bearBreak(pdLastHrLow)
 rBearVWBL  = i_showVWBand and bearBreak(vwapLowerBand)
 
