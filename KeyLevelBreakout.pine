@@ -59,6 +59,7 @@ i_fADX    = input.bool(true, "ADX Trend Strength Filter",   tooltip="Suppress si
 i_fCandle = input.bool(true, "Candle Body Quality Filter",  tooltip="Suppress wick-heavy breakout candles (body < 30% or close in wrong zone)", group="Filters")
 i_fMode   = input.string("Suppress", "Filter Mode", options=["Suppress", "Dim"], tooltip="Suppress: hide signals entirely. Dim: show as gray with ? suffix", group="Filters")
 i_emaGate  = input.bool(true, "EMA Hard Gate (suppress non-EMA)", tooltip="After 9:50: suppress signals against EMA trend. Before 9:50: dim only.", group="Filters")
+i_exrevGate = input.bool(true, "EXREV Bypass (Bear)",    group="Filters")
 
 i_useZones     = input.bool(true,   "Use Level Zones (wick-to-body)",  group="Zones")
 i_zoneATRPct   = input.float(3.0,   "Zone Width for PM/ORB (% of ATR)", minval=0, step=0.5, group="Zones")
@@ -517,6 +518,10 @@ bool emaGateBear = not i_emaGate or fEMA_bear
 bool emaGateBull_dim = i_emaGate and not fEMA_bull and isPre950
 bool emaGateBear_dim = i_emaGate and not fEMA_bear and isPre950
 
+// EXREV bypass: bear REV with tiny body (< 30%) = strong rejection wick
+// Bypasses BOTH candle quality filter AND EMA gate (v3.2)
+bool exrevBypass = i_exrevGate and bodyRatio < 0.30 and candleRange > 0
+
 retestBuf      = not na(dailyATR) ? dailyATR * i_retestProx / 100.0 : rearmBuf
 retestMaxElapsed = i_retestWindow == "Short (50 min)" ? 10 : i_retestWindow == "Extended (2.5 hr)" ? 30 : 99999
 
@@ -877,10 +882,10 @@ sigRevBullYL  = rRevBullYL  and (not i_firstOnly or not rYL)  and fGateBull_rev 
 sigRevBullWL  = rRevBullWL  and (not i_firstOnly or not rWL)  and fGateBull_rev and (emaGateBull or isPre950)
 sigRevBullOL  = false  // v3.2: ORB L bull REV suppressed — 27% win, -12.5 ATR net negative
 
-sigRevBearPMH = rRevBearPMH and (not i_firstOnly or not rPMH) and fGateBear_rev and (emaGateBear or isPre950)
-sigRevBearYH  = rRevBearYH  and (not i_firstOnly or not rYH)  and fGateBear_rev and (emaGateBear or isPre950)
-sigRevBearWH  = rRevBearWH  and (not i_firstOnly or not rWH)  and fGateBear_rev and (emaGateBear or isPre950)
-sigRevBearOH  = rRevBearOH  and (not i_firstOnly or not rOH)  and fGateBear_rev and (emaGateBear or isPre950)
+sigRevBearPMH = rRevBearPMH and (not i_firstOnly or not rPMH) and (fGateBear_rev or exrevBypass) and (emaGateBear or isPre950 or exrevBypass)
+sigRevBearYH  = rRevBearYH  and (not i_firstOnly or not rYH)  and (fGateBear_rev or exrevBypass) and (emaGateBear or isPre950 or exrevBypass)
+sigRevBearWH  = rRevBearWH  and (not i_firstOnly or not rWH)  and (fGateBear_rev or exrevBypass) and (emaGateBear or isPre950 or exrevBypass)
+sigRevBearOH  = rRevBearOH  and (not i_firstOnly or not rOH)  and (fGateBear_rev or exrevBypass) and (emaGateBear or isPre950 or exrevBypass)
 
 // VWAP filtered signals (reversal stack + EMA gate)
 sigRevBullVWAP = rRevBullVWAP and not xVWAPBull and fGateBull_rev and (emaGateBull or isPre950)
@@ -1089,22 +1094,22 @@ if sigRevBullPDClose
 revBearText = ""
 revBearHasReclaim = false
 if sigRevBearPMH
-    string pfx = i_showReclaim and hadBrkPMH and rclBearOK ? "~~ " : "~ "
+    string pfx = exrevBypass ? "x~ " : (i_showReclaim and hadBrkPMH and rclBearOK ? "~~ " : "~ ")
     revBearText := revBearText + (revBearText != "" ? " + " : "") + pfx + "PM H"
     if i_showReclaim and hadBrkPMH and rclBearOK
         revBearHasReclaim := true
 if sigRevBearYH
-    string pfx = i_showReclaim and hadBrkYH and rclBearOK ? "~~ " : "~ "
+    string pfx = exrevBypass ? "x~ " : (i_showReclaim and hadBrkYH and rclBearOK ? "~~ " : "~ ")
     revBearText := revBearText + (revBearText != "" ? " + " : "") + pfx + "Yest H"
     if i_showReclaim and hadBrkYH and rclBearOK
         revBearHasReclaim := true
 if sigRevBearWH
-    string pfx = i_showReclaim and hadBrkWH and rclBearOK ? "~~ " : "~ "
+    string pfx = exrevBypass ? "x~ " : (i_showReclaim and hadBrkWH and rclBearOK ? "~~ " : "~ ")
     revBearText := revBearText + (revBearText != "" ? " + " : "") + pfx + "Week H"
     if i_showReclaim and hadBrkWH and rclBearOK
         revBearHasReclaim := true
 if sigRevBearOH
-    string pfx = i_showReclaim and hadBrkOH and rclBearOK ? "~~ " : "~ "
+    string pfx = exrevBypass ? "x~ " : (i_showReclaim and hadBrkOH and rclBearOK ? "~~ " : "~ ")
     revBearText := revBearText + (revBearText != "" ? " + " : "") + pfx + "ORB H"
     if i_showReclaim and hadBrkOH and rclBearOK
         revBearHasReclaim := true
