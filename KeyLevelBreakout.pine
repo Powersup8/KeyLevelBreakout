@@ -294,13 +294,13 @@ var int   qmcRTStart    = 0
 var float qmcRTVolRatio = na
 var int   qmcRTClosePos = na
 
-// Failed Breakout Fade state (v3.0)
-var float fadeBullLevel = na    // level from failed bear BRK → bull fade
-var float fadeBearLevel = na    // level from failed bull BRK → bear fade
-var int   fadeBullBar   = 0     // bar_index when CONF failed
-var int   fadeBearBar   = 0
-var bool  fadeBullFired = false
-var bool  fadeBearFired = false
+// FADE state (v3.2): counter-EMA signal crossback
+// Watches for ANY signal that fired counter-EMA, then price crosses back through level
+var float fadeWatchLevel  = na     // the level to watch for crossback
+var int   fadeWatchDir    = 0      // original signal direction: +1=bull, -1=bear
+var int   fadeWatchExpiry = 0      // bar_index when 6-bar window expires
+var bool  fadeWatchActive = false  // is a watch currently active?
+var bool  fadeFired       = false  // did FADE already fire this watch?
 
 // Range+Vol state (v3.0)
 var bool rngBullFired = false
@@ -321,12 +321,11 @@ if newRegular
     qmcRTEntry   := na
     qmcRTDir     := 0
     qmcRTStart   := 0
-    fadeBullLevel := na
-    fadeBearLevel := na
-    fadeBullBar   := 0
-    fadeBearBar   := 0
-    fadeBullFired := false
-    fadeBearFired := false
+    fadeWatchLevel  := na
+    fadeWatchDir    := 0
+    fadeWatchExpiry := 0
+    fadeWatchActive := false
+    fadeFired       := false
     rngBullFired := false
     rngBearFired := false
 
@@ -953,22 +952,20 @@ anyBreakout = anyBull or anyBear
 anyRevBull  = sigRevBullPML or sigRevBullYL or sigRevBullWL or sigRevBullOL or sigRevBullVWAP or sigRevBullPDLH or sigRevBullVWBL or sigRevBullPDMid or sigRevBullTodayOpen or sigRevBullPDClose
 anyRevBear  = sigRevBearPMH or sigRevBearYH or sigRevBearWH or sigRevBearOH or sigRevBearVWAP or sigRevBearPDMid or sigRevBearTodayOpen or sigRevBearPDClose
 anyReversal = anyRevBull or anyRevBear
-// Failed Breakout Fade signals (v3.0b)
-// NO EMA gate — FADE is contrarian (fades INTO the failed direction, EMAs won't have flipped)
-// 60-min window (2x slBars) — wider than SL lines since fades develop slower
-int fadeWindow = slBars * 2
-bool sigFadeBull = not na(fadeBullLevel) and not fadeBullFired
-     and newSigBar and isRegular
-     and sigC > fadeBullLevel
-     and (bar_index - fadeBullBar) <= fadeWindow
-bool sigFadeBear = not na(fadeBearLevel) and not fadeBearFired
-     and newSigBar and isRegular
-     and sigC < fadeBearLevel
-     and (bar_index - fadeBearBar) <= fadeWindow
-if sigFadeBull
-    fadeBullFired := true
-if sigFadeBear
-    fadeBearFired := true
+// FADE signal detection (v3.2): counter-EMA crossback
+// Original was bull (counter-EMA) → price falls back through level → FADE fires BEAR (with EMA)
+// Original was bear (counter-EMA) → price rises back through level → FADE fires BULL (with EMA)
+bool sigFadeBull = false
+bool sigFadeBear = false
+if fadeWatchActive and not fadeFired and newSigBar and isRegular
+    if bar_index > fadeWatchExpiry
+        fadeWatchActive := false  // window expired
+    else if fadeWatchDir == -1 and sigC > fadeWatchLevel  // was bear, now crossing back up = BULL FADE
+        sigFadeBull := true
+        fadeFired   := true
+    else if fadeWatchDir == 1 and sigC < fadeWatchLevel   // was bull, now crossing back down = BEAR FADE
+        sigFadeBear := true
+        fadeFired   := true
 bool anyFade = sigFadeBull or sigFadeBear
 
 // Range+Vol signals (v3.0b): 12-bar range breakout + vol ≥ 3x. NO EMA requirement.
@@ -992,6 +989,29 @@ if sigRNG_bear
 bool anyRNG = sigRNG_bull or sigRNG_bear
 
 anyQBSMC    = qbsFired
+
+// FADE watch setup (v3.2): any counter-EMA signal starts a 6-bar watch
+// Counter-EMA = bull signal when EMA=bear, or bear signal when EMA=bull
+bool _fadeBullSig = anyBull or anyRevBull
+bool _fadeBearSig = anyBear or anyRevBear
+
+// Determine the primary level for the watch (first matching level price)
+float _fadeBullLvl = sigBullPMH ? pmHigh : sigBullYH ? yestHigh : sigBullWH ? weekHigh : sigBullOH ? orbHigh : sigBullWO ? weekOpen : sigBullMO ? monthOpen : sigRevBullPML ? pmLow : sigRevBullYL ? yestLow : sigRevBullWL ? weekLow : sigRevBullOL ? orbLow : sigRevBullPDLH ? pdLastHrLow : sigRevBullVWBL ? vwapLowerBand : sigRevBullPDMid ? pdMid : sigRevBullTodayOpen ? todayOpen : sigRevBullPDClose ? yestClose : na
+float _fadeBearLvl = sigBearPML ? pmLow : sigBearYL ? yestLow : sigBearWL ? weekLow : sigBearOL ? orbLow : sigBearPDLH ? pdLastHrLow : sigBearVWBL ? vwapLowerBand : sigBearWO ? weekOpen : sigBearMO ? monthOpen : sigRevBearPMH ? pmHigh : sigRevBearYH ? yestHigh : sigRevBearWH ? weekHigh : sigRevBearOH ? orbHigh : sigRevBearPDMid ? pdMid : sigRevBearTodayOpen ? todayOpen : sigRevBearPDClose ? yestClose : na
+
+// Set up watch when counter-EMA signal fires
+if _fadeBullSig and not fEMA_bull and not na(_fadeBullLvl)
+    fadeWatchLevel  := _fadeBullLvl
+    fadeWatchDir    := 1   // original was bull
+    fadeWatchExpiry := bar_index + 6
+    fadeWatchActive := true
+    fadeFired       := false
+if _fadeBearSig and not fEMA_bear and not na(_fadeBearLvl)
+    fadeWatchLevel  := _fadeBearLvl
+    fadeWatchDir    := -1  // original was bear
+    fadeWatchExpiry := bar_index + 6
+    fadeWatchActive := true
+    fadeFired       := false
 
 // ─── Signal Labels (confluent levels merged) ────────────────
 bullText = ""
@@ -1212,26 +1232,26 @@ if sigQBS_bear
         qmcRTVolRatio := volRatioBear
         qmcRTClosePos := bearClosePos
 
-// FADE labels (v3.0) — purple/magenta
+// FADE labels (v3.2) — purple/magenta
 if sigFadeBull
-    string fadeText = "FADE ▲\n~ " + str.tostring(fadeBullLevel, "#.##")
+    string fadeText = "FADE ▲\n~ " + str.tostring(fadeWatchLevel, "#.##")
     fadeText += "\n" + (not na(volRatioBull) ? str.tostring(volRatioBull, "#.#") + "x" : "")
     label.new(bar_index + shapeOff, na, fadeText,
          yloc=yloc.belowbar, style=label.style_label_up,
          color=color.new(#9C27B0, 0), textcolor=color.white, size=size.small)
     if i_debugLog and barstate.isconfirmed
-        log.info("[KLB] {0} ▲ FADE at {1}", fmtTime(time), str.tostring(fadeBullLevel, "#.##"))
-    alert("FADE ▲ Bull fade at " + str.tostring(fadeBullLevel, "#.##"), alert.freq_once_per_bar)
+        log.info("[KLB] {0} ▲ FADE at {1}", fmtTime(time), str.tostring(fadeWatchLevel, "#.##"))
+    alert("FADE ▲ Bull fade at " + str.tostring(fadeWatchLevel, "#.##"), alert.freq_once_per_bar)
 
 if sigFadeBear
-    string fadeText = "FADE ▼\n~ " + str.tostring(fadeBearLevel, "#.##")
+    string fadeText = "FADE ▼\n~ " + str.tostring(fadeWatchLevel, "#.##")
     fadeText += "\n" + (not na(volRatioBear) ? str.tostring(volRatioBear, "#.#") + "x" : "")
     label.new(bar_index + shapeOff, na, fadeText,
          yloc=yloc.abovebar, style=label.style_label_down,
          color=color.new(#9C27B0, 0), textcolor=color.white, size=size.small)
     if i_debugLog and barstate.isconfirmed
-        log.info("[KLB] {0} ▼ FADE at {1}", fmtTime(time), str.tostring(fadeBearLevel, "#.##"))
-    alert("FADE ▼ Bear fade at " + str.tostring(fadeBearLevel, "#.##"), alert.freq_once_per_bar)
+        log.info("[KLB] {0} ▼ FADE at {1}", fmtTime(time), str.tostring(fadeWatchLevel, "#.##"))
+    alert("FADE ▼ Bear fade at " + str.tostring(fadeWatchLevel, "#.##"), alert.freq_once_per_bar)
 
 // RNG labels (v3.0) — teal/cyan
 if sigRNG_bull
@@ -1714,10 +1734,6 @@ if i_confirm and bRTState == 1 and not na(bRTConsLvl) and isRegular
                  yloc=yloc.price, style=label.style_label_down,
                  color=color.new(color.orange, 20), textcolor=color.black, size=size.small)
             chopWarned := true
-        // Set up FADE: failed bull BRK → potential bear fade
-        fadeBearLevel := bRTConsLvl
-        fadeBearBar   := bar_index
-        fadeBearFired := false
     else
         bool anyNew = false
         for i = 0 to 3
@@ -1764,10 +1780,6 @@ if i_confirm and sRTState == 1 and not na(sRTConsLvl) and isRegular
                  yloc=yloc.price, style=label.style_label_down,
                  color=color.new(color.orange, 20), textcolor=color.black, size=size.small)
             chopWarned := true
-        // Set up FADE: failed bear BRK → potential bull fade
-        fadeBullLevel := sRTConsLvl
-        fadeBullBar   := bar_index
-        fadeBullFired := false
     else
         bool anyNew = false
         for i = 0 to 3
