@@ -6,7 +6,7 @@
 | [KLB_Reference.md](KLB_Reference.md) | Setup, Signal Types, Label Anatomy, CONF System, Levels, Filters, Visuals, Alerts, Settings |
 | [KLB_DESIGN-JOURNAL.md](KLB_DESIGN-JOURNAL.md) | The Idea, Data Foundation, Key Discoveries, Filter Validation, Evolution, Dead Ends |
 
-> Based on 1,841 signals, 25,304 significant moves, 9,596 big-move bars, 13 symbols, 28+ trading days
+> Based on 1,841 signals, 25,304 significant moves, 9,596 big-move bars, 15 symbols, 28+ trading days
 
 ---
 ## 1. Signal Catalog
@@ -157,21 +157,23 @@ Levels: Yest L > PM L > ORB L > Week L > PD Last Hr L (BRK). HIGH levels = REV o
 ---
 ## 9. Symbol Tiers
 
-| Tier | Symbol | CONF% | Best Window |
-|------|--------|-------|-------------|
-| A | AMZN | 62% | 10-11 (69%) |
-| A | QQQ | 59% | 10-11 (64%) |
-| A | SPY | 59% | 10-11 (61%) |
-| B | AAPL | 48% | 10-11 (64%) |
-| B | GOOGL | 47% | 10-11 (60%) |
-| B | META | 46% | 13-16 (67%) |
-| B | NVDA | 45% | 10-11 (55%) |
-| B | TSLA | 43% | Midday (50%) |
-| C | TSM | 44% | 13-16 (60%) |
-| C | SLV | 42% | 11-13 (67%) |
-| D | AMD | 41% | -- |
-| D | MSFT | 40% | -- |
-| D | GLD | 40% | -- |
+| Tier | Symbol | CONF% | Best Window | Notes |
+|------|--------|-------|-------------|-------|
+| A | AMZN | 62% | 10-11 (69%) | Top performer |
+| A | QQQ | 59% | 10-11 (64%) | Index — confirms moves |
+| A | SPY | 59% | 10-11 (61%) | Index — drives BAIL regime |
+| A+ | XLE | new | TBD | Energy ETF, 98.6% bounce, SPY corr 0.07, best diversifier |
+| B | AAPL | 48% | 10-11 (64%) | |
+| B | GOOGL | 47% | 10-11 (60%) | |
+| B | META | 46% | 13-16 (67%) | Best afternoon performer |
+| B | NFLX | new | TBD | 97.3% bounce, SPY corr 0.09, independent mover |
+| B | NVDA | 45% | 10-11 (55%) | |
+| B | TSLA | 43% | Midday (50%) | Volatile, many signals |
+| C | TSM | 44% | 13-16 (60%) | Often suppressed |
+| C | SLV | 42% | 11-13 (67%) | Commodity |
+| D | AMD | 41% | -- | No clear edge window |
+| D | MSFT | 40% | -- | Low signal quality |
+| D | GLD | 40% | -- | Commodity, low edge |
 
 ---
 ## 🔴 TODO: Open Call Management Setup

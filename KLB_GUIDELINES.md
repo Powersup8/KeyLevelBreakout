@@ -33,7 +33,7 @@ Build a TradingView indicator that alerts on key level breakouts and reversals w
 - Coverage cliff (95% at open → 2% after 11:00) is the #1 gap to close.
 
 ### 5. Cross-Symbol Intelligence
-- 13 symbols minimum: SPY, QQQ, AAPL, AMZN, AMD, GOOGL, META, MSFT, NVDA, TSLA, TSM, GLD, SLV
+- 15 symbols: SPY, QQQ, AAPL, AMZN, AMD, GOOGL, META, MSFT, NVDA, NFLX, TSLA, TSM, XLE, GLD, SLV
 - When 4+ symbols move together = market regime shift (morning bear = +1.058 ATR, 63% win)
 - SPY direction (>±0.3%) drives BAIL decisions for all symbols
 - Individual stocks lead, NOT SPY/QQQ — they confirm
@@ -49,7 +49,7 @@ Build a TradingView indicator that alerts on key level breakouts and reversals w
 
 ### Data Infrastructure
 - **IB cache pool**: 1s/5s (30 days), 15s/1m/5m/15m/1h/1d (180-360 days), 120+ symbols
-- **TV 1m candles**: 13 symbols, 24+ days, BATS exchange
+- **TV 1m candles**: 15 symbols, 24+ days, BATS exchange
 - **Enriched signals**: 1,841 signals with MFE/MAE (60-min follow-through from 5s data)
 - **Big moves**: 9,596 significant bars, 2,069 moves at 2x ATR
 - **Pine logs**: Per-symbol signal + CONF + BAIL logs from TradingView
@@ -97,7 +97,7 @@ Build a TradingView indicator that alerts on key level breakouts and reversals w
 ### After Market Close — Signal Review
 1. **Read `debug/_toinvestigate.md`** for user-noted misses and anomalies
 2. **Parse new pine logs** — what fired, what confirmed, what BAILed
-3. **Scan for major moves** — across all 13 symbols, find every move ≥ 1 ATR
+3. **Scan for major moves** — across all 15 symbols, find every move ≥ 1 ATR
 4. **Match signals to moves** — which moves did we catch? Which did we miss?
 
 ### For Each Missed Move — Deep Investigation
@@ -132,12 +132,12 @@ Build a TradingView indicator that alerts on key level breakouts and reversals w
 
 ```
 Read debug/_toinvestigate.md for new entries. Parse new pine logs in debug/.
-Load IB 5m candle data for all 13 symbols for today's date.
+Load IB 5m candle data for all 15 symbols for today's date.
 
 1. SIGNAL REVIEW: Parse all signals, CONF, and BAIL from today's pine logs.
    For each: outcome (HOLD/BAIL), 5m PnL, SPY regime, Runner Score.
 
-2. MOVE SCAN: Find every move ≥ 1 ATR across all 13 symbols today.
+2. MOVE SCAN: Find every move ≥ 1 ATR across all 15 symbols today.
    For each: start time, end time, magnitude, direction, which symbol(s).
 
 3. MATCH: Which moves did we catch? Which did we miss?
