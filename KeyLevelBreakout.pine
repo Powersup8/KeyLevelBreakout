@@ -181,7 +181,8 @@ float atrConsumed = not na(dayRangeHi) and not na(dailyATR) and dailyATR > 0 ? (
 // Uses first regular bar: gap, range, volume. Precision ~5-7%, visual indicator only.
 float gapPct = not na(close[1]) and close[1] > 0 ? math.abs(open - close[1]) / close[1] : 0.0
 float fbRangeAtr = not na(dailyATR) and dailyATR > 0 ? (high - low) / dailyATR : 0.0
-float fbVolRatio  = volume > 0 and ta.sma(volume, 20)[1] > 0 ? volume / ta.sma(volume, 20)[1] : 1.0
+float _volSma20   = ta.sma(volume, 20)[1]
+float fbVolRatio  = volume > 0 and _volSma20 > 0 ? volume / _volSma20 : 1.0
 var bool isSpecialDay = false
 if newRegular
     int score = (gapPct > 0.02 ? 1 : 0) + (fbRangeAtr > 0.5 ? 1 : 0) + (fbVolRatio > 2.0 ? 1 : 0)
@@ -991,15 +992,15 @@ sigRevBearPDClose   = rRevBearPDClose   and (not i_firstOnly or not rPDClose)   
 // Data: Win%=25.3%, Net=-707 ATR, Asymmetry=12.6x (vs 4.4x for HIGHs suppressed in v3.3c)
 // Structural: NVDA's one-directional momentum means bear REV works (+1,105 ATR), bull REV fails
 bool isNotNVDA = syminfo.ticker != "NVDA"
-sigRevBullPML       = sigRevBullPML       and isNotNVDA
-sigRevBullYL        = sigRevBullYL        and isNotNVDA
-sigRevBullWL        = sigRevBullWL        and isNotNVDA
-sigRevBullVWAP      = sigRevBullVWAP      and isNotNVDA
-sigRevBullPDLH      = sigRevBullPDLH      and isNotNVDA
-sigRevBullVWBL      = sigRevBullVWBL      and isNotNVDA
-sigRevBullPDMid     = sigRevBullPDMid     and isNotNVDA
-sigRevBullTodayOpen = sigRevBullTodayOpen and isNotNVDA
-sigRevBullPDClose   = sigRevBullPDClose   and isNotNVDA
+sigRevBullPML       := sigRevBullPML       and isNotNVDA
+sigRevBullYL        := sigRevBullYL        and isNotNVDA
+sigRevBullWL        := sigRevBullWL        and isNotNVDA
+sigRevBullVWAP      := sigRevBullVWAP      and isNotNVDA
+sigRevBullPDLH      := sigRevBullPDLH      and isNotNVDA
+sigRevBullVWBL      := sigRevBullVWBL      and isNotNVDA
+sigRevBullPDMid     := sigRevBullPDMid     and isNotNVDA
+sigRevBullTodayOpen := sigRevBullTodayOpen and isNotNVDA
+sigRevBullPDClose   := sigRevBullPDClose   and isNotNVDA
 
 // Update reversal flags
 if rRevBullPML
