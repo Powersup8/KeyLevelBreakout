@@ -1,4 +1,4 @@
-# KeyLevelBreakout v3.2 — Design Journal
+# KeyLevelBreakout v3.3 — Design Journal
 
 | Doc | What's Inside |
 |-----|---------------|
@@ -129,6 +129,19 @@ For big moves (the 2x ATR dataset), the filter landscape shifts. EMA alignment d
 **v2.7 -- Data-driven tuning from multi-symbol fingerprint (1,841) + big-move fingerprint (9,596).** Body filter lowered from 50% to 30% after finding zero differentiation. VWAP zone signals added as a ninth level type. 5-minute checkpoint added to evaluate signals after entry. Runner Score volume factor revised from 2-5x to >= 5x.
 
 **v2.8 -- Big-move integration from 2,069 moves at 2x ATR.** QBS (Quiet Before Storm) and MC (Momentum Cascade) standalone signals based on the U-shaped volume ramp discovery. Body >= 80% fakeout warning (⚠ glyph). Big-move flag (⚡) for any signal on a bar >= 2x ATR. Moderate ramp dimming for the 1-2x trap bucket. Runner Score time window shifted from 10-11 to 9:30-10 (validated: 70% runner rate, MFE 2.36 in the first half hour). TSM added to D-tier (38% runner rate, the worst of all 13 symbols). closeLoc threshold lowered from 0.4 to 0.3.
+
+**v3.0 -- All-in overhaul (+45.6 ATR).** Kill MC signals, EMA hard gate, auto-confirm R1, 3 new levels (PD Mid, PD Last Hr Low/High), CONF 1→3 bars, FADE, RNG, regime score.
+
+**v3.1 -- Regime + runner redesign (+15.5 ATR).** SPY regime drives BAIL. PD Mid REV. Runner score 6 factors.
+
+**v3.2 -- Signal type surgery (+25 ATR est).** HIGH levels (PM/Yest/ORB/Week H) → REV instead of BRK. EXREV bypass for strong-confidence counter-trend. FADE resurrection. 4 midday levels (Today Open, PD Close, Week Open, Month Open).
+
+**v3.3 -- Fingerprint-driven quality filters from 72K-move catalog analysis.** Five data-driven changes based on KMeans clustering (12 regimes) and KNN pattern matching across 59 fingerprint features per move:
+1. Volume gate lowered 1.5x → 1.0x (default). Research: volume was over-filtering; the 1.0-1.5x range had quality signals.
+2. Volume exhaustion dim: trigger vol > 5x = 15.8% noise rate (exhaustion moves). These get dimmed.
+3. Exhaustion filter: afternoon (13:00+) + ATR consumed > 1.5 + SPY range > 0.8% = exhausted day. Signals dimmed.
+4. Level freshness counters: 14 per-level daily touch counters. 3rd+ test at same level → dim. Research: z=-0.51 for level_tests_today — stale levels strongly predict noise.
+5. Quiet Coil dim override: drying volume (< 0.5x ramp) + small trigger range (< 0.5 ATR) = compression before breakout. 35.8% great rate (1.8x baseline), 1.5% noise. Overrides all dim conditions — trust the pattern.
 
 ---
 

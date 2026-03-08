@@ -1,8 +1,8 @@
 // © Key Level Breakout Alert Indicator
-// Detects bullish/bearish 5m candle closes through key levels (v3.2)
+// Detects bullish/bearish 5m candle closes through key levels (v3.3)
 // Designed for US stocks (NYSE/NASDAQ) on 5-min charts
 //@version=6
-indicator("Key Level Breakout v3.2", overlay=true, max_labels_count=500, max_lines_count=200)
+indicator("Key Level Breakout v3.3", overlay=true, max_labels_count=500, max_lines_count=200)
 
 // ─── Inputs ────────────────────────────────────────────────
 i_showPM    = input.bool(true,  "Premarket High/Low",         group="Level Toggles")
@@ -27,7 +27,7 @@ i_dimAfternoon = input.bool(true, "Dim Afternoon Signals (after 11:00)", group="
 // ─── Filter Inputs ──────────────────────────────────────
 i_volFilter  = input.bool(true,  "Require Above-Avg Volume",    group="Filters")
 i_volMode    = input.string("Signal TF SMA", "Volume Baseline", options=["Signal TF SMA", "Daily Average"], group="Filters")
-i_volMult    = input.float(1.5,  "Volume Multiplier",           minval=0.5, step=0.1, group="Filters")
+i_volMult    = input.float(1.0,  "Volume Multiplier",           minval=0.0, step=0.1, group="Filters")
 i_volLen     = input.int(20,     "Volume SMA Length",            minval=5, group="Filters")
 i_atrBuf     = input.bool(true,  "Use ATR Buffer",              group="Filters")
 i_atrPct     = input.float(5.0,  "Breakout Buffer (% of ATR)",  minval=0, step=1, group="Filters")
@@ -159,6 +159,18 @@ if newRegular
     pdLastHrLow := _lastHrLow
     pdMid := not na(yestHigh) and not na(yestLow) ? (yestHigh + yestLow) / 2.0 : na
 
+// ─── Intraday Range Tracking (v3.3) ─────────────────────
+// Track today's high/low for ATR-consumed and exhaustion detection
+var float dayRangeHi = na
+var float dayRangeLo = na
+if newRegular
+    dayRangeHi := high
+    dayRangeLo := low
+else if isRegular
+    dayRangeHi := math.max(nz(dayRangeHi), high)
+    dayRangeLo := math.min(nz(dayRangeLo), low)
+float atrConsumed = not na(dayRangeHi) and not na(dailyATR) and dailyATR > 0 ? (dayRangeHi - dayRangeLo) / dailyATR : 0.0
+
 // ─── ORB Signal Guard ────────────────────────────────────
 // Skip ORB signals on the first signal bar after the ORB window:
 // that bar's data IS the ORB-forming bar (self-referencing).
@@ -210,6 +222,24 @@ var bool rPDLH  = false
 var bool rVWBL  = false
 var bool rTodayOpen = false
 var bool rPDClose   = false
+
+// ─── Level Freshness Counters (v3.3) ────────────────────
+// Track signal fires per level per session. Research: z=-0.51 for level_tests_today.
+// 1st-2nd test = fresh (full signal). 3rd-4th = dim. 5th+ = suppress.
+var int tcPMH = 0, var int tcPML = 0
+var int tcYH  = 0, var int tcYL  = 0
+var int tcWH  = 0, var int tcWL  = 0
+var int tcOH  = 0, var int tcOL  = 0
+var int tcPDMid = 0, var int tcPDLH = 0
+var int tcTodayOpen = 0, var int tcPDClose = 0
+var int tcWO = 0, var int tcMO = 0
+
+// Reset at session open (alongside firstOnly flags)
+if newRegular
+    tcPMH := 0, tcPML := 0, tcYH := 0, tcYL := 0
+    tcWH := 0, tcWL := 0, tcOH := 0, tcOL := 0
+    tcPDMid := 0, tcPDLH := 0
+    tcTodayOpen := 0, tcPDClose := 0, tcWO := 0, tcMO := 0
 
 // ─── Reclaim Context (was this level broken + invalidated?) ──
 var bool hadBrkPMH = false
@@ -546,10 +576,17 @@ float preVolRamp = priorVol3 > 0 ? recentVol3 / priorVol3 : 1.0
 bool isVolDrying    = preVolRamp < 0.5
 bool isVolExplosive = preVolRamp > 5.0
 bool isVolModerate  = preVolRamp >= 1.0 and preVolRamp < 2.0
+// v3.3: Exhaustion volume — trigger vol > 5x avg = likely exhaustion move (15.8% noise rate)
+bool isVolExhaustBull = not na(volRatioBull) and volRatioBull > 5.0
+bool isVolExhaustBear = not na(volRatioBear) and volRatioBear > 5.0
 
 // Signal-TF ATR for big-move detection (v2.8)
 float sigRangeATR = not na(sigATR14) and sigATR14 > 0 ? (sigH - sigL) / sigATR14 : 0
 bool isBigMove = sigRangeATR >= 2.0
+// v3.3: Quiet Coil — drying volume + small range = compression before breakout (35.8% great, 1.8x lift)
+bool isQuietCoil = isVolDrying and sigRangeATR < 0.5
+// v3.3b: Broad Coil — small trigger + SPY moving = whole market is going (32.1% great, 1.6x, 1.0% noise)
+bool isBroadCoil = sigRangeATR < 0.5 and math.abs(spyChg) > 0.003
 string volRampGlyph = isVolDrying ? "🔇" : ""
 string bigMoveGlyph = isBigMove ? "⚡" : ""
 
@@ -558,6 +595,12 @@ string bigMoveGlyph = isBigMove ? "⚡" : ""
 int etHour = hour(time, TZ)
 int etMin = minute(time, TZ)
 bool isMorning = etHour < 11
+bool isMidday  = etHour >= 11 and etHour < 14
+// v3.3b: Midday + flat EMA boost — 31.1% great (1.55x), 2.2% noise, N=541
+bool isMiddayFlat = isMidday and not na(ema20_5m) and not na(dailyATR) and dailyATR > 0 and math.abs(ema20_5m - nz(ema20_5m[6])) / dailyATR < 0.02
+// v3.3: Exhaustion filter — C6 cluster: 30% noise, 5% great when market is spent
+// Triggers: afternoon (1pm+) + range > 1.5 ATR consumed + SPY moved > 0.8%
+bool isExhausted = etHour >= 13 and atrConsumed > 1.5 and math.abs(spyChg) > 0.008
 // Factor 6 (CONF pass) added after CONF evaluation — max 5 at signal time
 int scoreBull = (fEMA_bull ? 1 : 0) + (regimeBull == 2 ? 1 : 0) + (not na(volRatioBull) and volRatioBull >= 10.0 ? 1 : 0) + (isMorning ? 1 : 0) + (spyRegime == 1 ? 1 : 0)
 int scoreBear = (fEMA_bear ? 1 : 0) + (regimeBear == 2 ? 1 : 0) + (not na(volRatioBear) and volRatioBear >= 10.0 ? 1 : 0) + (isMorning ? 1 : 0) + (spyRegime == -1 ? 1 : 0)
@@ -799,21 +842,26 @@ rRevBearPDClose = i_showPDClose and not na(yestClose) and isRegular and newSigBa
      and (not i_limitRevWin or isSetupWindow)
      and sigC < sigO and sigH >= yestClose and sigC < yestClose
 
+// v3.3b: Unified EMA pass — includes pre-9:50 bypass AND quiet coil bypass (aggressive)
+// Quiet coil (drying vol + small range) bypasses EMA gate — catches Tier S monsters (40% EMA-misaligned)
+bool emaPassBull = emaGateBull or isPre950 or isQuietCoil
+bool emaPassBear = emaGateBear or isPre950 or isQuietCoil
+
 // ─── Filtered Signals (suppressed when flag active) ──────
-sigBullPMH = rBullPMH and (not i_firstOnly or not xPMH) and fGateBull and (emaGateBull or isPre950)
-sigBearPML = rBearPML and (not i_firstOnly or not xPML) and fGateBear and (emaGateBear or isPre950)
-sigBullYH  = rBullYH  and (not i_firstOnly or not xYH)  and fGateBull and (emaGateBull or isPre950)
-sigBearYL  = rBearYL  and (not i_firstOnly or not xYL)  and fGateBear and (emaGateBear or isPre950)
-sigBullWH  = rBullWH  and (not i_firstOnly or not xWH)  and fGateBull and (emaGateBull or isPre950)
-sigBearWL  = rBearWL  and (not i_firstOnly or not xWL)  and fGateBear and (emaGateBear or isPre950)
-sigBullOH  = rBullOH  and (not i_firstOnly or not xOH)  and fGateBull and (emaGateBull or isPre950)
-sigBearOL  = rBearOL  and (not i_firstOnly or not xOL)  and fGateBear and (emaGateBear or isPre950)
-sigBearPDLH  = rBearPDLH  and (not i_firstOnly or not xPDLH)  and fGateBear and (emaGateBear or isPre950)
-sigBearVWBL  = rBearVWBL  and (not i_firstOnly or not xVWBL)  and fGateBear and (emaGateBear or isPre950)
-sigBullWO = rBullWO and (not i_firstOnly or not xWO) and fGateBull and (emaGateBull or isPre950)
-sigBearWO = rBearWO and (not i_firstOnly or not xWO) and fGateBear and (emaGateBear or isPre950)
-sigBullMO = rBullMO and (not i_firstOnly or not xMO) and fGateBull and (emaGateBull or isPre950)
-sigBearMO = rBearMO and (not i_firstOnly or not xMO) and fGateBear and (emaGateBear or isPre950)
+sigBullPMH = rBullPMH and (not i_firstOnly or not xPMH) and fGateBull and emaPassBull
+sigBearPML = rBearPML and (not i_firstOnly or not xPML) and fGateBear and emaPassBear
+sigBullYH  = rBullYH  and (not i_firstOnly or not xYH)  and fGateBull and emaPassBull
+sigBearYL  = rBearYL  and (not i_firstOnly or not xYL)  and fGateBear and emaPassBear
+sigBullWH  = rBullWH  and (not i_firstOnly or not xWH)  and fGateBull and emaPassBull
+sigBearWL  = rBearWL  and (not i_firstOnly or not xWL)  and fGateBear and emaPassBear
+sigBullOH  = rBullOH  and (not i_firstOnly or not xOH)  and fGateBull and emaPassBull
+sigBearOL  = rBearOL  and (not i_firstOnly or not xOL)  and fGateBear and emaPassBear
+sigBearPDLH  = rBearPDLH  and (not i_firstOnly or not xPDLH)  and fGateBear and emaPassBear
+sigBearVWBL  = rBearVWBL  and (not i_firstOnly or not xVWBL)  and fGateBear and emaPassBear
+sigBullWO = rBullWO and (not i_firstOnly or not xWO) and fGateBull and emaPassBull
+sigBearWO = rBearWO and (not i_firstOnly or not xWO) and fGateBear and emaPassBear
+sigBullMO = rBullMO and (not i_firstOnly or not xMO) and fGateBull and emaPassBull
+sigBearMO = rBearMO and (not i_firstOnly or not xMO) and fGateBear and emaPassBear
 
 // Update flags after signal evaluation
 if rBullPMH
@@ -882,9 +930,9 @@ if not isORBwin and newSigBar
 
 // ─── Filtered Reversal Signals (reversal gate + EMA gate) ──────────
 // v3.1: EMA gate KEPT on REVs — backtest showed counter-EMA REVs = -11.8 ATR (35% win)
-sigRevBullPML = rRevBullPML and (not i_firstOnly or not rPML) and fGateBull_rev and (emaGateBull or isPre950)
-sigRevBullYL  = rRevBullYL  and (not i_firstOnly or not rYL)  and fGateBull_rev and (emaGateBull or isPre950)
-sigRevBullWL  = rRevBullWL  and (not i_firstOnly or not rWL)  and fGateBull_rev and (emaGateBull or isPre950)
+sigRevBullPML = rRevBullPML and (not i_firstOnly or not rPML) and fGateBull_rev and emaPassBull
+sigRevBullYL  = rRevBullYL  and (not i_firstOnly or not rYL)  and fGateBull_rev and emaPassBull
+sigRevBullWL  = rRevBullWL  and (not i_firstOnly or not rWL)  and fGateBull_rev and emaPassBull
 sigRevBullOL  = false  // v3.2: ORB L bull REV suppressed — 27% win, -12.5 ATR net negative
 
 sigRevBearPMH = rRevBearPMH and (not i_firstOnly or not rPMH) and (fGateBear_rev or exrevBypass) and (emaGateBear or isPre950 or exrevBypass)
@@ -893,17 +941,17 @@ sigRevBearWH  = rRevBearWH  and (not i_firstOnly or not rWH)  and (fGateBear_rev
 sigRevBearOH  = rRevBearOH  and (not i_firstOnly or not rOH)  and (fGateBear_rev or exrevBypass) and (emaGateBear or isPre950 or exrevBypass)
 
 // Bull REV at HIGH levels (v3.2)
-sigRevBullPMH = rRevBullPMH and (not i_firstOnly or not rPMH) and fGateBull_rev and (emaGateBull or isPre950)
-sigRevBullYH  = rRevBullYH  and (not i_firstOnly or not rYH)  and fGateBull_rev and (emaGateBull or isPre950)
-sigRevBullWH  = rRevBullWH  and (not i_firstOnly or not rWH)  and fGateBull_rev and (emaGateBull or isPre950)
-sigRevBullOH  = rRevBullOH  and (not i_firstOnly or not rOH)  and fGateBull_rev and (emaGateBull or isPre950)
+sigRevBullPMH = rRevBullPMH and (not i_firstOnly or not rPMH) and fGateBull_rev and emaPassBull
+sigRevBullYH  = rRevBullYH  and (not i_firstOnly or not rYH)  and fGateBull_rev and emaPassBull
+sigRevBullWH  = rRevBullWH  and (not i_firstOnly or not rWH)  and fGateBull_rev and emaPassBull
+sigRevBullOH  = rRevBullOH  and (not i_firstOnly or not rOH)  and fGateBull_rev and emaPassBull
 
 // VWAP filtered signals (reversal stack + EMA gate)
-sigRevBullVWAP = rRevBullVWAP and not xVWAPBull and fGateBull_rev and (emaGateBull or isPre950)
-sigRevBearVWAP = rRevBearVWAP and not xVWAPBear and fGateBear_rev and (emaGateBear or isPre950)
+sigRevBullVWAP = rRevBullVWAP and not xVWAPBull and fGateBull_rev and emaPassBull
+sigRevBearVWAP = rRevBearVWAP and not xVWAPBear and fGateBear_rev and emaPassBear
 
-sigRevBullPDLH = rRevBullPDLH and (not i_firstOnly or not rPDLH) and fGateBull_rev and (emaGateBull or isPre950)
-sigRevBullVWBL = rRevBullVWBL and (not i_firstOnly or not rVWBL) and fGateBull_rev and (emaGateBull or isPre950)
+sigRevBullPDLH = rRevBullPDLH and (not i_firstOnly or not rPDLH) and fGateBull_rev and emaPassBull
+sigRevBullVWBL = rRevBullVWBL and (not i_firstOnly or not rVWBL) and fGateBull_rev and emaPassBull
 // PD Mid REV: no EMA gate — magnet level, reversal is the correct signal type
 sigRevBullPDMid = rRevBullPDMid and (not i_firstOnly or not xPDMid) and fGateBull_rev
 sigRevBearPDMid = rRevBearPDMid and (not i_firstOnly or not xPDMid) and fGateBear_rev
@@ -956,8 +1004,8 @@ bool rQBS_bull = i_qbsSignal and isVolDrying and sigRangeATR >= 1.5
      and sigC > sigO and isRegular and newSigBar
 bool rQBS_bear = i_qbsSignal and isVolDrying and sigRangeATR >= 1.5
      and sigC < sigO and isRegular and newSigBar
-bool sigQBS_bull = rQBS_bull and not qbsBullFired and fGateBull_rev and (emaGateBull or isPre950)
-bool sigQBS_bear = rQBS_bear and not qbsBearFired and fGateBear_rev and (emaGateBear or isPre950)
+bool sigQBS_bull = rQBS_bull and not qbsBullFired and fGateBull_rev and emaPassBull
+bool sigQBS_bear = rQBS_bear and not qbsBearFired and fGateBear_rev and emaPassBear
 bool qbsFired = sigQBS_bull or sigQBS_bear
 if sigQBS_bull
     qbsBullFired := true
@@ -1173,6 +1221,46 @@ if sigRevBearPDClose
 revBullCount = (sigRevBullPML ? 1 : 0) + (sigRevBullYL ? 1 : 0) + (sigRevBullWL ? 1 : 0) + (sigRevBullOL ? 1 : 0) + (sigRevBullVWAP ? 1 : 0) + (sigRevBullPDLH ? 1 : 0) + (sigRevBullVWBL ? 1 : 0) + (sigRevBullPDMid ? 1 : 0) + (sigRevBullTodayOpen ? 1 : 0) + (sigRevBullPDClose ? 1 : 0) + (sigRevBullPMH ? 1 : 0) + (sigRevBullYH ? 1 : 0) + (sigRevBullWH ? 1 : 0) + (sigRevBullOH ? 1 : 0)
 revBearCount = (sigRevBearPMH ? 1 : 0) + (sigRevBearYH ? 1 : 0) + (sigRevBearWH ? 1 : 0) + (sigRevBearOH ? 1 : 0) + (sigRevBearVWAP ? 1 : 0) + (sigRevBearPDMid ? 1 : 0) + (sigRevBearTodayOpen ? 1 : 0) + (sigRevBearPDClose ? 1 : 0)
 
+// ─── Level Freshness: increment on any signal fire (v3.3) ──
+// A level is "tested" each time any signal (BRK or REV) fires at it.
+// 1st-2nd = fresh (full). 3rd-4th = dim. Research: z=-0.51 level_tests_today.
+if sigBullPMH or sigRevBullPMH or sigRevBearPMH
+    tcPMH += 1
+if sigBearPML or sigRevBullPML
+    tcPML += 1
+if sigBullYH or sigRevBullYH or sigRevBearYH
+    tcYH += 1
+if sigBearYL or sigRevBullYL
+    tcYL += 1
+if sigBullWH or sigRevBullWH or sigRevBearWH
+    tcWH += 1
+if sigBearWL or sigRevBullWL
+    tcWL += 1
+if sigBullOH or sigRevBullOH or sigRevBearOH
+    tcOH += 1
+if sigBearOL or sigRevBullOL
+    tcOL += 1
+if sigRevBullPDMid or sigRevBearPDMid
+    tcPDMid += 1
+if sigBearPDLH or sigRevBullPDLH
+    tcPDLH += 1
+if sigRevBullTodayOpen or sigRevBearTodayOpen
+    tcTodayOpen += 1
+if sigRevBullPDClose or sigRevBearPDClose
+    tcPDClose += 1
+if sigBullWO or sigBearWO
+    tcWO += 1
+if sigBullMO or sigBearMO
+    tcMO += 1
+
+// Level freshness dim: any firing level tested 3+ times today → dim
+bool _fbBull = (sigBullPMH and tcPMH >= 3) or (sigBullYH and tcYH >= 3) or (sigBullWH and tcWH >= 3) or (sigBullOH and tcOH >= 3) or (sigBullWO and tcWO >= 3) or (sigBullMO and tcMO >= 3)
+bool _frBull = (sigRevBullPML and tcPML >= 3) or (sigRevBullYL and tcYL >= 3) or (sigRevBullWL and tcWL >= 3) or (sigRevBullPDLH and tcPDLH >= 3) or (sigRevBullPDMid and tcPDMid >= 3) or (sigRevBullTodayOpen and tcTodayOpen >= 3) or (sigRevBullPDClose and tcPDClose >= 3) or (sigRevBullPMH and tcPMH >= 3) or (sigRevBullYH and tcYH >= 3) or (sigRevBullWH and tcWH >= 3) or (sigRevBullOH and tcOH >= 3)
+bool isFreshDimBull = _fbBull or _frBull
+bool _fbBear = (sigBearPML and tcPML >= 3) or (sigBearYL and tcYL >= 3) or (sigBearWL and tcWL >= 3) or (sigBearOL and tcOL >= 3) or (sigBearPDLH and tcPDLH >= 3) or (sigBearWO and tcWO >= 3) or (sigBearMO and tcMO >= 3)
+bool _frBear = (sigRevBearPMH and tcPMH >= 3) or (sigRevBearYH and tcYH >= 3) or (sigRevBearWH and tcWH >= 3) or (sigRevBearOH and tcOH >= 3) or (sigRevBearPDMid and tcPDMid >= 3) or (sigRevBearTodayOpen and tcTodayOpen >= 3) or (sigRevBearPDClose and tcPDClose >= 3)
+bool isFreshDimBear = _fbBear or _frBear
+
 var int lastBullSigBar = -999
 var int lastBearSigBar = -999
 var int lastBullLblBar = -999
@@ -1330,7 +1418,7 @@ if combinedBullText != ""
     combinedBullText += bullQualLine != "" ? "\n" + glyphPfx + bullQualLine + bwSuffix : (sigGlyphs != "" or bwSuffix != "" ? "\n" + sigGlyphs + bwSuffix : "")
     // Evidence stack dim mode: use breakout stack if breakout present, reversal stack if reversal-only
     bool isRegimeDimBull = i_emaGate and regimeBull == 1  // R1 bull = dim (data: 31.2% win, -0.176 P&L)
-    bool isDimBull = (i_fMode == "Dim" and not (bullText != "" ? evStackBull : evStackBull_rev)) or isVolModerate or emaGateBull_dim or isRegimeDimBull
+    bool isDimBull = ((i_fMode == "Dim" and not (bullText != "" ? evStackBull : evStackBull_rev)) or isVolModerate or emaGateBull_dim or isRegimeDimBull or isVolExhaustBull or isExhausted or isFreshDimBull) and not isQuietCoil and not isMiddayFlat and not isBroadCoil
     if isDimBull
         combinedBullText += "\n?"
     // Determine color: breakout color if breakout present, reversal color if reversal-only
@@ -1502,7 +1590,8 @@ if combinedBearText != ""
     string glyphPfx = sigGlyphs != "" ? sigGlyphs + " " : ""
     combinedBearText += bearQualLine != "" ? "\n" + glyphPfx + bearQualLine + bwSuffix : (sigGlyphs != "" or bwSuffix != "" ? "\n" + sigGlyphs + bwSuffix : "")
     // Evidence stack dim mode: use breakout stack if breakout present, reversal stack if reversal-only
-    bool isDimBear = (i_fMode == "Dim" and not (bearText != "" ? evStackBear : evStackBear_rev)) or isVolModerate or emaGateBear_dim
+    bool isRegimeDimBear = i_emaGate and regimeBear == 1
+    bool isDimBear = ((i_fMode == "Dim" and not (bearText != "" ? evStackBear : evStackBear_rev)) or isVolModerate or emaGateBear_dim or isRegimeDimBear or isVolExhaustBear or isExhausted or isFreshDimBear) and not isQuietCoil and not isMiddayFlat and not isBroadCoil
     if isDimBear
         combinedBearText += "\n?"
     // Determine color: breakout color if breakout present, reversal color if reversal-only
