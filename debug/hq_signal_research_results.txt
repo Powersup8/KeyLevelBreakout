@@ -1,0 +1,350 @@
+============================================================================
+KLB HQ Signal Research — Deep Analysis of Winning Signals
+HQ definition: WIN + mfe_atr >= 0.25 ATR  |  v3.3c logs  |  60m window
+============================================================================
+
+Loading v3.3c pine logs...
+  Found 17 v3.3c log files
+    1a06d: NFLX — 610 signals
+    40640: TSLA — 607 signals
+    4a6b0: AMZN — 615 signals
+    60338: GLD — 598 signals
+    66ecd: SPY — 663 signals
+    6900d: NVDA — 564 signals
+    837ad: QQQ — 571 signals
+    83daf: QQQ — 571 signals
+    96b1d: TSM — 642 signals
+    a3963: XLE — 781 signals
+    a66ad: NVDA — 622 signals
+    ae3ef: AAPL — 575 signals
+    bacec: META — 630 signals
+    bd5dd: MSFT — 582 signals
+    c9b83: AMD — 671 signals
+    e4a23: GOOGL — 623 signals
+    e633d: SLV — 547 signals
+  Total raw: 10472
+  After suppression: 10472
+
+Loading IB 1m data...
+  AAPL: 164190 bars
+  AMD: 100260 bars
+  AMZN: 145860 bars
+  GLD: 145500 bars
+  GOOGL: 145858 bars
+  META: 106470 bars
+  MSFT: 109198 bars
+  NFLX: 66538 bars
+  NVDA: 106468 bars
+  QQQ: 106470 bars
+  SLV: 106109 bars
+  SPY: 106290 bars
+  TSLA: 106469 bars
+  TSM: 54240 bars
+  XLE: 106109 bars
+
+Measuring MFE/MAE and building P&L paths...
+  Total signals with data: 8556
+  HQ signals (WIN + mfe >= 0.25): 2860
+
+============================================================================
+SECTION 1 — HQ SIGNAL UNIVERSE
+----------------------------------------------------------------------------
+  Total signals with MFE/MAE data: 8556
+  Winning signals (mfe >= 0.10):   4209 (49.2%)
+  HQ signals (WIN + mfe >= 0.25):  2860 (33.4%)
+
+  By signal type:
+  Type           N  % of HQ   Avg MFE   Avg MAE   Avg P&L
+  -------------------------------------------------------
+  BRK          806    28.2%     1.281     0.087     1.194
+  FADE         276     9.7%     0.948     0.057     0.891
+  QBS           36     1.3%     0.986     0.112     0.874
+  REV         1742    60.9%     1.071     0.086     0.985
+
+  By symbol (sorted by HQ count):
+  Symbol      N  % of HQ   Avg MFE Best type 
+  -------------------------------------------
+  NVDA      479    16.7%     4.189  FADE
+  QQQ       364    12.7%     0.523  BRK
+  SPY       204     7.1%     0.504  BRK
+  XLE       195     6.8%     0.504  BRK
+  GOOGL     169     5.9%     0.503  FADE
+  AMD       166     5.8%     0.466  BRK
+  TSM       161     5.6%     0.480  BRK
+  TSLA      156     5.5%     0.434  QBS
+  AMZN      152     5.3%     0.472  QBS
+  META      143     5.0%     0.454  BRK
+  NFLX      143     5.0%     0.494  BRK
+  MSFT      141     4.9%     0.522  BRK
+  GLD       134     4.7%     0.593  BRK
+  AAPL      129     4.5%     0.445  QBS
+  SLV       124     4.3%     0.583  BRK
+
+  By time of day:
+  morning      N=2290  avg MFE=1.072  avg peak@37m
+  midday       N= 422  avg MFE=1.222  avg peak@39m
+  afternoon    N= 148  avg MFE=1.509  avg peak@33m
+
+  Top 20 individual HQ signals by MFE (the monsters):
+  #   Symbol  Date/Time            Type     Dir       MFE     MAE   Peak@ Levels
+  ------------------------------------------------------------------------------
+  1   NVDA    2026-01-29 10:10     FADE     bear  46.064   0.000     57m  at 435.67
+  2   NVDA    2026-01-26 09:50     FADE     bear  38.498   0.000     21m  at 391.97
+  3   NVDA    2026-03-05 09:40     FADE     bear  33.296   0.000      5m  at 399.95
+  4   NVDA    2026-01-28 09:50     REV      bear  12.757   0.000     57m  PM H
+  5   NVDA    2026-01-29 10:15     BRK      bear  12.620   0.000     52m  ORB L + PD LH L
+  6   NVDA    2026-01-28 10:10     REV      bear  12.559   0.000     37m  ORB H
+  7   NVDA    2026-01-29 15:30     BRK      bear  12.518   0.000     16m  PD LH L
+  8   NVDA    2026-01-28 09:30     REV      bear  12.499   0.000      6m  VWAP + Today O
+  9   NVDA    2026-01-30 11:10     REV      bear  12.473   0.000     58m  Yest H
+  10  NVDA    2026-01-30 10:15     BRK      bear  12.412   0.000     15m  PM L
+  11  NVDA    2026-01-30 10:15     REV      bear  12.412   0.000     15m  Yest H
+  12  NVDA    2026-01-30 11:45     REV      bear  12.404   0.000     23m  Yest H
+  13  NVDA    2026-01-30 10:25     REV      bear  12.400   0.000      5m  Yest H
+  14  NVDA    2026-01-30 11:20     REV      bear  12.287   0.000     48m  Yest H
+  15  NVDA    2026-01-30 10:35     REV      bear  12.248   0.000     49m  PD Cls
+  16  NVDA    2026-01-30 12:35     BRK      bear  12.087   0.000     60m  PD LH L
+  17  NVDA    2026-01-27 09:35     REV      bear  12.065   0.000      8m  PM H
+  18  NVDA    2026-01-23 15:20     REV      bear  11.938   0.000     11m  ORB H
+  19  NVDA    2026-01-23 12:40     REV      bear  11.759   0.000     12m  PM H + x~ Yest H
+  20  NVDA    2026-01-23 12:45     REV      bear  11.686   0.000      7m  PM H
+
+============================================================================
+SECTION 2 — ENTRY QUALITY FACTORS (on HQ signals)
+----------------------------------------------------------------------------
+  Effect = high_group_avg_mfe - low_group_avg_mfe  (* p<0.05 proxy)
+
+  Factor                               Low N  Low MFE  High N  High MFE    Delta   Sig
+  ------------------------------------------------------------------------------------
+  is_vol_drying (yes vs no)             2765    1.107      95     1.415   +0.308   ***   🔇
+  vol_ratio (Q4 vs Q1)                   659    1.240     641     0.969   -0.271   ***   Q1<=1.4x vs Q4>7.6x
+  ema_aligned vs misaligned              549    0.945    2035     1.187   +0.242   ***   
+  range_atr (large vs small)            1298    1.241    1286     1.028   -0.213   ***   split at median=2.00
+  is_big_move ⚡ (yes vs no)             1543    1.193    1317     1.028   -0.165   ***   ⚡
+  ramp/vol_accel (high vs low)          1297    1.175    1287     1.095   -0.079    **   split at median=1.60x
+  close_pos (far vs close)              1364    1.167    1220     1.100   -0.067    **   split at median pos=86%
+  body_pct (high vs low)                1300    1.158    1284     1.112   -0.045     *   split at median=66%
+
+  Detailed breakdowns:
+
+  vol_ratio quartile breakdown:
+    Q1_quiet      N= 659  avg vol=0.97x  avg MFE=1.240  avg peak@39m
+    Q2            N= 660  avg vol=2.17x  avg MFE=1.228  avg peak@37m
+    Q3            N= 624  avg vol=4.90x  avg MFE=1.097  avg peak@38m
+    Q4_loud       N= 641  avg vol=12.69x  avg MFE=0.969  avg peak@36m
+
+============================================================================
+SECTION 3 — CONTEXT FACTORS (move-fingerprints match)
+----------------------------------------------------------------------------
+  Catalog: 72232 moves
+  Fingerprints: 59677 rows, 60 cols
+  Catalog+FP merged: 72232 rows, 59677 with daily_atr_consumed
+  Matching 2860 HQ signals to catalog within ±5m...
+  Matched: 1901 / 2860 HQ signals (66.5%)
+
+  Factor                                      Low N  Low MFE  High N  High MFE    Delta   Sig
+  -------------------------------------------------------------------------------------------
+  pre_12bar_range quiet vs loud                 515    0.853     515     1.128   +0.275   ***
+  level_tests_today 1st vs 2nd+                  72    0.717    1812     0.978   +0.261   ***
+  spy_range_consumed low vs high                941    1.092     943     0.845   -0.247   ***
+  pre_vol_dry_count high vs low                 803    1.043     227     0.804   -0.239   ***
+  daily_atr_consumed low(<50%) vs high          972    0.859     912     1.085   +0.226   ***
+  breadth_bear_moves low vs high                876    1.053    1008     0.895   -0.158   ***
+  concurrent_symbols high vs low               1029    1.025     872     0.906   -0.119   ***
+  leader_score high vs low                      957    0.975     927     0.961   -0.014     .
+
+  Level freshness detail (level_tests_today on HQ signals):
+    tests=0  N=1603  avg MFE=1.007
+    tests=1  N= 209  avg MFE=0.756
+    tests=2  N=  41  avg MFE=0.663
+    tests=3  N=  18  avg MFE=0.736
+    tests=3+  N=  31  avg MFE=0.790
+
+  daily_atr_consumed buckets on HQ signals:
+    0%-30%  N= 336  avg MFE=1.080  avg peak@38m
+    30%-50%  N= 576  avg MFE=1.088  avg peak@35m
+    50%-70%  N= 427  avg MFE=0.832  avg peak@35m
+    70%-100%  N= 298  avg MFE=0.847  avg peak@34m
+
+  Cross-symbol breadth on HQ signals:
+    concurrent >= 2:  N=1767  avg MFE=0.995  vs <2: N=134  avg MFE=0.650  delta=+0.345
+    concurrent >= 3:  N=1686  avg MFE=0.996  vs <3: N=215  avg MFE=0.773  delta=+0.222
+    concurrent >= 4:  N=1552  avg MFE=0.962  vs <4: N=349  avg MFE=1.007  delta=-0.044
+
+============================================================================
+SECTION 4 — HOLD OPTIMISATION FOR HQ SIGNALS
+----------------------------------------------------------------------------
+
+  P&L path at checkpoints (avg over HQ signals):
+  All HQ signals                  N=2860  @10m=+0.777  @20m=+0.836  @30m=+0.879  @45m=+0.912  @60m=+0.932  peak=1.090@37m
+
+  By signal type:
+  BRK (N=806)                     N= 806  @10m=+0.921  @20m=+0.977  @30m=+1.022  @45m=+1.066  @60m=+1.087  peak=1.251@38m
+  FADE (N=276)                    N= 276  @10m=+0.674  @20m=+0.719  @30m=+0.737  @45m=+0.751  @60m=+0.758  peak=0.925@35m
+  QBS (N=36)                      N=  36  @10m=+0.653  @20m=+0.705  @30m=+0.750  @45m=+0.806  @60m=+0.813  peak=0.959@38m
+  REV (N=1742)                    N=1742  @10m=+0.729  @20m=+0.793  @30m=+0.838  @45m=+0.868  @60m=+0.890  peak=1.044@38m
+
+  By time of day:
+  morning                         N=2290  @10m=+0.726  @20m=+0.785  @30m=+0.828  @45m=+0.861  @60m=+0.885  peak=1.046@37m
+  midday                          N= 422  @10m=+0.887  @20m=+0.950  @30m=+0.995  @45m=+1.031  @60m=+1.035  peak=1.196@39m
+  afternoon                       N= 148  @10m=+1.247  @20m=+1.302  @30m=+1.339  @45m=+1.358  @60m=+1.361  peak=1.475@33m
+
+  All HQ signals (N=2860):
+     0-10m: 282 (  9.9%) cumul=  9.9% ███
+    10-20m: 369 ( 12.9%) cumul= 22.8% ████
+    20-30m: 387 ( 13.5%) cumul= 36.3% ████
+    30-45m: 627 ( 21.9%) cumul= 58.2% ███████
+    45-60m: 1195 ( 41.8%) cumul=100.0% █████████████
+    Peaked by 20m: 22.8%
+    Peaked by 30m: 36.3%
+
+  By signal type:
+  BRK (N=806):
+     0-10m:  86 ( 10.7%) cumul= 10.7% ███
+    10-20m:  98 ( 12.2%) cumul= 22.8% ████
+    20-30m: 107 ( 13.3%) cumul= 36.1% ████
+    30-45m: 163 ( 20.2%) cumul= 56.3% ██████
+    45-60m: 352 ( 43.7%) cumul=100.0% ██████████████
+    Peaked by 20m: 22.8%
+    Peaked by 30m: 36.1%
+  FADE (N=276):
+     0-10m:  43 ( 15.6%) cumul= 15.6% █████
+    10-20m:  31 ( 11.2%) cumul= 26.8% ███
+    20-30m:  42 ( 15.2%) cumul= 42.0% █████
+    30-45m:  60 ( 21.7%) cumul= 63.8% ███████
+    45-60m: 100 ( 36.2%) cumul=100.0% ████████████
+    Peaked by 20m: 26.8%
+    Peaked by 30m: 42.0%
+  QBS (N=36):
+     0-10m:   5 ( 13.9%) cumul= 13.9% ████
+    10-20m:   4 ( 11.1%) cumul= 25.0% ███
+    20-30m:   3 (  8.3%) cumul= 33.3% ██
+    30-45m:   9 ( 25.0%) cumul= 58.3% ████████
+    45-60m:  15 ( 41.7%) cumul=100.0% █████████████
+    Peaked by 20m: 25.0%
+    Peaked by 30m: 33.3%
+  REV (N=1742):
+     0-10m: 148 (  8.5%) cumul=  8.5% ██
+    10-20m: 236 ( 13.5%) cumul= 22.0% ████
+    20-30m: 235 ( 13.5%) cumul= 35.5% ████
+    30-45m: 395 ( 22.7%) cumul= 58.2% ███████
+    45-60m: 728 ( 41.8%) cumul=100.0% █████████████
+    Peaked by 20m: 22.0%
+    Peaked by 30m: 35.5%
+
+  Early-peak (0-20m) HQ signals: N=651
+  Late-peak  (30m+)  HQ signals: N=1822
+
+  What distinguishes early vs late peak HQ signals?
+    vol_ratio        early=5.287  late=4.960  delta=-0.327
+    range_atr        early=2.599  late=2.343  delta=-0.256
+    body_pct         early=63.461  late=63.016  delta=-0.445
+    ramp             early=28.703  late=24.957  delta=-3.746
+    fp_pre_12bar_range_atr          early=0.604  late=0.611  delta=+0.006
+    fp_daily_atr_consumed           early=0.646  late=0.606  delta=-0.040
+    fp_level_tests_today            early=0.213  late=0.245  delta=+0.032
+
+  Net ATR under different exit rules (HQ signals only):
+  Exit rule                               N   Net ATR   Avg P&L   vs 60m
+  ----------------------------------------------------------------------
+  Hold 60m (baseline)                  2860 +2664.49   +0.9316    +0.00
+  Exit at 10m                          2860 +2220.96   +0.7766  -443.53
+  Exit at 20m                          2860 +2392.12   +0.8364  -272.37
+  Exit at 30m                          2860 +2513.99   +0.8790  -150.50
+  Exit at 45m                          2860 +2607.76   +0.9118   -56.73
+  Partial: 50%@20m + 50%@60m           2860 +2528.31   +0.8840  -136.18
+
+============================================================================
+SECTION 5 — SYMBOL-SPECIFIC PROFILES (top 5 by HQ count)
+----------------------------------------------------------------------------
+
+  NVDA:  N=479  avg MFE=4.189  avg peak@34m
+    Best sig type: FADE  (N=28  avg MFE=5.398)
+    BRK       N=166  avg MFE=4.145  avg peak@33m
+    FADE      N= 28  avg MFE=5.398  avg peak@27m
+    QBS       N=  4  avg MFE=5.354  avg peak@46m
+    REV       N=281  avg MFE=4.078  avg peak@35m
+    Best time: midday  (N=83  avg MFE=4.245)
+    NVDA bull: N=60  avg MFE=0.395  avg peak@35m
+      BRK       N=  2  avg MFE=0.492
+      FADE      N= 15  avg MFE=0.365
+      REV       N= 42  avg MFE=0.403
+    NVDA bear: N=419  avg MFE=4.732  avg peak@34m
+      BRK       N=164  avg MFE=4.190
+      FADE      N= 13  avg MFE=11.207
+      QBS       N=  3  avg MFE=7.040
+      REV       N=239  avg MFE=4.724
+
+  QQQ:  N=364  avg MFE=0.523  avg peak@40m
+    Best sig type: BRK  (N=110  avg MFE=0.578)
+    BRK       N=110  avg MFE=0.578  avg peak@42m
+    FADE      N= 28  avg MFE=0.453  avg peak@42m
+    QBS       N=  6  avg MFE=0.516  avg peak@29m
+    REV       N=220  avg MFE=0.504  avg peak@39m
+    Best time: midday  (N=82  avg MFE=0.547)
+
+  SPY:  N=204  avg MFE=0.504  avg peak@43m
+    Best sig type: BRK  (N=59  avg MFE=0.531)
+    BRK       N= 59  avg MFE=0.531  avg peak@43m
+    FADE      N= 12  avg MFE=0.380  avg peak@46m
+    QBS       N=  2  avg MFE=0.465  avg peak@47m
+    REV       N=131  avg MFE=0.504  avg peak@43m
+    Best time: morning  (N=144  avg MFE=0.530)
+
+  XLE:  N=195  avg MFE=0.504  avg peak@35m
+    Best sig type: BRK  (N=50  avg MFE=0.527)
+    BRK       N= 50  avg MFE=0.527  avg peak@38m
+    FADE      N= 21  avg MFE=0.474  avg peak@28m
+    QBS       N=  5  avg MFE=0.369  avg peak@47m
+    REV       N=119  avg MFE=0.506  avg peak@34m
+    Best time: morning  (N=163  avg MFE=0.533)
+
+  GOOGL:  N=169  avg MFE=0.503  avg peak@38m
+    Best sig type: FADE  (N=15  avg MFE=0.553)
+    BRK       N= 41  avg MFE=0.507  avg peak@37m
+    FADE      N= 15  avg MFE=0.553  avg peak@32m
+    QBS       N=  3  avg MFE=0.412  avg peak@39m
+    REV       N=110  avg MFE=0.497  avg peak@39m
+    Best time: morning  (N=145  avg MFE=0.530)
+
+============================================================================
+SECTION 6 — IMPROVEMENT MENU (A-H)
+----------------------------------------------------------------------------
+
+  Improvement                                   N pass  % pass   ΔAvgMFE   Net ATR   Complexity
+  ---------------------------------------------------------------------------------------------
+  A. ATR consumed gate (<50%)                      912   48.4%   +0.1168   -834.76           Med
+  B. Level freshness gate (1st test)              1812   96.2%   +0.0100    -51.66           Low
+  C. Quiet pre-move gate (pre_12bar < med)         515   50.0%   +0.1376   -439.15           Med
+  D. Partial profit (50%@20m + 50%@60m)           2860  100.0%   -0.0476   -136.18           Low
+  E. NVDA bear REV 2x size                         239    8.4%   +0.3928  +1123.36           Low
+  F. BAIL positive guard (already known: +36 ATR)    2341   81.9%   +0.0000    +36.00           Low
+  G. Cross-symbol confirmation (4+ concurrent)    1552   81.6%   -0.0082   -351.40          High
+  H. TOD sizing (midday 1.5x vs morning 1x)        422   14.8%   +0.0000   +218.32           Low
+
+============================================================================
+SECTION 7 — VERDICT (top 3 improvements by ATR gain × implementability)
+----------------------------------------------------------------------------
+
+  Ranked by (|Net ATR| × implementability_score):
+
+  #1: E. NVDA bear REV 2x size
+       Net ATR estimate: +1123.4  |  ΔAvg MFE: +0.3928  |  Complexity: Low  |  N signals: 239
+
+  #2: A. ATR consumed gate (<50%)
+       Net ATR estimate: -834.8  |  ΔAvg MFE: +0.1168  |  Complexity: Med  |  N signals: 912
+
+  #3: C. Quiet pre-move gate (pre_12bar < med)
+       Net ATR estimate: -439.1  |  ΔAvg MFE: +0.1376  |  Complexity: Med  |  N signals: 515
+
+
+  Key conclusions:
+
+  Entry quality: Top factor = "is_vol_drying (yes vs no)" — delta MFE = +0.308 ATR ***
+  Context: Top factor = "pre_12bar_range quiet vs loud" — delta MFE = +0.275 ATR ***
+  Hold: Best exit rule = "Hold 60m (baseline)" — net ATR = +2664.49
+  TOD: Midday avg MFE = 1.222 ATR vs Morning = 1.072 ATR (delta = +0.150)
+
+============================================================================
+Analysis complete. Based on 2860 HQ signals.
+============================================================================

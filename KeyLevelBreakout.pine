@@ -1,8 +1,8 @@
 // © Key Level Breakout Alert Indicator
-// Detects bullish/bearish 5m candle closes through key levels (v3.3c)
+// Detects bullish/bearish 5m candle closes through key levels (v3.4)
 // Designed for US stocks (NYSE/NASDAQ) on 5-min charts
 //@version=6
-indicator("Key Level Breakout v3.3c", overlay=true, max_labels_count=500, max_lines_count=200)
+indicator("Key Level Breakout v3.4", overlay=true, max_labels_count=500, max_lines_count=200)
 
 // ─── Inputs ────────────────────────────────────────────────
 i_showPM    = input.bool(true,  "Premarket High/Low",         group="Level Toggles")
@@ -140,23 +140,28 @@ if isORBwin
         orbHigh := math.max(orbHigh, high)
         orbLow  := math.min(orbLow, low)
 
-// Prior Day Last-Hour Low + Mid-Range (v3.0)
-var float pdLastHrLow = na
+// Prior Day Last-Hour Low/High + Mid-Range (v3.0; High added v3.4)
+var float pdLastHrLow  = na
+var float pdLastHrHigh = na   // v3.4: PD Last-Hr High for bull BRK
 var float pdMid = na
-var float _lastHrLow = na
+var float _lastHrLow  = na
+var float _lastHrHigh = na    // v3.4
 var bool _inLastHr = false
 
 // Track last hour of each day (15:00-16:00 ET)
 _inLastHr := isRegular and hour(time, TZ) == 15
 if _inLastHr
     if not _inLastHr[1]
-        _lastHrLow := low
+        _lastHrLow  := low
+        _lastHrHigh := high
     else
-        _lastHrLow := math.min(_lastHrLow, low)
+        _lastHrLow  := math.min(_lastHrLow, low)
+        _lastHrHigh := math.max(_lastHrHigh, high)
 
-// At session open, freeze yesterday's last-hour low and compute PD Mid
+// At session open, freeze yesterday's last-hour low/high and compute PD Mid
 if newRegular
-    pdLastHrLow := _lastHrLow
+    pdLastHrLow  := _lastHrLow
+    pdLastHrHigh := _lastHrHigh
     pdMid := not na(yestHigh) and not na(yestLow) ? (yestHigh + yestLow) / 2.0 : na
 
 // ─── Intraday Range Tracking (v3.3) ─────────────────────
@@ -170,6 +175,24 @@ else if isRegular
     dayRangeHi := math.max(nz(dayRangeHi), high)
     dayRangeLo := math.min(nz(dayRangeLo), low)
 float atrConsumed = not na(dayRangeHi) and not na(dailyATR) and dailyATR > 0 ? (dayRangeHi - dayRangeLo) / dailyATR : 0.0
+
+// ─── Special Day Detection (v3.4) ────────────────────────
+// Detects high-volatility days for manual sizing decisions.
+// Uses first regular bar: gap, range, volume. Precision ~5-7%, visual indicator only.
+float gapPct = not na(close[1]) and close[1] > 0 ? math.abs(open - close[1]) / close[1] : 0.0
+float fbRangeAtr = not na(dailyATR) and dailyATR > 0 ? (high - low) / dailyATR : 0.0
+float fbVolRatio  = volume > 0 and ta.sma(volume, 20)[1] > 0 ? volume / ta.sma(volume, 20)[1] : 1.0
+var bool isSpecialDay = false
+if newRegular
+    int score = (gapPct > 0.02 ? 1 : 0) + (fbRangeAtr > 0.5 ? 1 : 0) + (fbVolRatio > 2.0 ? 1 : 0)
+    isSpecialDay := score >= 2
+
+bgcolor(isSpecialDay ? color.new(color.yellow, 92) : na, title="Special Day")
+
+if newRegular and isSpecialDay and barstate.isconfirmed
+    label.new(bar_index, high, "★ SPECIAL DAY", yloc=yloc.abovebar,
+              style=label.style_label_down, color=color.new(color.orange, 60),
+              textcolor=color.white, size=size.small)
 
 // ─── ORB Signal Guard ────────────────────────────────────
 // Skip ORB signals on the first signal bar after the ORB window:
@@ -190,7 +213,8 @@ orbHBody  = i_useZones ? orbHigh - zoneWidth : orbHigh
 orbLBody  = i_useZones ? orbLow  + zoneWidth : orbLow
 pdMidBody   = i_useZones ? (not na(pdMid) ? pdMid - zoneWidth : na) : pdMid
 pdMidBodyHi = i_useZones ? (not na(pdMid) ? pdMid + zoneWidth : na) : pdMid
-pdLHBody    = i_useZones ? (not na(pdLastHrLow) ? pdLastHrLow + zoneWidth : na) : pdLastHrLow
+pdLHBody    = i_useZones ? (not na(pdLastHrLow)  ? pdLastHrLow  + zoneWidth : na) : pdLastHrLow
+pdLHHBody   = i_useZones ? (not na(pdLastHrHigh) ? pdLastHrHigh - zoneWidth : na) : pdLastHrHigh  // v3.4: bull BRK zone body edge
 
 // ─── Breakout Flags (reset each regular session) ────────
 var bool xPMH = false
@@ -823,6 +847,7 @@ rRevBullPDMid = i_showPDMid and not na(pdMid) and isRegular and newSigBar
 rRevBearPDMid = i_showPDMid and not na(pdMid) and isRegular and newSigBar
      and (not i_limitRevWin or isSetupWindow)
      and sigC < sigO and sigH >= pdMid and sigC < pdMid
+rBullPDLH  = i_showPDMid and bullBreak(pdLastHrHigh)   // v3.4: bull BRK above PD Last-Hr High
 rBearPDLH  = i_showPDMid and bearBreak(pdLastHrLow)
 rBearVWBL  = i_showVWBand and bearBreak(vwapLowerBand)
 
@@ -856,6 +881,7 @@ sigBullWH  = rBullWH  and (not i_firstOnly or not xWH)  and fGateBull and emaPas
 sigBearWL  = rBearWL  and (not i_firstOnly or not xWL)  and fGateBear and emaPassBear
 sigBullOH  = rBullOH  and (not i_firstOnly or not xOH)  and fGateBull and emaPassBull
 sigBearOL  = rBearOL  and (not i_firstOnly or not xOL)  and fGateBear and emaPassBear
+sigBullPDLH  = rBullPDLH  and (not i_firstOnly or not xPDLH)  and fGateBull and emaPassBull  // v3.4
 sigBearPDLH  = rBearPDLH  and (not i_firstOnly or not xPDLH)  and fGateBear and emaPassBear
 sigBearVWBL  = rBearVWBL  and (not i_firstOnly or not xVWBL)  and fGateBear and emaPassBear
 sigBullWO = rBullWO and (not i_firstOnly or not xWO) and fGateBull and emaPassBull
@@ -882,7 +908,7 @@ if rBearOL
     xOL := true
 if rRevBullPDMid or rRevBearPDMid
     xPDMid := true
-if rBearPDLH
+if rBullPDLH or rBearPDLH
     xPDLH := true
 if rBearVWBL
     xVWBL := true
@@ -931,7 +957,9 @@ if not isORBwin and newSigBar
 sigRevBullPML = rRevBullPML and (not i_firstOnly or not rPML) and fGateBull_rev and emaPassBull
 sigRevBullYL  = rRevBullYL  and (not i_firstOnly or not rYL)  and fGateBull_rev and emaPassBull
 sigRevBullWL  = rRevBullWL  and (not i_firstOnly or not rWL)  and fGateBull_rev and emaPassBull
-sigRevBullOL  = false  // v3.2: ORB L bull REV suppressed — 27% win, -12.5 ATR net negative
+// v3.4: ORB Low Reclaim re-enabled for midday only — 27.2% great, 3.4% noise, +0.296 ATR/signal
+// NO EMA gate — bear EMA is 74% of occurrences and BETTER (2.1% noise vs 8.3% EMA-aligned)
+sigRevBullOL = rRevBullOL and isMidday and (not i_firstOnly or not rOL) and fGateBull_rev
 
 sigRevBearPMH = rRevBearPMH and (not i_firstOnly or not rPMH) and (fGateBear_rev or exrevBypass) and (emaGateBear or isPre950 or exrevBypass)
 sigRevBearYH  = rRevBearYH  and (not i_firstOnly or not rYH)  and (fGateBear_rev or exrevBypass) and (emaGateBear or isPre950 or exrevBypass)
@@ -958,6 +986,20 @@ sigRevBullTodayOpen = rRevBullTodayOpen and (not i_firstOnly or not rTodayOpen) 
 sigRevBearTodayOpen = rRevBearTodayOpen and (not i_firstOnly or not rTodayOpen) and fGateBear_rev
 sigRevBullPDClose   = rRevBullPDClose   and (not i_firstOnly or not rPDClose)   and fGateBull_rev
 sigRevBearPDClose   = rRevBearPDClose   and (not i_firstOnly or not rPDClose)   and fGateBear_rev
+
+// v3.3d: NVDA bull REV suppressed entirely — momentum stock, failed reversals run -12+ ATR
+// Data: Win%=25.3%, Net=-707 ATR, Asymmetry=12.6x (vs 4.4x for HIGHs suppressed in v3.3c)
+// Structural: NVDA's one-directional momentum means bear REV works (+1,105 ATR), bull REV fails
+bool isNotNVDA = syminfo.ticker != "NVDA"
+sigRevBullPML       = sigRevBullPML       and isNotNVDA
+sigRevBullYL        = sigRevBullYL        and isNotNVDA
+sigRevBullWL        = sigRevBullWL        and isNotNVDA
+sigRevBullVWAP      = sigRevBullVWAP      and isNotNVDA
+sigRevBullPDLH      = sigRevBullPDLH      and isNotNVDA
+sigRevBullVWBL      = sigRevBullVWBL      and isNotNVDA
+sigRevBullPDMid     = sigRevBullPDMid     and isNotNVDA
+sigRevBullTodayOpen = sigRevBullTodayOpen and isNotNVDA
+sigRevBullPDClose   = sigRevBullPDClose   and isNotNVDA
 
 // Update reversal flags
 if rRevBullPML
@@ -1004,7 +1046,7 @@ if sigQBS_bear
     qbsBearFired := true
 
 // ─── Combined Signals ────────────────────────────────────
-anyBull     = sigBullWO or sigBullMO  // v3.2: HIGH levels moved to REV
+anyBull     = sigBullPDLH or sigBullWO or sigBullMO  // v3.2: HIGH levels moved to REV; v3.4: +PDLH
 anyBear     = sigBearPML or sigBearYL or sigBearWL or sigBearOL or sigBearPDLH or sigBearVWBL or sigBearWO or sigBearMO
 anyBreakout = anyBull or anyBear
 
@@ -1055,7 +1097,7 @@ bool _fadeBullSig = anyBull or anyRevBull
 bool _fadeBearSig = anyBear or anyRevBear
 
 // Determine the primary level for the watch (first matching level price)
-float _fadeBullLvl = sigBullPMH ? pmHigh : sigBullYH ? yestHigh : sigBullWH ? weekHigh : sigBullOH ? orbHigh : sigBullWO ? weekOpen : sigBullMO ? monthOpen : sigRevBullPML ? pmLow : sigRevBullYL ? yestLow : sigRevBullWL ? weekLow : sigRevBullOL ? orbLow : sigRevBullPDLH ? pdLastHrLow : sigRevBullVWBL ? vwapLowerBand : sigRevBullPDMid ? pdMid : sigRevBullTodayOpen ? todayOpen : sigRevBullPDClose ? yestClose : na
+float _fadeBullLvl = sigBullPMH ? pmHigh : sigBullYH ? yestHigh : sigBullWH ? weekHigh : sigBullOH ? orbHigh : sigBullPDLH ? pdLastHrHigh : sigBullWO ? weekOpen : sigBullMO ? monthOpen : sigRevBullPML ? pmLow : sigRevBullYL ? yestLow : sigRevBullWL ? weekLow : sigRevBullOL ? orbLow : sigRevBullPDLH ? pdLastHrLow : sigRevBullVWBL ? vwapLowerBand : sigRevBullPDMid ? pdMid : sigRevBullTodayOpen ? todayOpen : sigRevBullPDClose ? yestClose : na
 float _fadeBearLvl = sigBearPML ? pmLow : sigBearYL ? yestLow : sigBearWL ? weekLow : sigBearOL ? orbLow : sigBearPDLH ? pdLastHrLow : sigBearVWBL ? vwapLowerBand : sigBearWO ? weekOpen : sigBearMO ? monthOpen : sigRevBearPMH ? pmHigh : sigRevBearYH ? yestHigh : sigRevBearWH ? weekHigh : sigRevBearOH ? orbHigh : sigRevBearPDMid ? pdMid : sigRevBearTodayOpen ? todayOpen : sigRevBearPDClose ? yestClose : na
 
 // Set up watch when counter-EMA signal fires
@@ -1082,6 +1124,8 @@ if sigBullWH
     bullText := bullText + (bullText != "" ? " + " : "") + "Week H"
 if sigBullOH
     bullText := bullText + (bullText != "" ? " + " : "") + "ORB H"
+if sigBullPDLH
+    bullText := bullText + (bullText != "" ? " + " : "") + "PD LH H"  // v3.4
 if sigBullWO
     bullText := bullText + (bullText != "" ? " + " : "") + "Week O"
 if sigBullMO
@@ -1114,7 +1158,7 @@ bearVolTrim = i_volFilter and not na(volRatioBear) ? str.tostring(volRatioBear, 
 bearPosTrim = i_closePos and not na(bearClosePos) ? "v" + str.tostring(bearClosePos) : ""
 bearQualLine = bearVolTrim + (bearVolTrim != "" and bearPosTrim != "" ? " " : "") + bearPosTrim
 
-bullCount = (sigBullWO ? 1 : 0) + (sigBullMO ? 1 : 0)  // v3.2: HIGH levels moved to REV
+bullCount = (sigBullPDLH ? 1 : 0) + (sigBullWO ? 1 : 0) + (sigBullMO ? 1 : 0)  // v3.2: HIGH levels moved to REV; v3.4: +PDLH
 bearCount = (sigBearPML ? 1 : 0) + (sigBearYL ? 1 : 0) + (sigBearWL ? 1 : 0) + (sigBearOL ? 1 : 0) + (sigBearPDLH ? 1 : 0) + (sigBearVWBL ? 1 : 0) + (sigBearWO ? 1 : 0) + (sigBearMO ? 1 : 0)
 
 // Runner Score: max 5 at signal time (6th factor = CONF pass, added later)
@@ -1233,7 +1277,7 @@ if sigBearOL or sigRevBullOL
     tcOL += 1
 if sigRevBullPDMid or sigRevBearPDMid
     tcPDMid += 1
-if sigBearPDLH or sigRevBullPDLH
+if sigBullPDLH or sigBearPDLH or sigRevBullPDLH
     tcPDLH += 1
 if sigRevBullTodayOpen or sigRevBearTodayOpen
     tcTodayOpen += 1
@@ -1245,7 +1289,7 @@ if sigBullMO or sigBearMO
     tcMO += 1
 
 // Level freshness dim: any firing level tested 3+ times today → dim
-bool _fbBull = (sigBullPMH and tcPMH >= 3) or (sigBullYH and tcYH >= 3) or (sigBullWH and tcWH >= 3) or (sigBullOH and tcOH >= 3) or (sigBullWO and tcWO >= 3) or (sigBullMO and tcMO >= 3)
+bool _fbBull = (sigBullPMH and tcPMH >= 3) or (sigBullYH and tcYH >= 3) or (sigBullWH and tcWH >= 3) or (sigBullOH and tcOH >= 3) or (sigBullPDLH and tcPDLH >= 3) or (sigBullWO and tcWO >= 3) or (sigBullMO and tcMO >= 3)
 bool _frBull = (sigRevBullPML and tcPML >= 3) or (sigRevBullYL and tcYL >= 3) or (sigRevBullWL and tcWL >= 3) or (sigRevBullPDLH and tcPDLH >= 3) or (sigRevBullPDMid and tcPDMid >= 3) or (sigRevBullTodayOpen and tcTodayOpen >= 3) or (sigRevBullPDClose and tcPDClose >= 3) or (sigRevBullPMH and tcPMH >= 3) or (sigRevBullYH and tcYH >= 3) or (sigRevBullWH and tcWH >= 3) or (sigRevBullOH and tcOH >= 3)
 bool isFreshDimBull = _fbBull or _frBull
 bool _fbBear = (sigBearPML and tcPML >= 3) or (sigBearYL and tcYL >= 3) or (sigBearWL and tcWL >= 3) or (sigBearOL and tcOL >= 3) or (sigBearPDLH and tcPDLH >= 3) or (sigBearWO and tcWO >= 3) or (sigBearMO and tcMO >= 3)
@@ -1580,6 +1624,9 @@ if combinedBearText != ""
     string sigGlyphs = bigMoveGlyph + volRampGlyph
     string glyphPfx = sigGlyphs != "" ? sigGlyphs + " " : ""
     combinedBearText += bearQualLine != "" ? "\n" + glyphPfx + bearQualLine + bwSuffix : (sigGlyphs != "" or bwSuffix != "" ? "\n" + sigGlyphs + bwSuffix : "")
+    // v3.4: NVDA bear = 2x size signal (Win%=51.7%, +450 ATR on normal days)
+    if syminfo.ticker == "NVDA" and anyRevBear
+        combinedBearText += " ★2x"
     // Evidence stack dim mode: use breakout stack if breakout present, reversal stack if reversal-only
     bool isRegimeDimBear = i_emaGate and regimeBear == 1
     bool isDimBear = ((i_fMode == "Dim" and not (bearText != "" ? evStackBear : evStackBear_rev)) or isVolModerate or emaGateBear_dim or isRegimeDimBear or isVolExhaustBear or isExhausted or isFreshDimBear) and not isQuietCoil and not isMiddayFlat and not isBroadCoil
@@ -1738,10 +1785,11 @@ if not na(checkpointBar) and newSigBar and bar_index > checkpointBar
     // Signal matches SPY direction → never BAIL (let it run)
     // SPY neutral → loose BAIL (only cut if losing > 0.10 ATR)
     // Signal opposes SPY → strict BAIL (must be positive)
+    // v3.4: Positive guard — if pnl≥0 at check, always HOLD (data: pnl≥0 BAIL = 49% accuracy = coin flip)
     bool spyAligned = (checkpointDir == 1 and spyRegime == 1) or (checkpointDir == -1 and spyRegime == -1)
     bool spyOpposed = (checkpointDir == 1 and spyRegime == -1) or (checkpointDir == -1 and spyRegime == 1)
     float bailThresh = spyAligned ? na : spyOpposed ? 0.05 : -0.10
-    bool hold = spyAligned or (not na(pnl) and not na(bailThresh) and pnl > bailThresh)
+    bool hold = pnl >= 0 or spyAligned or (not na(pnl) and not na(bailThresh) and pnl > bailThresh)
 
     // Update existing CONF label
     if not na(checkpointLbl)

@@ -9,15 +9,20 @@ after that: investigate each signal on the past if we fetch it right, how far it
   could use other findings we have but didnt use or in other circumstances.
 
 
-3/6/26
-NVDA 15:50 alert "RNG up Range+Vol" but no label → INVESTIGATED: NOT a code bug.
-  Code: alert() and label.new() are in the SAME `if sigRNG_bull` block (lines 1164-1172).
-  Time gate: `rngTimeOK = etHour < 11` — at 15:50 ET, signal cannot fire.
-  Root cause: **FIFO label eviction** — `max_labels_count=500`, RNG fired in the morning,
-  label was created then. By 15:50, enough new labels pushed it out of the 500-label queue.
-  Alert persists in TV alert log but label is gone from chart.
-  → VERIFY: Check TV Alerts Log for actual fire time (should be before 11 AM).
-  → CONSIDER: Reduce label count or add label.delete() for old/dimmed labels to extend FIFO life.
+3/6/26 — INVESTIGATED → debug/investigation-2026-03-06.md
+NVDA 15:50 alert "RNG up Range+Vol" but no label → INVESTIGATED: NOT a code bug. FIFO label eviction.
+AMD 12:05 down → 0.24 ATR. Midday desert + EMA gate. No action needed.
+TSLA 11:05 down → 0.05 ATR. Noise, not a real move.
+TSLA 12:40 up → 0.32 ATR. EMA gate + midday. Correct suppression.
+TSLA 13:15 bull → 0.06 ATR. Move was exhausted by signal time.
+NVDA 9:30 up → 0.29 ATR. Signal fired 9:35 but no CONF (EMA bear). Volume 11.1x — consider vol-override research.
+NVDA 12:00 down → 0.27 ATR. EMA gate + midday. Correct suppression.
+META 9:30 bear → FALSE MISS. Auto-R1 CONF was there. User didn't see it on chart → CONF visibility issue.
+META 9:35 up → 0.34 ATR. Intra-bar reversal inside massive bear candle. Uncatchable.
+META 10:30 bear → No signal needed. META was going UP at that time.
+
+Summary: 1.12 ATR real misses. Midday desert (#1 gap). EMA gate correct. 3/9 were false alarms.
+→ ACTION: Forward-test v3.2 midday levels. Investigate CONF label visibility. Low-pri: vol-override auto-confirm.
 
 
 3/5/26 — INVESTIGATED → debug/investigation-2026-03-05.md + debug/v30b-move-scanner-research.md
