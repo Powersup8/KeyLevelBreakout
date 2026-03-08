@@ -1,8 +1,8 @@
 // © Key Level Breakout Alert Indicator
-// Detects bullish/bearish 5m candle closes through key levels (v3.3)
+// Detects bullish/bearish 5m candle closes through key levels (v3.3c)
 // Designed for US stocks (NYSE/NASDAQ) on 5-min charts
 //@version=6
-indicator("Key Level Breakout v3.3", overlay=true, max_labels_count=500, max_lines_count=200)
+indicator("Key Level Breakout v3.3c", overlay=true, max_labels_count=500, max_lines_count=200)
 
 // ─── Inputs ────────────────────────────────────────────────
 i_showPM    = input.bool(true,  "Premarket High/Low",         group="Level Toggles")
@@ -903,11 +903,9 @@ rRevBearYH  = i_showReversal and i_showYest  and i_revYest and bearRev(yestHigh,
 rRevBearWH  = i_showReversal and i_showWeek  and i_revWeek and bearRev(weekHigh, weekHBody)
 rRevBearOH  = i_showReversal and i_showORB   and i_revORB  and not isORBwin and orbFirstDone and bearRev(orbHigh, orbHBody)
 
-// Bull REV at HIGH levels (v3.2: HIGH = magnet, price bounces up from resistance)
-rRevBullPMH = i_showReversal and i_showPM   and i_revPM   and bullRev(pmHigh,  pmHBody)
-rRevBullYH  = i_showReversal and i_showYest  and i_revYest and bullRev(yestHigh, yestHBody)
-rRevBullWH  = i_showReversal and i_showWeek  and i_revWeek and bullRev(weekHigh, weekHBody)
-rRevBullOH  = i_showReversal and i_showORB   and i_revORB  and not isORBwin and orbFirstDone and bullRev(orbHigh, orbHBody)
+// v3.3c: Bull REV at HIGH levels REMOVED — magnets don't provide support
+// Data: bull REV at PM H/ORB H/Yest H/Week H = -699 ATR, 37-44% win, 3.3x loss/win asymmetry
+// Bear REV at highs KEPT (lines 901-904) — rejection at resistance = +697 ATR
 
 // Bull reversal at new LOW levels (v3.0)
 rRevBullPDLH = i_showReversal and i_showPDMid and bullRev(pdLastHrLow, pdLHBody)
@@ -940,11 +938,11 @@ sigRevBearYH  = rRevBearYH  and (not i_firstOnly or not rYH)  and (fGateBear_rev
 sigRevBearWH  = rRevBearWH  and (not i_firstOnly or not rWH)  and (fGateBear_rev or exrevBypass) and (emaGateBear or isPre950 or exrevBypass)
 sigRevBearOH  = rRevBearOH  and (not i_firstOnly or not rOH)  and (fGateBear_rev or exrevBypass) and (emaGateBear or isPre950 or exrevBypass)
 
-// Bull REV at HIGH levels (v3.2)
-sigRevBullPMH = rRevBullPMH and (not i_firstOnly or not rPMH) and fGateBull_rev and emaPassBull
-sigRevBullYH  = rRevBullYH  and (not i_firstOnly or not rYH)  and fGateBull_rev and emaPassBull
-sigRevBullWH  = rRevBullWH  and (not i_firstOnly or not rWH)  and fGateBull_rev and emaPassBull
-sigRevBullOH  = rRevBullOH  and (not i_firstOnly or not rOH)  and fGateBull_rev and emaPassBull
+// v3.3c: Bull REV at HIGH levels suppressed — magnets attract, they don't repel
+sigRevBullPMH = false
+sigRevBullYH  = false
+sigRevBullWH  = false
+sigRevBullOH  = false
 
 // VWAP filtered signals (reversal stack + EMA gate)
 sigRevBullVWAP = rRevBullVWAP and not xVWAPBull and fGateBull_rev and emaPassBull
@@ -978,14 +976,7 @@ if rRevBearWH
     rWH := true
 if rRevBearOH
     rOH := true
-if rRevBullPMH
-    rPMH := true
-if rRevBullYH
-    rYH := true
-if rRevBullWH
-    rWH := true
-if rRevBullOH
-    rOH := true
+// v3.3c: bull REV at HIGH levels removed — first-occurrence flags now set only by bear REV (above)
 if sigRevBullVWAP
     xVWAPBull := true
 if sigRevBearVWAP
