@@ -1,10 +1,10 @@
-# KeyLevelBreakout v3.2 — Reference
+# KeyLevelBreakout v3.5 — Reference
 
 | Doc | What's Inside |
 |-----|---------------|
-| [KLB_PLAYBOOK.md](KLB_PLAYBOOK.md) | Signal Catalog, Time Windows, Avoid List, Decision Flowchart, Execution, Symbols |
-| **KLB_Reference.md** | Setup, Signal Types, Label Anatomy, CONF System, Levels, Filters, Visuals, Alerts, Settings |
-| [KLB_DESIGN-JOURNAL.md](KLB_DESIGN-JOURNAL.md) | The Idea, Data Foundation, Key Discoveries, Filter Validation, Evolution, Dead Ends |
+| [KLB_PLAYBOOK.md](KLB_PLAYBOOK.md) | Signal Catalog, Time Windows, Avoid List, Decision Flowchart, Execution, Symbols — **v3.5** |
+| **KLB_Reference.md** | Setup, Signal Types, Label Anatomy, CONF System, Levels, Filters, Visuals, Alerts, Settings — **v3.5** |
+| [KLB_DESIGN-JOURNAL.md](KLB_DESIGN-JOURNAL.md) | The Idea, Data Foundation, Key Discoveries, Filter Validation, Evolution, Dead Ends — **v3.5** |
 
 ---
 
@@ -167,6 +167,7 @@ Nine configurable filters. Each can be independently toggled. Filter Mode contro
 | RS vs SPY | Blocks long signals when the symbol underperforms SPY (and vice versa for shorts). Auto-bypasses SPY, QQQ, GLD, SLV. | ON |
 | ADX > 20 | Blocks signals when 5m ADX(14) < 20 (choppy/trendless environment). | ON |
 | Candle Body Quality | Blocks wick-heavy candles: body < 30% of range, or close in the wrong 40% of the bar. | ON |
+| Suppress Afternoon Signals | Suppresses all signals in the 14:00–16:00 ET window. Research (v3.3c + v3.4): afternoon net negative at ALL SL sizes. 14:00–15:00 is worst (-0.026/signal). | OFF |
 | Filter Mode | **Suppress:** filtered signals are hidden entirely. **Dim:** filtered signals show as gray with `?` suffix, size.tiny. | Suppress |
 
 Breakout signals must pass both Volume and ATR Buffer. Reversal/reclaim signals must pass VWAP Direction but do not require the Volume gate. QBS signals pass through the reversal filter gate (EMA, RS, ADX, Body). RNG signals skip EMA requirement (the only profitable non-EMA signal type). FADE signals fire with-EMA by design (counter-EMA trigger ensures the fade is trend-aligned). EXREV signals bypass both EMA gate and candle body filter (bear only, body < 30%). Today's Open and PD Close REV signals skip the EMA gate.
@@ -180,15 +181,15 @@ Breakout signals must pass both Volume and ATR Buffer. Reversal/reclaim signals 
 | Element | Style | When Visible |
 |---------|-------|-------------|
 | VWAP line | Orange (`#FF6D00`), width 2, semi-transparent | Regular session, when Show VWAP Line ON |
-| SL 0.10 ATR | Orange dashed, width 1 | 30 min after CONF ✓/✓★ signal |
-| SL 0.15 ATR | Red solid, width 1 | 30 min after CONF ✓/✓★ signal |
+| SL warn line | Orange dashed, width 1 | 30 min after CONF ✓/✓★. Distance adapts: morning 0.08 ATR, midday 0.20 ATR, afternoon 0.10 ATR |
+| SL hard line | Red solid, width 1 | 30 min after CONF ✓/✓★. Distance adapts: morning 0.10 ATR, midday 0.25 ATR, afternoon 0.15 ATR |
 | PM H/L lines | Orange, width 1 | Regular session, when Show Level Lines ON |
 | Yest H/L lines | Blue, width 1 | Regular session, when Show Level Lines ON |
 | Week H/L lines | Purple, width 1 | Regular session, when Show Level Lines ON |
 | ORB H/L lines | Teal, width 1 | Regular session, when Show Level Lines ON |
 | Zone fills | Same color as level line, 85% transparent | When Show Level Lines ON + Use Level Zones ON |
 
-SL line duration adapts to chart timeframe: 1800 seconds / timeframe-in-seconds = number of bars. On a 1m chart, SL lines extend 30 bars. Entry proxy is the confirming breakout's close price.
+SL line duration adapts to chart timeframe: 1800 seconds / timeframe-in-seconds = number of bars. On a 1m chart, SL lines extend 30 bars. Entry proxy is the confirming breakout's close price. SL distances are adaptive (v3.5): morning (9:30–11:00) 0.08/0.10 ATR, midday (11:00–14:00) 0.20/0.25 ATR, afternoon (14:00–16:00) 0.10/0.15 ATR. Lines update automatically when the time window changes.
 
 ### Regime Score
 
@@ -291,6 +292,7 @@ All `input.*` parameters, organized by group.
 | RS vs SPY Filter | On | Filters |
 | ADX Trend Strength Filter | On | Filters |
 | Candle Body Quality Filter | On | Filters |
+| Suppress Afternoon Signals (14:00–16:00) | Off | Filters |
 | Filter Mode | Suppress | Filters |
 | Show Close Position % | On | Quality |
 | Show Level Lines | Off | Visuals |

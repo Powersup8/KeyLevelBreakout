@@ -1,4 +1,4 @@
-# KeyLevelBreakout v3.3 — Design Journal
+# KeyLevelBreakout v3.5 — Design Journal
 
 | Doc | What's Inside |
 |-----|---------------|
@@ -285,4 +285,16 @@ Analysis files: `debug/v30b-bail-investigation.md`, `debug/v31-backtest-results.
 
 Analysis files: `docs/plans/2026-03-06-v32-design.md`, `debug/v32-backtest-results.md`.
 
-*Last updated: 2026-03-06 | v3.2 | Data: Sep 2025–Mar 2026*
+**v3.3 / v3.3b / v3.3c / v3.3d — Fingerprint-driven quality filters and structural suppression (2026-03-08).** See Evolution section entry above and MEMORY.md for full detail. Summary of cumulative changes through this cycle: volume gate lowered to 1.0x, volume exhaustion dim (>5x), exhaustion filter (afternoon + ATR consumed + SPY range), level freshness counters (3rd+ test → dim), quiet coil dim override, midday flat-EMA boost, broad coil boost, quiet coil EMA bypass. Bull REV at HIGH levels structurally suppressed (v3.3c: -1,212 ATR drag identified; kept bear REV at HIGHs). NVDA bull REV fully suppressed (v3.3d: 25.3% win, -707 ATR, 12.6x asymmetry).
+
+**v3.4 — Missed coverage + exit improvements (2026-03-08, commit 6e238ae).** Five changes: bull BRK at PD Last Hr High (symmetric to existing bear), ORB Low Reclaim midday re-enabled (no EMA gate, 27.2% great, +0.296 ATR/signal), BAIL positive guard (pnl≥0 at 5m → force HOLD, +36 ATR), NVDA bear ★2x visual label, special day detection (gap+range+vol score ≥2 → yellow bg + banner label).
+
+**v3.5 — Adaptive SL and afternoon suppression toggle (2026-03-09).** Two targeted changes driven by time-of-day P&L analysis validated across v3.3c and v3.4 data.
+
+1. *Adaptive Stop-Loss by time window.* The single fixed 0.10/0.15 ATR SL was calibrated for morning conditions. Time-of-day research showed optimal SL varies significantly across sessions. Morning (9:30–11:00): 0.08/0.10 ATR — winners are decisive, tight stops cut losers fast (+0.011/signal at optimal). Midday (11:00–14:00): 0.20/0.25 ATR — price has more noise, wider room needed (+0.013/signal at optimal). Afternoon (14:00–16:00): 0.10/0.15 ATR (unchanged from prior default, but see below). SL lines on chart update automatically when the session window changes — a midday CONF entry gets wider lines than a morning CONF entry. Established P&L baseline: +0.117 ATR/signal with adaptive SL vs +0.005/signal without any SL. **SL is the primary source of edge, not filtering alone.**
+
+2. *Afternoon suppression toggle (`i_suppressAfternoon`, default OFF).* Research across v3.3c + v3.4 confirmed afternoon signals (14:00–16:00) are net negative at every SL size tested. The 14:00–15:00 window is the worst sub-window (-0.026/signal). The 15:00–16:00 window is marginal but not reliably actionable. Validated across all signal types (BRK, REV, FADE) and both directions. The toggle defaults OFF to preserve backward compatibility — traders who actively monitor the market can still see afternoon signals. Enable to suppress them entirely. Note: afternoon dimming (visual only, added in v2.4) remains separate and independent.
+
+Research files: time-of-day SL optimization analysis (validated on enriched-signals.csv, 1841 signals, 13 symbols). Prior validation: `debug/v33c_backtest.py`, `debug/v33_backtest.py`.
+
+*Last updated: 2026-03-09 | v3.5 | Data: Sep 2025–Mar 2026*

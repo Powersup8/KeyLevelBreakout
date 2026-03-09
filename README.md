@@ -2,7 +2,7 @@
 
 Pine Script v6 indicators for US stocks (NYSE/NASDAQ) on 5-minute charts.
 
-## KeyLevelBreakout v2.8 — Documentation
+## KeyLevelBreakout v3.5 — Documentation
 
 | Doc | What's Inside |
 |-----|---------------|
@@ -22,3 +22,13 @@ Pine Script v6 indicators for US stocks (NYSE/NASDAQ) on 5-minute charts.
 | [15m Fib Scalper](Fib15mScalper.md) | `Fib15mScalper.pine` | Liquidity candle reversal on 15m opening range (Fibonacci TP) |
 
 See each indicator's documentation for full details on strategy logic, inputs, and setup.
+
+## Changelog (recent)
+
+| Version | Date | Summary |
+|---------|------|---------|
+| v3.5 | 2026-03-09 | Adaptive SL by time window (morning 0.08/0.10, midday 0.20/0.25, afternoon 0.10/0.15 ATR). Afternoon suppression toggle (`i_suppressAfternoon`, default OFF). Baseline: +0.117 ATR/signal with adaptive SL. |
+| v3.4 | 2026-03-08 | Bull BRK at PD Last Hr High, ORB Low Reclaim midday, BAIL positive guard (+36 ATR), NVDA bear ★2x label, special day detection. |
+| v3.3c/d | 2026-03-08 | Bull REV at HIGH levels suppressed (-1,212 ATR drain). NVDA bull REV suppressed (25.3% win). |
+| v3.3/b | 2026-03-08 | Fingerprint-driven quality filters: quiet coil, exhaustion dim, level freshness, midday flat-EMA boost. |
+| v3.2 | 2026-03-06 | HIGH levels → REV (magnets). EXREV bypass. FADE resurrection. 4 midday levels. |

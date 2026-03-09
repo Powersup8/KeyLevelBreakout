@@ -1,4 +1,4 @@
-# KeyLevelBreakout v3.2 — Trading Playbook
+# KeyLevelBreakout v3.5 — Trading Playbook
 
 | Doc | What's Inside |
 |-----|---------------|
@@ -40,7 +40,7 @@
 | 10:00-11:00 | 60% | 4.3% GOOD, 1.6% BAD | BEST -- trade any with-trend BRK |
 | 9:30-10:00 | High variance | Best MFE (0.42 ATR) | Trade 2-5x vol + VWAP aligned. Skip <2x |
 | 11:00-13:00 | ~49% | 0% GOOD | Mostly skip — new levels (PD Mid, PD Last Hr Low) provide some midday coverage |
-| 13:00-16:00 | ~49% | 0% GOOD, negative MFE/MAE | SKIP -- looks fine, loses money |
+| 13:00-16:00 | ~49% | 0% GOOD, negative MFE/MAE | SKIP — net negative at ALL SL sizes (v3.3c + v3.4 validated). Enable `Suppress Afternoon Signals` toggle to filter automatically. |
 
 ---
 ## 3. Levels
@@ -68,6 +68,7 @@
 | Trap | Why | Data |
 |------|-----|------|
 | After 11:00 | 0% GOOD follow-through | MFE/MAE = 0.90 |
+| After 14:00 (afternoon) | Net negative at ALL SL sizes | 14:00–15:00 worst (-0.026/signal); validated across v3.3c + v3.4 — use suppress toggle |
 | CONF ✗ | Failed breakout | Exit immediately |
 | ORB H breakouts | Now REV only (v3.2) | Was worst BRK level, 3.5% GOOD |
 | <2x volume | No conviction | 1.5% GOOD, 1.2% BAD |
@@ -119,10 +120,15 @@ Levels: Yest L > PM L > ORB L > Week L > PD Last Hr L (BRK). HIGH levels = REV o
 
 **Entry:** On signal bar close (5m confirmed). Wait for CONF before sizing up.
 
-**Stop Loss** (visible on chart after CONF):
-- 0.10 ATR dashed orange -- early warning. If here at minute 2, likely BAD.
-- 0.15 ATR solid red -- hard stop. BAD signals hit by minute 5.
-- At 5 min: if positive, switch to 0.25 ATR trailing stop from high.
+**Stop Loss** — Adaptive SL (v3.5), visible on chart after CONF. Lines update automatically per time window:
+
+| Window | Warn (dashed orange) | Hard (solid red) | Notes |
+|--------|---------------------|-----------------|-------|
+| Morning 9:30–11:00 | 0.08 ATR | 0.10 ATR | Tight — winners are decisive, cut fast |
+| Midday 11:00–14:00 | 0.20 ATR | 0.25 ATR | Wide — room to breathe; +0.013/signal at optimal SL |
+| Afternoon 14:00–16:00 | 0.10 ATR | 0.15 ATR | Net negative regardless — prefer skipping via suppress toggle |
+
+Research baseline (v3.5): +0.117 ATR/signal with adaptive SL. Without any SL: near zero (+0.005/signal). **SL is essential.**
 
 **Hold Time:** 30 min minimum. GOOD peak at minute 23. BAD peak at minute 3.5. 85% of GOOD never reverse below -0.10 ATR.
 
