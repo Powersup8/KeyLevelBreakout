@@ -40,6 +40,15 @@ TSLA downmove 12:06 → ❌ NO SIGNALS for TSLA.
 SPY/QQQ/AMD/NVDA downmove 12:06 → Continuation of morning weakness. SPY broke ORB L at 10:25.
   NVDA caught it at 12:40 (BRK Yest L), AMD at 12:50 (BRK PM L + ORB L). 30-40 min lag.
   QQQ had dim REV at ORB H 12:10. Cross-symbol trigger detectable but midday dead zone.
+NVDA 9:40 down → ✅ CORRECTLY SUPPRESSED — NOT a real miss (investigated 2026-03-09)
+  Signal DID fire: `9:40 ▼ ~ x~ ORB H` — but killed by TWO independent filters:
+  1. vol=7.1x → exhaustion dim (>5x threshold, v3.3 logic)
+  2. body=23% → below body filter (pin bar / shooting star, no directional commitment)
+  Move: 182.46 → 180.90 = 1.56 pts = 0.25 ATR over 9 minutes. Immediately fully recovered.
+  Real best exit: only 0.095 ATR MFE by 10:32 — well below 0.3 ATR threshold for quality trade.
+  The "real" NVDA bear signal that day: 12:40 BRK Yest L → KLB caught it correctly.
+  v3.5: identical — same 6 signals, same suppression. No change needed.
+
 
 Key findings 3/5:
 - BAIL epidemic: 11/12 signals BAILed (91.7%). Only 1 HOLD (SPY 10:05 BRK PD LH L).
