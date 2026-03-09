@@ -9,6 +9,23 @@
 > Based on 1,841 signals, 25,304 significant moves, 9,596 big-move bars, 15 symbols, 28+ trading days
 
 ---
+## 0. Quick Reference — What Makes Money
+
+| Signal Type | ATR/signal | SL hit% | Best Window | Key Rule |
+|-------------|-----------|---------|-------------|----------|
+| **NVDA Bear REV** | **+0.350+** | 17.5% | Any | Highest win rate (72%), lowest SL rate. Size up. |
+| **Bear REV (non-NVDA)** | **+0.140** | ~48% | Morning/Midday | Rejection at resistance. Core edge. |
+| **Bull BRK** | **+0.075** | ~52% | Morning | Breakout with volume. Wait for CONF. |
+| Bear BRK | +0.060 | ~52% | Morning | Same as bull, opposite direction. |
+| FADE | small positive | low | Any | Ex-NVDA only. Small size. |
+| **Bull REV** | **negative** | — | — | **Do not trade** — structurally broken. |
+| Afternoon (any) | **negative** | — | 14:00–16:00 | **Do not trade** — net negative at every SL. |
+
+**Hold time:** 30–60 min. Curve is flat after 30m — no cliff, no urgency to exit.
+**SL is essential:** Without SL, edge ≈ zero (+0.005/sig). With adaptive SL: +0.117/sig (+2,300% improvement).
+**Morning cut fast (0.10 ATR), Midday give room (0.25 ATR).** Lines on chart update automatically.
+
+---
 ## 1. Signal Catalog
 
 | Rank | Signal | Look | Edge | Action |
@@ -130,7 +147,7 @@ Levels: Yest L > PM L > ORB L > Week L > PD Last Hr L (BRK). HIGH levels = REV o
 
 Research baseline (v3.5): +0.117 ATR/signal with adaptive SL. Without any SL: near zero (+0.005/signal). **SL is essential.**
 
-**Hold Time:** 30 min minimum. GOOD peak at minute 23. BAD peak at minute 3.5. 85% of GOOD never reverse below -0.10 ATR.
+**Hold Time:** 30–60 min. Curve is flat from 30m onward (+0.114/sig at 30m vs +0.117/sig at 60m). No cliff — exit at 30m if needed, but 60m is marginally better. BAD signals resolve by minute 3–5 (SL handles it). 85% of GOOD never reverse below -0.10 ATR.
 
 **VWAP Exit:** After CONF ✓/✓★, alert fires when price crosses VWAP against position. Momentum death signal.
 
