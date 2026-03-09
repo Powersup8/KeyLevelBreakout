@@ -22,7 +22,8 @@ i_showVWAP  = input.bool(true,  "Show VWAP Line",             group="Visuals")
 i_showSL    = input.bool(true,  "Show SL Lines (30 min)",     tooltip="Draw 0.10 and 0.15 ATR stop-loss reference lines for 30 minutes after each signal", group="Visuals")
 i_fadeOld   = input.bool(true,  "Fade Old Labels",            group="Visuals")
 i_fadeAge   = input.int(100,    "Fade After (signal bars)",    minval=10, group="Visuals")
-i_dimAfternoon = input.bool(true, "Dim Afternoon Signals (after 11:00)", group="Visuals")
+i_dimAfternoon      = input.bool(true,  "Dim Afternoon Signals (after 11:00)",           group="Visuals")
+i_suppressAfternoon = input.bool(false, "Suppress Afternoon Signals (14:00–16:00)", tooltip="Research (v3.3c + v3.4): afternoon signals are net negative at every SL size. Toggle to hide them entirely.", group="Filters")
 
 // ─── Filter Inputs ──────────────────────────────────────
 i_volFilter  = input.bool(true,  "Require Above-Avg Volume",    group="Filters")
@@ -619,8 +620,9 @@ string bigMoveGlyph = isBigMove ? "⚡" : ""
 // 6 validated factors: EMA aligned, regime=2, vol≥10x, morning, SPY-aligned, CONF pass (added later)
 int etHour = hour(time, TZ)
 int etMin = minute(time, TZ)
-bool isMorning = etHour < 11
-bool isMidday  = etHour >= 11 and etHour < 14
+bool isMorning       = etHour < 11
+bool isMidday        = etHour >= 11 and etHour < 14
+bool isTrueAfternoon = etHour >= 14  // 14:00–16:00 ET (distinct from isAfternoon which means 11+)
 // v3.3b: Midday + flat EMA boost — 31.1% great (1.55x), 2.2% noise, N=541
 bool isMiddayFlat = isMidday and not na(ema20_5m) and not na(dailyATR) and dailyATR > 0 and math.abs(ema20_5m - nz(ema20_5m[6])) / dailyATR < 0.02
 // v3.3: Exhaustion filter — C6 cluster: 30% noise, 5% great when market is spent
@@ -698,8 +700,12 @@ dbAppend(string dir, string typ, string levels, float vol, int clsPos, string co
             string rsStr  = not na(rsVsSpy) ? (rsVsSpy >= 0 ? "+" : "") + str.tostring(rsVsSpy * 100, "#.#") + "%" : "na"
             string adxStr = not na(adx_5m) ? str.tostring(adx_5m, "#") : "na"
             string bodyStr = str.tostring(math.round(bodyRatio * 100)) + "%"
-            float slWarn = dir == "▲" ? sigC - nz(dailyATR) * 0.10 : sigC + nz(dailyATR) * 0.10
-            float slHard = dir == "▲" ? sigC - nz(dailyATR) * 0.15 : sigC + nz(dailyATR) * 0.15
+            // v3.5: Adaptive SL — morning 0.10 ATR (tight/fast), midday 0.25 ATR (room to breathe)
+            // Research: optimal SL by window: morning=0.10 (+0.011/sig), midday=0.25 (+0.013/sig)
+            float _slW = isMorning ? 0.08 : isMidday ? 0.20 : 0.10
+            float _slH = isMorning ? 0.10 : isMidday ? 0.25 : 0.15
+            float slWarn = dir == "▲" ? sigC - nz(dailyATR) * _slW : sigC + nz(dailyATR) * _slW
+            float slHard = dir == "▲" ? sigC - nz(dailyATR) * _slH : sigC + nz(dailyATR) * _slH
             string rampStr = str.tostring(preVolRamp, "#.#") + "x"
             string flagStr = (isBigMove ? " ⚡" : "") + (bodyWarn ? " ⚠" : "") + (isVolDrying ? " 🔇" : "")
             string msg = "[KLB] " + fmtTime(time) + " " + dir + " " + typ + " " + levels + " vol=" + volStr + " pos=" + posStr + " vwap=" + vwapStr + " ema=" + emaStr + " rs=" + rsStr + " adx=" + adxStr + " body=" + bodyStr + " ramp=" + rampStr + " rangeATR=" + str.tostring(sigRangeATR, "#.#") + flagStr + " " + ohlc + " ATR=" + str.tostring(nz(dailyATR), "#.##") + " SL=" + str.tostring(slWarn, "#.##") + "/" + str.tostring(slHard, "#.##") + " rawVol=" + str.tostring(nz(sigVol), "#") + " volSMA=" + str.tostring(nz(volBase), "#") + " buf=" + str.tostring(breakBuf, "#.###") + " prices=" + lvlPrices
@@ -1447,7 +1453,7 @@ if revBullText != ""
             label.set_textcolor(revLblOL, color.new(color.gray, 60))
     combinedBullText := combinedBullText + (combinedBullText != "" ? "\n" : "") + revBullText
 
-if combinedBullText != ""
+if combinedBullText != "" and not (i_suppressAfternoon and isTrueAfternoon)
     string bwSuffix = bodyWarn ? " ⚠" : ""
     string sigGlyphs = bigMoveGlyph + volRampGlyph
     string glyphPfx = sigGlyphs != "" ? sigGlyphs + " " : ""
@@ -1545,8 +1551,10 @@ if combinedBullText != ""
             checkpointDir   := 1
             // SL reference lines at CONF time (using new breakout's sigC as entry proxy)
             if i_showSL and not na(dailyATR)
-                line.new(bar_index, sigC - dailyATR * 0.10, bar_index + slBars, sigC - dailyATR * 0.10, color=color.new(color.orange, 40), style=line.style_dashed, width=1)
-                line.new(bar_index, sigC - dailyATR * 0.15, bar_index + slBars, sigC - dailyATR * 0.15, color=color.new(color.red, 30),    style=line.style_solid,  width=1)
+                float _slW_b = isMorning ? 0.08 : isMidday ? 0.20 : 0.10
+                float _slH_b = isMorning ? 0.10 : isMidday ? 0.25 : 0.15
+                line.new(bar_index, sigC - dailyATR * _slW_b, bar_index + slBars, sigC - dailyATR * _slW_b, color=color.new(color.orange, 40), style=line.style_dashed, width=1)
+                line.new(bar_index, sigC - dailyATR * _slH_b, bar_index + slBars, sigC - dailyATR * _slH_b, color=color.new(color.red, 30),    style=line.style_solid,  width=1)
             if dbConfBullIdx >= 0 and dbConfBullIdx < array.size(dbConf)
                 array.set(dbConf, dbConfBullIdx, highConv ? "✓★" : "✓")
                 if i_debugLog and barstate.isconfirmed
@@ -1591,8 +1599,10 @@ if combinedBullText != ""
             checkpointLbl   := bRTLbl
             checkpointDir   := 1
             if i_showSL and not na(dailyATR)
-                line.new(bar_index, sigC - dailyATR * 0.10, bar_index + slBars, sigC - dailyATR * 0.10, color=color.new(color.orange, 40), style=line.style_dashed, width=1)
-                line.new(bar_index, sigC - dailyATR * 0.15, bar_index + slBars, sigC - dailyATR * 0.15, color=color.new(color.red, 30),    style=line.style_solid,  width=1)
+                float _slW_b = isMorning ? 0.08 : isMidday ? 0.20 : 0.10
+                float _slH_b = isMorning ? 0.10 : isMidday ? 0.25 : 0.15
+                line.new(bar_index, sigC - dailyATR * _slW_b, bar_index + slBars, sigC - dailyATR * _slW_b, color=color.new(color.orange, 40), style=line.style_dashed, width=1)
+                line.new(bar_index, sigC - dailyATR * _slH_b, bar_index + slBars, sigC - dailyATR * _slH_b, color=color.new(color.red, 30),    style=line.style_solid,  width=1)
             if dbConfBullIdx >= 0 and dbConfBullIdx < array.size(dbConf)
                 array.set(dbConf, dbConfBullIdx, "✓")
                 if i_debugLog and barstate.isconfirmed
@@ -1620,7 +1630,7 @@ if revBearText != ""
             label.set_textcolor(revLblOH, color.new(color.gray, 60))
     combinedBearText := combinedBearText + (combinedBearText != "" ? "\n" : "") + revBearText
 
-if combinedBearText != ""
+if combinedBearText != "" and not (i_suppressAfternoon and isTrueAfternoon)
     string bwSuffix = bodyWarn ? " ⚠" : ""
     string sigGlyphs = bigMoveGlyph + volRampGlyph
     string glyphPfx = sigGlyphs != "" ? sigGlyphs + " " : ""
@@ -1721,8 +1731,10 @@ if combinedBearText != ""
             checkpointDir   := -1
             // SL reference lines at CONF time (using new breakout's sigC as entry proxy)
             if i_showSL and not na(dailyATR)
-                line.new(bar_index, sigC + dailyATR * 0.10, bar_index + slBars, sigC + dailyATR * 0.10, color=color.new(color.orange, 40), style=line.style_dashed, width=1)
-                line.new(bar_index, sigC + dailyATR * 0.15, bar_index + slBars, sigC + dailyATR * 0.15, color=color.new(color.red, 30),    style=line.style_solid,  width=1)
+                float _slW_s = isMorning ? 0.08 : isMidday ? 0.20 : 0.10
+                float _slH_s = isMorning ? 0.10 : isMidday ? 0.25 : 0.15
+                line.new(bar_index, sigC + dailyATR * _slW_s, bar_index + slBars, sigC + dailyATR * _slW_s, color=color.new(color.orange, 40), style=line.style_dashed, width=1)
+                line.new(bar_index, sigC + dailyATR * _slH_s, bar_index + slBars, sigC + dailyATR * _slH_s, color=color.new(color.red, 30),    style=line.style_solid,  width=1)
             if dbConfBearIdx >= 0 and dbConfBearIdx < array.size(dbConf)
                 array.set(dbConf, dbConfBearIdx, highConv ? "✓★" : "✓")
                 if i_debugLog and barstate.isconfirmed
@@ -1767,8 +1779,10 @@ if combinedBearText != ""
             checkpointLbl   := sRTLbl
             checkpointDir   := -1
             if i_showSL and not na(dailyATR)
-                line.new(bar_index, sigC + dailyATR * 0.10, bar_index + slBars, sigC + dailyATR * 0.10, color=color.new(color.orange, 40), style=line.style_dashed, width=1)
-                line.new(bar_index, sigC + dailyATR * 0.15, bar_index + slBars, sigC + dailyATR * 0.15, color=color.new(color.red, 30),    style=line.style_solid,  width=1)
+                float _slW_s = isMorning ? 0.08 : isMidday ? 0.20 : 0.10
+                float _slH_s = isMorning ? 0.10 : isMidday ? 0.25 : 0.15
+                line.new(bar_index, sigC + dailyATR * _slW_s, bar_index + slBars, sigC + dailyATR * _slW_s, color=color.new(color.orange, 40), style=line.style_dashed, width=1)
+                line.new(bar_index, sigC + dailyATR * _slH_s, bar_index + slBars, sigC + dailyATR * _slH_s, color=color.new(color.red, 30),    style=line.style_solid,  width=1)
             if dbConfBearIdx >= 0 and dbConfBearIdx < array.size(dbConf)
                 array.set(dbConf, dbConfBearIdx, "✓")
                 if i_debugLog and barstate.isconfirmed
