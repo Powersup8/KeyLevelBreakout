@@ -85,6 +85,45 @@ SPY upmove 9:46-11:03
 AMZN upmove 9:46-10:27
 Key findings: Gap-and-Pullback CONF Failure (5/5 symbols), Level Desert Grind, 32% capture rate (1.75/5.46 ATR)
 
+TSLA 3/4/26 — DEEP INVESTIGATION (v3.4/v3.5 validated 2026-03-09)
+Root cause: Enormous opening bar (rangeATR=5.9, L=394.55 H=403.47) consumed ALL nearby levels in 5 minutes.
+Left v3.4 with 4 signals at 9:30–9:35 and ZERO signals the rest of the day despite 2 meaningful moves.
+
+TSLA upmove 9:57–10:28 (+0.76 ATR) — WHY MISSED:
+  → 9:35 VWAP REV (bull) fired but no CONF — opening bar too wild, CONF never formed
+  → Actual bounce at $396.72 (9:57) was 0.026 ATR above Yest H ($396.34) — came within $0.38 but didn't TOUCH
+  → Level desert: bounce happened between Yest H and ORB_L with no level hit
+  → Root cause: proximity tolerance. 0.026 ATR is economically a Yest H reversal. Signal needs ~0.05 ATR buffer.
+  → Magnitude: $11.14 = 0.76 ATR over 31 min. Fully recoverable miss.
+
+TSLA downmove 10:30–11:14 (-0.42 ATR) — WHY MISSED:
+  → ORB_H ($403.47) was consumed by 9:35 RNG opening bar — level "used up", no re-arm
+  → Price above ORB_H all the way to 10:30 peak ($407.79) — no resistance level overhead
+  → Failed BRK: 9:35 bar broke ORB_H but never confirmed (no CONF ✓). Re-crossed below ORB_H at 11:10.
+  → No "failed BRK reversal" signal type in system. v2.8a fired BRK ORB_H at 10:25; v3.4 does not.
+  → Root cause 1: Opening bar level consumption (no re-arm after 30min).
+  → Root cause 2: No "failed breakout" reverse signal type.
+  → Magnitude: $6.17 = 0.42 ATR over 44 min. Partially recoverable.
+
+TSLA upmove 11:14–11:30 (+0.21 ATR) — ACCEPTABLE MISS:
+  → Bounce from $401.62, PM_H ($402.04) only $0.42 overhead — no clean level support below
+  → 0.21 ATR, below threshold. Afternoon context. No action needed.
+
+v3.5 comparison: Identical to v3.4 on this day. Changes in v3.5 (adaptive SL, afternoon suppress) don't affect opening-bar level consumption or proximity tolerance. Still 4 signals, all at 9:30–9:35.
+
+Pattern: v3.4/v3.5 catches moves cleanly when direction aligns with trend + price breaks a defined level.
+Struggles when: (1) opening bar swallows all levels, (2) bounce near but not AT a level, (3) failed BRK re-crosses.
+
+TOTAL RECOVERABLE MISSED: ~1.18 ATR (0.76 + 0.42)
+
+→ ACTION 1 (HIGH): Near-level proximity tolerance for REV signals — 0.03–0.05 ATR buffer.
+   The 9:57 Yest H reversal was 0.026 ATR away. Tier S fingerprint avg level distance = 0.065 ATR.
+   Risk: noise from levels that don't hold. Needs research validation before implementing.
+→ ACTION 2 (MEDIUM): Opening-bar level re-arm timer — if opening bar rangeATR > 3.0, re-arm
+   consumed levels after 30 min. Would restore v2.8a's 10:25 BRK ORB_H signal in v3.4.
+→ ACTION 3 (LOW): Failed BRK reverse signal — when no-CONF BRK bar is followed 30+ min later
+   by re-cross in opposite direction → fire reverse signal. Complex, needs research.
+
 ---
 🔴 NEXT MEETING: Open Call Management — Research Complete, Ready for Trading Setup
 
