@@ -9,6 +9,21 @@ after that: investigate each signal on the past if we fetch it right, how far it
   could use other findings we have but didnt use or in other circumstances.
 
 
+3/9/26
+NYSE has DST!
+TSLA investigate from opening on, how went the signals, 9:30 bullish signal, 9:35 baerish - how to improve this to catch the right move at the right time?
+TSLA uptrend after 10:12 not covered
+SPY 9:36-9:53 downtrend signaled late at 9:44
+SPY/QQQ 9:54-10:04 upmove missed
+SPY/QQQ 10:05-10:13 down massive, no signal
+SPY/QQQ 10:14 long uptrend missed
+NVDA 9:33-10:44 down missed and signeled up!
+NVDA 9:46- uptrend with a little down 10:05-10:13 totally missed
+META signals false?!?
+generally, no high quality signals at all, or did I miss them? Compare the real P/L to the signaled one
+
+
+
 3/6/26 — INVESTIGATED → debug/investigation-2026-03-06.md
 NVDA 15:50 alert "RNG up Range+Vol" but no label → INVESTIGATED: NOT a code bug. FIFO label eviction.
 AMD 12:05 down → 0.24 ATR. Midday desert + EMA gate. No action needed.
@@ -48,7 +63,39 @@ NVDA 9:40 down → ✅ CORRECTLY SUPPRESSED — NOT a real miss (investigated 20
   Real best exit: only 0.095 ATR MFE by 10:32 — well below 0.3 ATR threshold for quality trade.
   The "real" NVDA bear signal that day: 12:40 BRK Yest L → KLB caught it correctly.
   v3.5: identical — same 6 signals, same suppression. No change needed.
-
+NVDA 9:45-10:30 down → INVESTIGATED 2026-03-09 [WRONG FRAME — actual move was 11:05-12:50]
+  Price: 184.06 → 177.88 = 6.18 pts = 0.99 ATR (day high to day low)
+  Root cause: The "9:45-10:30" window was NOT a real downmove (-0.05 pts net, 0.01 ATR chop).
+    The real sustained downmove: 11:05 high (184.06) → 12:50 low (177.88) = 0.99 ATR over 105 min.
+    Split into two phases:
+      Phase 1 (11:05–12:28): 184.06 → 181.07 = 2.99 pts grind (0.48 ATR, 75 min, LOW VOLUME)
+      Phase 2 (12:29–12:50): 181.07 → 177.88 = 3.19 pts flush (0.51 ATR, 22 min, VOLUME SPIKE 1M+/bar)
+  KLB signals in window (11:05–12:40):
+    11:35 ▲ ~~ VWAP (DIM bull — EMA flipped bull during 9:45-10:50 rally, vol=0.8x)
+    12:40 ▼ BRK Yest L → FIRED + CONF ✓ + HOLD (caught Phase 2 late)
+    NOTHING between 11:05 and 12:40 — 95-min signal desert
+  Why no signal 11:05–12:29 (Phase 1):
+    1. EMA GATE: EMA flipped BULL during the 9:45–10:50 rally to 182.80.
+       All bear BRK signals require ema=bear — still bull at 11:05-12:29.
+       Confirmed: 11:35 log shows ema=bull; 12:40 log shows ema=bear (EMA crossed back).
+    2. LEVEL DESERT: Price drifted through 8 levels (PD Last Hr High, PD Close, ORB High,
+       PD Mid, PD Last Hr Low, Today Open, ORB Low, PD Low) but all generated DIM or no signal.
+       The only clean non-dim BRK was "Yest L" (~179.50 on TV) which price only reached at 12:29.
+    3. GRADUAL GRIND: Phase 1 was 75-min slow bleed with low volume (vol ~0.8-1.5x) —
+       volume gate + slow approach = multiple dim signals instead of clean BRKs.
+  Nearest level at move start: PD Last Hr High (183.86) — 0.034 ATR from 184.06.
+    This generated a DIM bull REV at 10:55 (ema=bull, correct direction but already falling).
+  Recoverable ATR:
+    If BRK PD Low (~12:30, entry ~180.00): MFE to low = 2.12 pts = 0.34 ATR
+    If earlier ORB High BRK (~10:25, entry ~182.00): MFE to 177.88 = 4.12 pts = 0.66 ATR
+    Actual catch (12:40 Yest L): 1.62 pts = 0.26 ATR (but was a HOLD signal)
+  Verdict: NOT a KLB miss — correct behavior given EMA state.
+    Phase 1 was unactionable (EMA bull, low-vol grind).
+    Phase 2 was caught correctly at Yest L (12:40).
+    The "9:45-10:30" framing was misleading — that period was actually a RALLY (+1.7 pts to ORB H).
+  Improvement opportunity: PD Low BRK at 12:30 (vol 1M+ spike, ema=bear by then) was not fired
+    because "Yest L" fired instead just 10 bars later. PD Low = 180.06 vs Yest L = ~179.50 (TV).
+    Gap = BATS vs IB price discrepancy (~0.5 pts). Not a real miss.
 
 Key findings 3/5:
 - BAIL epidemic: 11/12 signals BAILed (91.7%). Only 1 HOLD (SPY 10:05 BRK PD LH L).
@@ -127,9 +174,22 @@ TOTAL RECOVERABLE MISSED: ~1.18 ATR (0.76 + 0.42)
 
 → ACTION 1 (HIGH): Near-level proximity tolerance for REV signals — 0.03–0.05 ATR buffer.
    The 9:57 Yest H reversal was 0.026 ATR away. Tier S fingerprint avg level distance = 0.065 ATR.
-   Risk: noise from levels that don't hold. Needs research validation before implementing.
-→ ACTION 2 (MEDIUM): Opening-bar level re-arm timer — if opening bar rangeATR > 3.0, re-arm
+   RESEARCHED 2026-03-09: VALIDATED. Signal quality at 0.03–0.05 ATR is EQUAL to exact-touch.
+   - great%=42.7%, noise%=8.0%, mfe/mae=4.24x vs touching: 45.3%, 6.7%, 4.22x
+   - False alarm rate flat at 40% across ALL distance buckets (inherent property of HIGH levels)
+   - TSLA 9:57 confirmed: dist=0.029 ATR, mfe=0.319 in move catalog
+   - Expected gain: +5.6–10 ATR/symbol/year (N=1,517 over 2yr, 15 symbols)
+   - IMPLEMENT: bear REV at HIGH levels fires when price within 0.03 ATR of level
+   → RECOMMENDED: Start conservative at 0.03 ATR; can expand to 0.05 ATR after validation
+→ ACTION 2 (LOW, was MEDIUM): Opening-bar level re-arm timer — if opening bar rangeATR > 3.0, re-arm
    consumed levels after 30 min. Would restore v2.8a's 10:25 BRK ORB_H signal in v3.4.
+   RESEARCHED 2026-03-09: LOW PRIORITY — do not implement yet.
+   - Big-open threshold >4.0 fires 24% of days (too common); >3.0 = 47% of days (meaningless)
+   - TSLA 3/4 10:30 downmove was 0.34 ATR from ORB High — re-arm would NOT have caught it
+   - Expected gain: ~1.6 ATR/symbol/year (4–6x less than proximity tolerance)
+   - High implementation complexity: per-level consumed-state tracking + re-arm timer
+   - Big-open days actually have BETTER move quality after 10am (great=43.9% vs 38.8% normal)
+   → DEFER: Proximity tolerance addresses the motivating case; re-arm doesn't
 → ACTION 3 (LOW): Failed BRK reverse signal — when no-CONF BRK bar is followed 30+ min later
    by re-cross in opposite direction → fire reverse signal. Complex, needs research.
 
