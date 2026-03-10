@@ -1477,6 +1477,11 @@ if revBullText != ""
             label.set_textcolor(revLblOL, color.new(color.gray, 60))
     combinedBullText := combinedBullText + (combinedBullText != "" ? "\n" : "") + revBullText
 
+// v3.7: top-level scope — used in both bull and bear rendering blocks
+bool isBigCandle = sigRangeATR >= 2.0
+bool spySustainedReclaim = not na(spyVwap) and spyClose > spyVwap and spyClosePrev > spyVwap
+bool isSpyReclaimDimBear = spySustainedReclaim and (isMidday or rsVsSpy > 0)
+
 if combinedBullText != "" and not (i_suppressAfternoon and isTrueAfternoon)
     string bwSuffix = bodyWarn ? " ⚠" : ""
     string sigGlyphs = bigMoveGlyph + volRampGlyph
@@ -1484,11 +1489,6 @@ if combinedBullText != "" and not (i_suppressAfternoon and isTrueAfternoon)
     combinedBullText += bullQualLine != "" ? "\n" + glyphPfx + bullQualLine + bwSuffix : (sigGlyphs != "" or bwSuffix != "" ? "\n" + sigGlyphs + bwSuffix : "")
     // Evidence stack dim mode: use breakout stack if breakout present, reversal stack if reversal-only
     bool isRegimeDimBull = i_emaGate and regimeBull == 1  // R1 bull = dim (data: 31.2% win, -0.176 P&L)
-    // v3.7: large-candle bypass (2+ ATR bar = directional conviction, skip DIM)
-    bool isBigCandle = sigRangeATR >= 2.0
-    // v3.7: SPY sustained VWAP reclaim — DIM bear signals in midday or when symbol outperforms SPY
-    bool spySustainedReclaim = not na(spyVwap) and spyClose > spyVwap and spyClosePrev > spyVwap
-    bool isSpyReclaimDimBear = spySustainedReclaim and (isMidday or rsVsSpy > 0)
     bool isDimBull = ((i_fMode == "Dim" and not (bullText != "" ? evStackBull : evStackBull_rev)) or isVolModerate or emaGateBull_dim or isRegimeDimBull or isVolExhaustBull or isExhausted or isFreshDimBull) and not isQuietCoil and not isMiddayFlat and not isBroadCoil and not isBigCandle
     if isDimBull
         combinedBullText += "\n?"
