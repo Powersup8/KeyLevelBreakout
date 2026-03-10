@@ -50,6 +50,7 @@ BRK_BULL_LEVELS = {
     "PM High", "Week High",     # autoklb exp14: bull BRK at resistance highs
     "PD High", "ORB High",      # autoklb exp15: more bull BRK levels
     "Today Open", "PD Close",   # autoklb exp19: midline bull BRK
+    "PD Mid",                   # autoklb exp20: mid-level bull BRK
 }
 
 # REV levels — EMA gated
