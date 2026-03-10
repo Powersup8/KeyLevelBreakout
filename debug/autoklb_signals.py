@@ -55,6 +55,7 @@ BRK_BULL_LEVELS = {
 REV_LEVELS_GATED = {
     "PM Low", "PD Low", "Week Low",             # bull REV at LOWs
     "PD Last Hr Low",                            # bull REV
+    "ORB Low",                                   # autoklb exp17: re-enabled
     # NOTE: PM High, PD High, Week High, ORB High removed — bull REV suppressed v3.3c
 }
 
@@ -67,6 +68,7 @@ REV_LEVELS_UNGATED = {
 REV_BULL_LEVELS = {
     "PM Low", "PD Low", "Week Low",             # bull REV at LOWs (gated)
     "PD Last Hr Low",                            # bull REV (gated)
+    "ORB Low",                                   # autoklb exp17: re-enabled
     "PD Mid", "Today Open", "PD Close",          # magnet REV (ungated)
     # v3.3c: PM High, PD High, Week High, ORB High REMOVED for bull REV
 }
@@ -78,7 +80,7 @@ REV_BEAR_LEVELS = {
 
 # ── Suppressions ──
 DISABLED_SIGNALS = {
-    ("ORB Low", "bull", "REV"),          # v3.2: disabled
+    # ("ORB Low", "bull", "REV"),        # autoklb exp17: re-enabled ORB Low bull REV
     ("PM High", "bull", "REV"),          # v3.3c: bull REV at HIGHs suppressed
     ("PD High", "bull", "REV"),          # v3.3c
     ("Week High", "bull", "REV"),        # v3.3c
