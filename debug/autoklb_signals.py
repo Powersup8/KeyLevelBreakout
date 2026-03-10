@@ -20,7 +20,7 @@ import numpy as np
 BODY_PCT_MIN = 0.0            # autoklb exp6: remove body% gate entirely
 VOL_RATIO_MIN = 0.0           # autoklb exp2: remove vol gate entirely
 VOL_EXHAUSTION_MAX = 5.0       # v3.3: trigger vol > 5x → dim
-ADX_MIN = 20.0
+ADX_MIN = 15.0                # autoklb exp7: lower ADX gate
 LEVEL_PROXIMITY_ATR = 0.10     # within 10% ATR to count as "at level"
 FRESHNESS_MAX_TESTS = 3        # v3.3: 3rd+ test at same level → dim
 ATR_CONSUMED_MAX = 1.5         # v3.3: afternoon exhaustion threshold
