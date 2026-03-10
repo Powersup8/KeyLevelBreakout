@@ -18,7 +18,7 @@ import numpy as np
 # GATE THRESHOLDS — agent can tune these
 # ══════════════════════════════════════════════════════════════════════════════
 BODY_PCT_MIN = 30.0
-VOL_RATIO_MIN = 1.0           # v3.3: lowered from 1.5
+VOL_RATIO_MIN = 0.5           # autoklb exp1: try lower vol gate
 VOL_EXHAUSTION_MAX = 5.0       # v3.3: trigger vol > 5x → dim
 ADX_MIN = 20.0
 LEVEL_PROXIMITY_ATR = 0.10     # within 10% ATR to count as "at level"
