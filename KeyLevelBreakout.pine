@@ -2,7 +2,7 @@
 // Detects bullish/bearish 5m candle closes through key levels (v3.6)
 // Designed for US stocks (NYSE/NASDAQ) on 5-min charts
 //@version=6
-indicator("Key Level Breakout v3.6", overlay=true, max_labels_count=500, max_lines_count=200)
+indicator("Key Level Breakout v3.7", overlay=true, max_labels_count=500, max_lines_count=200)
 
 // ─── Inputs ────────────────────────────────────────────────
 i_showPM    = input.bool(true,  "Premarket High/Low",         group="Level Toggles")
@@ -128,8 +128,10 @@ dailyVolSma = request.security(syminfo.tickerid, "D", ta.sma(volume, i_volLen)[1
 [ema20_5m, ema50_5m, adx_5m] = request.security(syminfo.tickerid, "5",
      [ta.ema(close, 20)[1], ta.ema(close, 50)[1], f_adx()[1]], lookahead = barmerge.lookahead_on)
 // SPY intraday data for relative strength
-spyClose   = request.security("SPY", i_signalTF, close[1], lookahead = barmerge.lookahead_on)
-spyDayOpen = request.security("SPY", "D", open, lookahead = barmerge.lookahead_on)
+spyClose     = request.security("SPY", i_signalTF, close[1], lookahead = barmerge.lookahead_on)
+spyClosePrev = request.security("SPY", i_signalTF, close[2], lookahead = barmerge.lookahead_on)
+spyVwap      = request.security("SPY", i_signalTF, ta.vwap[1], lookahead = barmerge.lookahead_on)
+spyDayOpen   = request.security("SPY", "D", open, lookahead = barmerge.lookahead_on)
 
 // ORB High/Low — first 5-min bar(s) of regular session
 var float orbHigh = na
@@ -489,6 +491,9 @@ if newRegular
 // Previous completed signal-TF bar's OHLC — non-repainting
 [sigC, sigO, sigH, sigL, sigPC, sigPC2, sigVol, sigVolPrev, sigVolSma, sigVol2, sigVol3, sigVol4, sigVol5, sigATR14] = request.security(syminfo.tickerid, i_signalTF,
      [close[1], open[1], high[1], low[1], close[2], close[3], volume[1], volume[2], ta.sma(volume, i_volLen)[1], volume[3], volume[4], volume[5], volume[6], ta.atr(14)[1]], lookahead = barmerge.lookahead_on)
+
+// VWAP at signal timeframe — for VWAP Reclaim signal (v3.7)
+sigVwap = request.security(syminfo.tickerid, i_signalTF, ta.vwap[1], lookahead = barmerge.lookahead_on)
 
 // Range+Vol: 12-bar range PRIOR to signal bar (v3.0)
 // [2] offset excludes signal bar — [1] caused impossible condition (high[1] >= close[1] always)
@@ -957,6 +962,15 @@ rRevBearVWAP = i_vwapSignal and not na(vwapZoneLo) and isRegular and newSigBar
      and sigC < sigO and sigH >= vwapZoneLo and sigC < vwapZoneLo
      and (not i_vwapFilter or not na(vwapVal) and sigC < vwapVal)
 
+// VWAP Reclaim (v3.7): 2 consecutive 5m bars on one side of VWAP → close crosses to other side
+// No EMA gate — regime-shift signal; counter-EMA context is expected
+bool rVWAPReclaimBull = i_vwapSignal and not na(sigVwap) and isRegular and newSigBar
+     and sigC > sigO and sigC > sigVwap
+     and sigPC < sigVwap and sigPC2 < sigVwap
+bool rVWAPReclaimBear = i_vwapSignal and not na(sigVwap) and isRegular and newSigBar
+     and sigC < sigO and sigC < sigVwap
+     and sigPC > sigVwap and sigPC2 > sigVwap
+
 // Arm ORB signals after skipping the first signal bar post-ORB
 if not isORBwin and newSigBar
     orbFirstDone := true
@@ -983,6 +997,9 @@ sigRevBullOH  = false
 
 // VWAP filtered signals (reversal stack + EMA gate)
 sigRevBullVWAP = rRevBullVWAP and not xVWAPBull and fGateBull_rev and emaPassBull
+// VWAP Reclaim — no EMA gate by design
+bool sigVWAPReclaimBull = rVWAPReclaimBull and not xVWAPBull and fGateBull_rev
+bool sigVWAPReclaimBear = rVWAPReclaimBear and not xVWAPBear and fGateBear_rev
 sigRevBearVWAP = rRevBearVWAP and not xVWAPBear and fGateBear_rev and emaPassBear
 
 sigRevBullPDLH = rRevBullPDLH and (not i_firstOnly or not rPDLH) and fGateBull_rev and emaPassBull
@@ -1009,6 +1026,7 @@ sigRevBullVWBL      := sigRevBullVWBL      and isNotNVDA
 sigRevBullPDMid     := sigRevBullPDMid     and isNotNVDA
 sigRevBullTodayOpen := sigRevBullTodayOpen and isNotNVDA
 sigRevBullPDClose   := sigRevBullPDClose   and isNotNVDA
+sigVWAPReclaimBull  := sigVWAPReclaimBull  and isNotNVDA
 
 // Update reversal flags
 if rRevBullPML
@@ -1028,9 +1046,9 @@ if rRevBearWH
 if rRevBearOH
     rOH := true
 // v3.3c: bull REV at HIGH levels removed — first-occurrence flags now set only by bear REV (above)
-if sigRevBullVWAP
+if sigRevBullVWAP or sigVWAPReclaimBull
     xVWAPBull := true
-if sigRevBearVWAP
+if sigRevBearVWAP or sigVWAPReclaimBear
     xVWAPBear := true
 if rRevBullPDLH
     rPDLH := true
@@ -1059,8 +1077,8 @@ anyBull     = sigBullPDLH or sigBullWO or sigBullMO  // v3.2: HIGH levels moved 
 anyBear     = sigBearPML or sigBearYL or sigBearWL or sigBearOL or sigBearPDLH or sigBearVWBL or sigBearWO or sigBearMO
 anyBreakout = anyBull or anyBear
 
-anyRevBull  = sigRevBullPML or sigRevBullYL or sigRevBullWL or sigRevBullOL or sigRevBullVWAP or sigRevBullPDLH or sigRevBullVWBL or sigRevBullPDMid or sigRevBullTodayOpen or sigRevBullPDClose or sigRevBullPMH or sigRevBullYH or sigRevBullWH or sigRevBullOH
-anyRevBear  = sigRevBearPMH or sigRevBearYH or sigRevBearWH or sigRevBearOH or sigRevBearVWAP or sigRevBearPDMid or sigRevBearTodayOpen or sigRevBearPDClose
+anyRevBull  = sigRevBullPML or sigRevBullYL or sigRevBullWL or sigRevBullOL or sigRevBullVWAP or sigRevBullPDLH or sigRevBullVWBL or sigRevBullPDMid or sigRevBullTodayOpen or sigRevBullPDClose or sigRevBullPMH or sigRevBullYH or sigRevBullWH or sigRevBullOH or sigVWAPReclaimBull
+anyRevBear  = sigRevBearPMH or sigRevBearYH or sigRevBearWH or sigRevBearOH or sigRevBearVWAP or sigRevBearPDMid or sigRevBearTodayOpen or sigRevBearPDClose or sigVWAPReclaimBear
 anyReversal = anyRevBull or anyRevBear
 // FADE signal detection (v3.2): counter-EMA crossback
 // Original was bull (counter-EMA) → price falls back through level → FADE fires BEAR (with EMA)
@@ -1212,6 +1230,8 @@ if sigRevBullOL
         revBullHasReclaim := true
 if sigRevBullVWAP
     revBullText := revBullText + (revBullText != "" ? "\n" : "") + "~ VWAP"
+if sigVWAPReclaimBull
+    revBullText := revBullText + (revBullText != "" ? "\n" : "") + "~> VWAP"
 if sigRevBullPDLH
     revBullText := revBullText + (revBullText != "" ? " + " : "") + "~ PD LH L"
 if sigRevBullVWBL
@@ -1255,6 +1275,8 @@ if sigRevBearOH
         revBearHasReclaim := true
 if sigRevBearVWAP
     revBearText := revBearText + (revBearText != "" ? "\n" : "") + "~ VWAP"
+if sigVWAPReclaimBear
+    revBearText := revBearText + (revBearText != "" ? "\n" : "") + "~> VWAP"
 if sigRevBearPDMid
     revBearText := revBearText + (revBearText != "" ? " + " : "") + "~ PD Mid"
 if sigRevBearTodayOpen
@@ -1262,8 +1284,8 @@ if sigRevBearTodayOpen
 if sigRevBearPDClose
     revBearText := revBearText + (revBearText != "" ? " + " : "") + "~ PD Cls"
 
-revBullCount = (sigRevBullPML ? 1 : 0) + (sigRevBullYL ? 1 : 0) + (sigRevBullWL ? 1 : 0) + (sigRevBullOL ? 1 : 0) + (sigRevBullVWAP ? 1 : 0) + (sigRevBullPDLH ? 1 : 0) + (sigRevBullVWBL ? 1 : 0) + (sigRevBullPDMid ? 1 : 0) + (sigRevBullTodayOpen ? 1 : 0) + (sigRevBullPDClose ? 1 : 0) + (sigRevBullPMH ? 1 : 0) + (sigRevBullYH ? 1 : 0) + (sigRevBullWH ? 1 : 0) + (sigRevBullOH ? 1 : 0)
-revBearCount = (sigRevBearPMH ? 1 : 0) + (sigRevBearYH ? 1 : 0) + (sigRevBearWH ? 1 : 0) + (sigRevBearOH ? 1 : 0) + (sigRevBearVWAP ? 1 : 0) + (sigRevBearPDMid ? 1 : 0) + (sigRevBearTodayOpen ? 1 : 0) + (sigRevBearPDClose ? 1 : 0)
+revBullCount = (sigRevBullPML ? 1 : 0) + (sigRevBullYL ? 1 : 0) + (sigRevBullWL ? 1 : 0) + (sigRevBullOL ? 1 : 0) + (sigRevBullVWAP ? 1 : 0) + (sigRevBullPDLH ? 1 : 0) + (sigRevBullVWBL ? 1 : 0) + (sigRevBullPDMid ? 1 : 0) + (sigRevBullTodayOpen ? 1 : 0) + (sigRevBullPDClose ? 1 : 0) + (sigRevBullPMH ? 1 : 0) + (sigRevBullYH ? 1 : 0) + (sigRevBullWH ? 1 : 0) + (sigRevBullOH ? 1 : 0) + (sigVWAPReclaimBull ? 1 : 0)
+revBearCount = (sigRevBearPMH ? 1 : 0) + (sigRevBearYH ? 1 : 0) + (sigRevBearWH ? 1 : 0) + (sigRevBearOH ? 1 : 0) + (sigRevBearVWAP ? 1 : 0) + (sigRevBearPDMid ? 1 : 0) + (sigRevBearTodayOpen ? 1 : 0) + (sigRevBearPDClose ? 1 : 0) + (sigVWAPReclaimBear ? 1 : 0)
 
 // ─── Level Freshness: increment on any signal fire (v3.3) ──
 // A level is "tested" each time any signal (BRK or REV) fires at it.
@@ -1462,7 +1484,12 @@ if combinedBullText != "" and not (i_suppressAfternoon and isTrueAfternoon)
     combinedBullText += bullQualLine != "" ? "\n" + glyphPfx + bullQualLine + bwSuffix : (sigGlyphs != "" or bwSuffix != "" ? "\n" + sigGlyphs + bwSuffix : "")
     // Evidence stack dim mode: use breakout stack if breakout present, reversal stack if reversal-only
     bool isRegimeDimBull = i_emaGate and regimeBull == 1  // R1 bull = dim (data: 31.2% win, -0.176 P&L)
-    bool isDimBull = ((i_fMode == "Dim" and not (bullText != "" ? evStackBull : evStackBull_rev)) or isVolModerate or emaGateBull_dim or isRegimeDimBull or isVolExhaustBull or isExhausted or isFreshDimBull) and not isQuietCoil and not isMiddayFlat and not isBroadCoil
+    // v3.7: large-candle bypass (2+ ATR bar = directional conviction, skip DIM)
+    bool isBigCandle = sigRangeATR >= 2.0
+    // v3.7: SPY sustained VWAP reclaim — DIM bear signals in midday or when symbol outperforms SPY
+    bool spySustainedReclaim = not na(spyVwap) and spyClose > spyVwap and spyClosePrev > spyVwap
+    bool isSpyReclaimDimBear = spySustainedReclaim and (isMidday or rsVsSpy > 0)
+    bool isDimBull = ((i_fMode == "Dim" and not (bullText != "" ? evStackBull : evStackBull_rev)) or isVolModerate or emaGateBull_dim or isRegimeDimBull or isVolExhaustBull or isExhausted or isFreshDimBull) and not isQuietCoil and not isMiddayFlat and not isBroadCoil and not isBigCandle
     if isDimBull
         combinedBullText += "\n?"
     // Determine color: breakout color if breakout present, reversal color if reversal-only
@@ -1642,7 +1669,7 @@ if combinedBearText != "" and not (i_suppressAfternoon and isTrueAfternoon)
         combinedBearText += " ★2x"
     // Evidence stack dim mode: use breakout stack if breakout present, reversal stack if reversal-only
     bool isRegimeDimBear = i_emaGate and regimeBear == 1
-    bool isDimBear = ((i_fMode == "Dim" and not (bearText != "" ? evStackBear : evStackBear_rev)) or isVolModerate or emaGateBear_dim or isRegimeDimBear or isVolExhaustBear or isExhausted or isFreshDimBear) and not isQuietCoil and not isMiddayFlat and not isBroadCoil
+    bool isDimBear = ((i_fMode == "Dim" and not (bearText != "" ? evStackBear : evStackBear_rev)) or isVolModerate or emaGateBear_dim or isRegimeDimBear or isVolExhaustBear or isExhausted or isFreshDimBear or isSpyReclaimDimBear) and not isQuietCoil and not isMiddayFlat and not isBroadCoil and not isBigCandle
     if isDimBear
         combinedBearText += "\n?"
     // Determine color: breakout color if breakout present, reversal color if reversal-only

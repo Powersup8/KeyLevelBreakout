@@ -1,0 +1,185 @@
+======================================================================
+BEAR KLB SIGNALS DURING SPY VWAP RECLAIM — FACTOR ANALYSIS
+======================================================================
+
+Loading SPY data...
+  SPY 5m bars: 44,432 | market hours: 41,096
+Processing AAPL...
+  AAPL: 65 signals, 32 wins (49.2%)
+Processing AMD...
+  AMD: 43 signals, 26 wins (60.5%)
+Processing AMZN...
+  AMZN: 43 signals, 23 wins (53.5%)
+Processing GLD...
+  GLD: 27 signals, 13 wins (48.1%)
+Processing GOOGL...
+  GOOGL: 59 signals, 37 wins (62.7%)
+Processing META...
+  META: 50 signals, 29 wins (58.0%)
+Processing MSFT...
+  MSFT: 46 signals, 27 wins (58.7%)
+Processing NFLX...
+  NFLX: 63 signals, 33 wins (52.4%)
+Processing NVDA...
+  NVDA: 30 signals, 16 wins (53.3%)
+Processing QQQ...
+  QQQ: 17 signals, 9 wins (52.9%)
+Processing SLV...
+  SLV: 31 signals, 19 wins (61.3%)
+Processing TSLA...
+  TSLA: 39 signals, 19 wins (48.7%)
+Processing TSM...
+  TSM: 20 signals, 11 wins (55.0%)
+Processing XLE...
+  XLE: 60 signals, 35 wins (58.3%)
+
+======================================================================
+TOTAL SIGNALS: 593
+Date range: 2024-01-30 to 2026-03-05 (765 days, ~25.5 months)
+Signals/month: 23.3
+
+Baseline: Win=55.5% | Loss=16.7% | Neutral=27.8%
+Win condition: MFE > 0.15 ATR  |  Loss condition: MFE < 0.05 ATR
+
+======================================================================
+FACTOR ANALYSIS
+======================================================================
+
+--- Symbol above its own VWAP ---
+Bucket                      N    Win%   Loss%   Lift
+----------------------------------------------------
+0.0                     466.0   57.7%   15.7%   1.04x <-- BEST
+1.0                     127.0   47.2%   20.5%   0.85x
+
+--- Symbol EMA20 trending down (bear) ---
+Bucket                      N    Win%   Loss%   Lift
+----------------------------------------------------
+1.0                     306.0   56.5%   17.6%   1.02x <-- BEST
+0.0                     287.0   54.4%   15.7%   0.98x
+
+--- Time of day ---
+Bucket                      N    Win%   Loss%   Lift
+----------------------------------------------------
+morning                   451   59.4%   15.3%   1.07x <-- BEST
+afternoon                  58   48.3%   27.6%   0.87x
+midday                     84   39.3%   16.7%   0.71x
+
+--- Resistance level within 0.3 ATR above ---
+Bucket                      N    Win%   Loss%   Lift
+----------------------------------------------------
+0.0                     336.0   57.4%   15.2%   1.04x <-- BEST
+1.0                     257.0   52.9%   18.7%   0.95x
+
+--- SPY reclaim duration ---
+Bucket                      N    Win%   Loss%   Lift
+----------------------------------------------------
+just_reclaimed            145   57.2%   14.5%   1.03x <-- BEST
+held                      448   54.9%   17.4%   0.99x
+
+--- Symbol weaker than SPY (underperforming) ---
+Bucket                      N    Win%   Loss%   Lift
+----------------------------------------------------
+1.0                     488.0   58.4%   15.4%   1.05x <-- BEST
+0.0                     105.0   41.9%   22.9%   0.76x
+
+--- Symbol VWAP distance bucket ---
+Bucket                      N    Win%   Loss%   Lift
+----------------------------------------------------
+near_below                398   59.0%   16.1%   1.06x <-- BEST
+far_below                  68   50.0%   13.2%   0.90x
+above                     127   47.2%   20.5%   0.85x
+
+======================================================================
+TOP 2-FACTOR COMBOS (N >= 20, win_rate >= 55%)
+======================================================================
+Factor1=Val                         Factor2=Val                             N    Win%   Loss%   Lift
+-----------------------------------------------------------------------------------------------
+symbol_above_vwap=1                 time_bucket=afternoon                24.0   66.7%   20.8%   1.20x
+time_bucket=afternoon               vwap_bucket=above                    24.0   66.7%   20.8%   1.20x
+time_bucket=morning                 resistance_nearby=0                 238.0   62.6%   13.9%   1.13x
+spy_reclaim_bucket=just_reclaimed   vwap_bucket=above                    24.0   62.5%   16.7%   1.13x
+symbol_above_vwap=1                 spy_reclaim_bucket=just_reclaimed    24.0   62.5%   16.7%   1.13x
+sym_weaker=1                        vwap_bucket=near_below              361.0   61.8%   15.0%   1.11x
+time_bucket=morning                 sym_weaker=1                        394.0   61.7%   14.2%   1.11x
+time_bucket=morning                 vwap_bucket=near_below              354.0   61.6%   14.1%   1.11x
+symbol_above_vwap=0                 time_bucket=morning                 375.0   61.3%   14.1%   1.11x
+spy_reclaim_bucket=held             vwap_bucket=near_below              287.0   61.0%   16.4%   1.10x
+resistance_nearby=0.0               sym_weaker=1.0                      281.0   60.9%   14.2%   1.10x
+time_bucket=morning                 spy_reclaim_bucket=held             317.0   60.6%   15.1%   1.09x
+symbol_ema_bear=0                   time_bucket=morning                 216.0   60.2%   13.0%   1.08x
+resistance_nearby=0                 vwap_bucket=near_below              242.0   59.9%   15.7%   1.08x
+symbol_above_vwap=0.0               sym_weaker=1.0                      428.0   59.8%   14.7%   1.08x
+symbol_ema_bear=1                   vwap_bucket=near_below              210.0   59.5%   17.6%   1.07x
+symbol_ema_bear=0.0                 sym_weaker=1.0                      213.0   59.2%   13.1%   1.07x
+symbol_above_vwap=0                 vwap_bucket=near_below              398.0   59.0%   16.1%   1.06x
+spy_reclaim_bucket=held             sym_weaker=1                        364.0   58.8%   15.7%   1.06x
+symbol_ema_bear=1                   time_bucket=morning                 235.0   58.7%   17.4%   1.06x
+
+======================================================================
+BEST FILTER RULE & COVERAGE
+======================================================================
+
+Best single filter: time_bucket == morning
+  Win rate: 59.4%  (baseline: 55.5%,  lift: 1.07x)
+  Loss rate: 15.3%
+  N: 451
+  Coverage: 76.1% of all signals PASS this filter
+  Suppressed: 23.9% of signals would be DIM/suppressed
+  Signals/month kept: 17.7 (from 23.3 total)
+
+Best 2-factor filter: symbol_above_vwap==1 AND time_bucket==afternoon
+  Win rate: 66.7%  Loss rate: 20.8%  N: 24.0
+  Coverage: 4.0% of signals pass | Suppressed: 96.0%
+
+======================================================================
+SYMBOL BREAKDOWN
+======================================================================
+Symbol       N    Win%   Loss%
+--------------------------------
+GOOGL       59   62.7%   13.6%
+SLV         31   61.3%    9.7%
+AMD         43   60.5%    9.3%
+MSFT        46   58.7%   15.2%
+XLE         60   58.3%   16.7%
+META        50   58.0%   12.0%
+TSM         20   55.0%   10.0%
+AMZN        43   53.5%   20.9%
+NVDA        30   53.3%   23.3%
+QQQ         17   52.9%   35.3%
+NFLX        63   52.4%   20.6%
+AAPL        65   49.2%   20.0%
+TSLA        39   48.7%   15.4%
+GLD         27   48.1%   18.5%
+
+======================================================================
+PINE SCRIPT IMPLEMENTATION SKETCH
+======================================================================
+
+// Filter: bear signal during SPY VWAP reclaim — best condition: time_bucket==morning
+// Win rate: 59.4% vs 55.5% baseline (1.07x lift)
+
+// SPY VWAP reclaim detection (on symbol chart using security())
+spy_vwap = ta.vwap(hlc3)  // or request.security("SPY", ...)
+spy_above_vwap = close > spy_vwap  // proxy: symbol above its own VWAP
+spy_sustained_reclaim = spy_above_vwap and spy_above_vwap[1]  // 2+ bars
+
+// Bear signal conditions
+bear_bar = close < open
+vol_above_avg = volume > ta.sma(volume, 20)
+sig_range = (high - low) >= 0.3 * atr14
+
+// Base bear signal during SPY reclaim
+base_signal = bear_bar and vol_above_avg and sig_range and spy_sustained_reclaim
+
+// Best quality filter (from research):
+sym_above_vwap = close > ta.vwap(hlc3)
+ema20 = ta.ema(close, 20)
+sym_ema_bear = ema20 < ema20[5]
+sym_weaker_spy = (close / close[1] - 1) < (spy_close / spy_close[1] - 1)
+
+// Apply filter — DIM if not meeting quality conditions
+bear_hq = base_signal and sym_ema_bear  // counter-trend with-EMA: highest lift
+// or: bear_hq = base_signal and not sym_above_vwap  // symbol below own VWAP
+
+======================================================================
+Results saved to: /Users/mab/Library/CloudStorage/GoogleDrive-mab@bina.de/Meine Ablage/Claude/misc/TradingView/debug/spy_vwap_reclaim_bear_results.txt

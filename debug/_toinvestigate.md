@@ -9,18 +9,26 @@ after that: investigate each signal on the past if we fetch it right, how far it
   could use other findings we have but didnt use or in other circumstances.
 
 
-3/9/26
-NYSE has DST!
-TSLA investigate from opening on, how went the signals, 9:30 bullish signal, 9:35 baerish - how to improve this to catch the right move at the right time?
-TSLA uptrend after 10:12 not covered
-SPY 9:36-9:53 downtrend signaled late at 9:44
-SPY/QQQ 9:54-10:04 upmove missed
-SPY/QQQ 10:05-10:13 down massive, no signal
-SPY/QQQ 10:14 long uptrend missed
-NVDA 9:33-10:44 down missed and signeled up!
-NVDA 9:46- uptrend with a little down 10:05-10:13 totally missed
-META signals false?!?
-generally, no high quality signals at all, or did I miss them? Compare the real P/L to the signaled one
+3/9/26 — INVESTIGATED → debug/investigation-2026-03-09.md + debug/deep_investigation_20260309.md
+V-shaped bull recovery day. SPY ATR=$9.45. All 11 major moves were bull. KLB caught late BRK cluster (15:15+).
+
+TSLA 9:30 bull vs 9:35 bear → CORRECT behavior. RNG fires on bar close. 5-min rule resolves: 9:35 close < open → cancel bull RNG. v3.7 note: VWAP reclaim at 10:45 (+0.21 ATR) is the real TSLA entry.
+TSLA uptrend after 10:12 → Level desert + EMA bear all morning. VWAP reclaim at 10:45 (v3.7 would catch). Full move = 1.38 ATR but uncatchable from open.
+SPY 9:36-9:53 downtrend late → Only -0.35 ATR total. Sub-threshold. RNG was correct response.
+SPY/QQQ 9:54-10:04 upmove → +0.31 ATR bounce. Not a quality signal.
+SPY/QQQ 10:05-10:13 "massive" down → Only -0.38 ATR (SPY ATR=$9.45). No level broken. Correct: no signal.
+SPY/QQQ 10:14 long uptrend → v3.7 VWAP Reclaim at 10:20 (SPY entry 665.29, MFE=0.46 ATR). IMPLEMENTED.
+NVDA 9:33-10:44 "down missed, signaled up" → WRONG framing. NVDA went DOWN only -0.42 ATR at open, then held above VWAP all morning. VR fired at 09:55 (MFE=0.386 ATR). Was leader, not laggard.
+NVDA 9:46 uptrend missed → See above. 09:55 VR would catch it in v3.7.
+META signals false → NOT false. All caught the real -0.43 ATR bear leg. Day reversed after. v3.7 adds bull VR at 10:00/10:20 for the recovery.
+No HQ signals → Real quality trade was 15:15-15:40 BRK cluster (5 symbols, all CONF✓). V-days are KLB's blind spot.
+
+Key findings:
+- v3.7 VWAP Reclaim catches 4/18 missed moves (SPY 10:20, AMZN 10:15, META 10:00, NVDA 09:55)
+- 47 total VR signals on this day (31 bull, 16 bear), 17 HQ (MFE>0.30 ATR)
+- SPY ATR mismatch: $3.54/7min = 0.38 ATR (ATR=$9.45 — high-volatility period)
+- DST: US DST started 3/8/26. ET=UTC-4, Berlin=UTC+1, offset=5h until EU DST (~3/29)
+→ RESOLVED: v3.7 implements VWAP Reclaim + SPY reclaim DIM + large-candle bypass
 
 
 
