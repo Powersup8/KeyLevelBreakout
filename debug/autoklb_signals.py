@@ -17,7 +17,7 @@ import numpy as np
 # ══════════════════════════════════════════════════════════════════════════════
 # GATE THRESHOLDS — agent can tune these
 # ══════════════════════════════════════════════════════════════════════════════
-BODY_PCT_MIN = 10.0           # autoklb exp5: lower body% gate further
+BODY_PCT_MIN = 0.0            # autoklb exp6: remove body% gate entirely
 VOL_RATIO_MIN = 0.0           # autoklb exp2: remove vol gate entirely
 VOL_EXHAUSTION_MAX = 5.0       # v3.3: trigger vol > 5x → dim
 ADX_MIN = 20.0
