@@ -47,6 +47,7 @@ BRK_BEAR_LEVELS = {
 BRK_BULL_LEVELS = {
     "Week Open", "Month Open",
     "PD Last Hr High",          # v3.4: added
+    "PM High", "Week High",     # autoklb exp14: bull BRK at resistance highs
 }
 
 # REV levels — EMA gated
