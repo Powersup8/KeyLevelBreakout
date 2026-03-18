@@ -1,10 +1,12 @@
 # TSLA Open Scalper — Reference Doc
 
-**Version:** v1.0d | **Chart:** TSLA 1m, Extended Hours ON
+**Version:** v1.1a | **Chart:** TSLA 1m, Extended Hours ON
 
 ## What It Does
 
-A 6-state decision machine for TSLA 0DTE/1DTE options at the open. Guides you from pre-open assessment (9:20) through entry (9:30), hold/bail (9:35), and exit (9:40). Every threshold is validated from 280 days of TSLA research (Feb 2025–Mar 2026).
+An 8-state decision machine for TSLA 0DTE/1DTE options at the open. Guides you from pre-open assessment (9:20) through entry (9:30), ORB formation (9:30–9:35), breakout detection (9:35+), and exit (10 bars after breakout). Every threshold is validated from 280 days of TSLA research (Feb 2025–Mar 2026).
+
+**v1.1 upgrade:** Replaced the fixed-time 5m BAIL (which exited at the worst moment on shakeout days) with ORB-based breakout detection. The indicator now waits for price to tell you the direction instead of checking a clock.
 
 ## Setup
 
@@ -21,9 +23,12 @@ A 6-state decision machine for TSLA 0DTE/1DTE options at the open. Guides you fr
 | 1 PRE-SCAN | 9:20–9:29 | PM tracking, confidence scoring, corner table appears |
 | 2 OPENING | 9:30 | Entry/SL lines drawn, entry label placed |
 | 3 FAKEOUT | 9:30 (bar close) | 1m bar pattern check: fakeout, chaotic, or shakeout |
-| 4 5M RULE | 9:35 | HOLD (add size) or BAIL (exit) |
-| 5 EXIT | 9:40 | Take profit signal for options |
-| 6 DONE | after 9:40 | Overhold warning at 9:45, then quiet |
+| 4 ORB BUILD | 9:31–9:34 | Tracking opening range high/low |
+| 5 ORB WATCH | 9:35+ | ORB box drawn (yellow zone), watching for breakout |
+| 6 BREAKOUT | when price breaks ORB | Bull (close > ORB high) or Bear (close < ORB low) |
+| 7 DONE | after exit/timeout | Lines remain, no new signals |
+
+**SL Hit:** If price touches SL (entry − $2) during states 3–5, an immediate "SL HIT — EXIT" warning fires regardless of ORB state.
 
 ## Confidence Scoring (5 checks, +1 each)
 
@@ -62,16 +67,20 @@ Since 30s `request.security_lower_tf` is not available, uses the 9:30 1m bar's O
 | CHAOTIC | Bar range > $3.04 | Warning label (orange) |
 | Shakeout | Red bar, no wick rejection | Watch label — if BAIL fires, shows "MAY RECOVER" (orange) |
 
-## 5-Minute Rule
+## ORB Breakout (v1.1 — replaces fixed 5m BAIL)
 
-At 9:35: compare close to 9:30 open.
+At 9:35, the 5-minute Opening Range (ORB) is frozen. After 9:35, each bar is checked for close above ORB high or below ORB low.
 
-| Result | Label | Research |
-|---|---|---|
-| HOLD (close > open) | Green "HOLD — ADD SIZE" | 66.7% win, +$3.10 avg (280 days) |
-| BAIL (close ≤ open) | Red "BAIL — EXIT ALL" | 32% win, -$3.30 avg |
-| BAIL + shakeout | Orange "BAIL — SHAKEOUT, MAY RECOVER" | DOWN→DOWN + HOLD = 78.6% win |
-| HOLD + prior fakeout | Teal "RECOVERY HOLD" | Shakeout reversal confirmed |
+| Signal | Detection | Label | Research |
+|---|---|---|---|
+| ORB Bull | close > ORB high | Green "ORB BULL — ADD SIZE" | R01: 70% day above, +$3.98 avg |
+| ORB Bull + shakeout | Bull break after shakeout detected | Teal "ORB BULL — SHAKEOUT RECOVERY" | A6: DOWN→DOWN + HOLD = 78.6% win |
+| ORB Bear | close < ORB low | Red "ORB BEAR — EXIT" | R01: 29% day above, -$4.36 avg |
+| No breakout | neither by 9:55 | Gray "ORB — NO BREAK (timeout)" | Range-bound day |
+
+**5m rule** is still computed at 9:35 and shown as info in the table ("5m: above open ✓/✗"), but no longer triggers action.
+
+**Exit:** 10 bars after bull breakout (optimal for 0DTE options, research: 81.6% win, Sharpe 14.64).
 
 ## Visual Elements
 
@@ -121,11 +130,11 @@ One alert covers all signals (uses `alert()` with dynamic messages):
 | No entry lines | Tier was LOW or NO-GO | Check confidence score in table |
 | Labels at wrong time | Timezone mismatch | Chart must use ET (UTC-4/5) |
 
-## Known Limitations (v1.0)
+## Known Limitations (v1.1)
 
-- **Fixed-time BAIL at 9:35 can exit at the worst moment** — shakeout days may recover after BAIL. The orange "MAY RECOVER" label mitigates but doesn't solve this. v1.1 will add ORB-based signals.
 - **30s fakeout detection not available** — uses 1m bar proxy instead.
-- **TSLA-specific thresholds** — dollar values ($2.00 SL, $3.04 chaotic) are hardcoded for TSLA.
+- **TSLA-specific thresholds** — dollar values ($2.00 SL, $3.04 chaotic, ORB) are hardcoded for TSLA.
+- **ORB breakout on tight range days** — very narrow ORB may trigger false breakouts on noise. Consider adding minimum ORB width filter in v1.2.
 
 ## Research Files
 
