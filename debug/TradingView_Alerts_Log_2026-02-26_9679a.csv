@@ -1,0 +1,14 @@
+Alert ID,Ticker,Name,Description,Time
+4112303996,"BATS:NVDA, 5m","Key Level Breakout (5, 100, Signal TF SMA, 1.5, 20, 5, 3, Session, 3, 2, 0930-1130, 3, bottom_right, 20): Any alert() function call",Bearish reversal: ~ ORB H 11.9x v98,2026-02-26T14:40:00Z
+4112302732,"BATS:AMD, 5m","Key Level Breakout (5, 100, Signal TF SMA, 1.5, 20, 5, 3, Session, 3, 2, 0930-1130, 3, bottom_right, 20): Any alert() function call",Bearish breakout: PM L 15.6x v96,2026-02-26T14:40:02Z
+4112302732,"BATS:AMD, 5m","Key Level Breakout (5, 100, Signal TF SMA, 1.5, 20, 5, 3, Session, 3, 2, 0930-1130, 3, bottom_right, 20): Any alert() function call",Bearish reversal: ~ PM H + ~ ORB H 15.6x v96,2026-02-26T14:40:02Z
+4112294219,"BATS:SPY, 5m","Key Level Breakout (5, 100, Signal TF SMA, 1.5, 20, 5, 3, Session, 3, 2, 0930-1130, 3, bottom_right, 20): Any alert() function call",Bearish reversal: ~ Yest H + ~ ORB H 14.6x v81,2026-02-26T14:40:00Z
+4112306737,"BATS:TSLA, 5m","Key Level Breakout (5, 100, Signal TF SMA, 1.5, 20, 5, 3, Session, 3, 2, 0930-1130, 3, bottom_right, 20): Any alert() function call",Bearish reversal: ~ PM H + ~ Week H + ~ ORB H 16.5x v88,2026-02-26T14:40:00Z
+4112306737,"BATS:TSLA, 5m","Key Level Breakout (5, 100, Signal TF SMA, 1.5, 20, 5, 3, Session, 3, 2, 0930-1130, 3, bottom_right, 20): Any alert() function call",Bearish breakout: PM L + Yest L 16.5x v88,2026-02-26T14:40:00Z
+4112297265,"BATS:AAPL, 5m","Key Level Breakout (5, 100, Signal TF SMA, 1.5, 20, 5, 3, Session, 3, 2, 0930-1130, 3, bottom_right, 20): Any alert() function call",Bearish reversal: ~ PM H + ~ ORB H 17.6x v81,2026-02-26T14:40:00Z
+4112303996,"BATS:NVDA, 5m","Key Level Breakout (5, 100, Signal TF SMA, 1.5, 20, 5, 3, Session, 3, 2, 0930-1130, 3, bottom_right, 20): Any alert() function call",Bearish reversal: ~ ORB H 11.9x v98,2026-02-26T14:40:00Z
+4112294959,"BATS:MSFT, 5m","Key Level Breakout (5, 100, Signal TF SMA, 1.5, 20, 5, 3, Session, 3, 2, 0930-1130, 3, bottom_right, 20): Any alert() function call",Bearish reversal: ~ PM H + ~ ORB H 14.9x v85,2026-02-26T14:40:00Z
+4112303996,"BATS:NVDA, 5m","Key Level Breakout (5, 100, Signal TF SMA, 1.5, 20, 5, 3, Session, 3, 2, 0930-1130, 3, bottom_right, 20): Any alert() function call",Bearish breakout: PM L + Yest L 11.9x v98,2026-02-26T14:40:00Z
+4112294959,"BATS:MSFT, 5m","Key Level Breakout (5, 100, Signal TF SMA, 1.5, 20, 5, 3, Session, 3, 2, 0930-1130, 3, bottom_right, 20): Any alert() function call",Retest: ◆¹ Yest H 11.2x ^91,2026-02-26T14:40:00Z
+4112294959,"BATS:MSFT, 5m","Key Level Breakout (5, 100, Signal TF SMA, 1.5, 20, 5, 3, Session, 3, 2, 0930-1130, 3, bottom_right, 20): Any alert() function call",Bullish breakout: Yest H + Week H 6.7x ^82,2026-02-26T14:35:00Z
+4112303996,"BATS:NVDA, 5m","Key Level Breakout (5, 100, Signal TF SMA, 1.5, 20, 5, 3, Session, 3, 2, 0930-1130, 3, bottom_right, 20): Any alert() function call",Bearish reversal: ~ Yest H 5.8x v83,2026-02-26T14:35:00Z

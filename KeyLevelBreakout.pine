@@ -1,0 +1,2161 @@
+// © Key Level Breakout Alert Indicator
+// Detects bullish/bearish 5m candle closes through key levels (v3.7)
+// Designed for US stocks (NYSE/NASDAQ) on 5-min charts
+//@version=6
+indicator("Key Level Breakout v3.7", overlay=true, max_labels_count=500, max_lines_count=200)
+
+// ─── Inputs ────────────────────────────────────────────────
+i_showPM    = input.bool(true,  "Premarket High/Low",         group="Level Toggles")
+i_showYest  = input.bool(true,  "Yesterday High/Low",         group="Level Toggles")
+i_showWeek  = input.bool(true,  "Last Week High/Low",         group="Level Toggles")
+i_showORB   = input.bool(true,  "ORB High/Low",               group="Level Toggles")
+i_showPDMid  = input.bool(true,  "Prior Day Mid/Last Hr Low",    group="Level Toggles")
+i_showVWBand = input.bool(true,  "VWAP Lower Band",              group="Level Toggles")
+i_showTodayOpen = input.bool(true, "Today's Open",       group="Level Toggles")
+i_showPDClose   = input.bool(true, "PD Close",           group="Level Toggles")
+i_showWeekOpen  = input.bool(true, "Week Open",          group="Level Toggles")
+i_showMonthOpen = input.bool(true, "Month Open",         group="Level Toggles")
+i_firstOnly = input.bool(true,  "Once Per Breakout", group="Signals")
+i_signalTF  = input.timeframe("5", "Signal Timeframe",        group="Signals")
+i_showLines = input.bool(false, "Show Level Lines",           group="Visuals")
+i_showVWAP  = input.bool(true,  "Show VWAP Line",             group="Visuals")
+i_showSL    = input.bool(true,  "Show SL Lines (30 min)",     tooltip="Draw 0.10 and 0.15 ATR stop-loss reference lines for 30 minutes after each signal", group="Visuals")
+i_fadeOld   = input.bool(true,  "Fade Old Labels",            group="Visuals")
+i_fadeAge   = input.int(100,    "Fade After (signal bars)",    minval=10, group="Visuals")
+i_dimAfternoon      = input.bool(true,  "Dim Afternoon Signals (after 11:00)",           group="Visuals")
+i_suppressAfternoon = input.bool(false, "Suppress Afternoon Signals (14:00–16:00)", tooltip="Research (v3.3c + v3.4): afternoon signals are net negative at every SL size. Toggle to hide them entirely.", group="Filters")
+i_proxTolerance     = input.float(0.03,  "REV Proximity Tolerance (ATR)",            minval=0.0, maxval=0.10, step=0.01, tooltip="Fire bear REV at HIGH levels when bar high comes within X ATR of the level without fully touching. Research: 0.03–0.05 ATR = same signal quality as exact touch (great%=42.7%, mfe/mae=4.24x).", group="Filters")
+
+// ─── Filter Inputs ──────────────────────────────────────
+i_volFilter  = input.bool(true,  "Require Above-Avg Volume",    group="Filters")
+i_volMode    = input.string("Signal TF SMA", "Volume Baseline", options=["Signal TF SMA", "Daily Average"], group="Filters")
+i_volMult    = input.float(1.0,  "Volume Multiplier",           minval=0.0, step=0.1, group="Filters")
+i_volLen     = input.int(20,     "Volume SMA Length",            minval=5, group="Filters")
+i_atrBuf     = input.bool(true,  "Use ATR Buffer",              group="Filters")
+i_atrPct     = input.float(5.0,  "Breakout Buffer (% of ATR)",  minval=0, step=1, group="Filters")
+i_atrRearm   = input.float(3.0,  "Re-arm Buffer (% of ATR)",    minval=0, step=1, group="Filters")
+
+i_closePos    = input.bool(true,  "Show Close Position %",           group="Quality")
+
+i_confirm     = input.bool(true,  "Post-Breakout Confirmation",     group="Confirmation")
+i_retestWindow = input.string("Session", "Retest Window", options=["Short (50 min)", "Extended (2.5 hr)", "Session"], group="Confirmation")
+i_retestProx   = input.float(3.0, "Retest Proximity (% of ATR)", minval=0.5, step=0.5, group="Confirmation")
+i_retestOnly  = input.bool(false, "Retest-Only Mode",                group="Signals")
+i_cooldownBars = input.int(2, "Signal Cooldown (signal bars)", minval=0, maxval=10, group="Signals")
+i_chopWarn     = input.bool(true, "Chop Day Warning (3+ CONF fails)", group="Signals")
+i_runnerScore  = input.bool(true, "Show Runner Score (①-⑤)",  tooltip="Score based on VWAP, vol 2-5x, time 9:30-10, level quality, symbol tier", group="Signals")
+i_vwapSignal   = input.bool(true, "VWAP Zone Signals",  tooltip="Fire reversal signals when price rejects off VWAP ±0.1 ATR zone", group="Signals")
+i_qbsSignal    = input.bool(true, "QBS Signals (Vol Drying Pattern)",  tooltip="Fire signals when pre-move volume drying pattern matches high-probability fingerprint", group="Signals")
+i_rngSignal    = input.bool(true, "Range+Vol Signals (Non-EMA)",  tooltip="12-bar range breakout + volume ≥3x. Works WITHOUT EMA alignment.", group="Signals")
+
+// ─── Setup Inputs ──────────────────────────────────────
+i_showReversal = input.bool(true,   "Show Reversal Setups",            group="Setups")
+i_limitRevWin  = input.bool(false,  "Limit Reversal Window",           group="Setups")
+i_showReclaim  = input.bool(true,   "Show Reclaim Setups",             group="Setups")
+i_setupWindow  = input.string("0930-1130", "Setup Active Window (ET)", group="Setups")
+
+i_vwapFilter   = input.bool(true,   "VWAP Directional Filter (reversals)", tooltip="Suppress bear reversals above VWAP, bull reversals below VWAP", group="Filters")
+i_fEMA    = input.bool(true, "5m EMA Alignment Filter",     tooltip="Suppress signals against the 5m EMA(20)/EMA(50) trend", group="Filters")
+i_fRS     = input.bool(true, "RS vs SPY Filter",            tooltip="Suppress long signals underperforming SPY (and vice versa)", group="Filters")
+i_fADX    = input.bool(true, "ADX Trend Strength Filter",   tooltip="Suppress signals when 5m ADX < 20 (chop/no trend)", group="Filters")
+i_fCandle = input.bool(true, "Candle Body Quality Filter",  tooltip="Suppress wick-heavy breakout candles (body < 30% or close in wrong zone)", group="Filters")
+i_fMode   = input.string("Suppress", "Filter Mode", options=["Suppress", "Dim"], tooltip="Suppress: hide signals entirely. Dim: show as gray with ? suffix", group="Filters")
+i_emaGate  = input.bool(true, "EMA Hard Gate (suppress non-EMA)", tooltip="After 9:50: suppress signals against EMA trend. Before 9:50: dim only.", group="Filters")
+i_exrevGate = input.bool(true, "EXREV Bypass (Bear)",    group="Filters")
+
+i_useZones     = input.bool(true,   "Use Level Zones (wick-to-body)",  group="Zones")
+i_zoneATRPct   = input.float(3.0,   "Zone Width for PM/ORB (% of ATR)", minval=0, step=0.5, group="Zones")
+
+i_revPM   = input.bool(true, "PM H/L Reversal/Reclaim",   group="Reversal/Reclaim Toggles")
+i_revYest = input.bool(true, "Yest H/L Reversal/Reclaim", group="Reversal/Reclaim Toggles")
+i_revWeek = input.bool(true, "Week H/L Reversal/Reclaim", group="Reversal/Reclaim Toggles")
+i_revORB  = input.bool(true, "ORB H/L Reversal/Reclaim",  group="Reversal/Reclaim Toggles")
+
+// ─── Debug Inputs ─────────────────────────────────────
+i_debugTable = input.bool(false, "Show Signal Table",        group="Debug")
+i_debugLog   = input.bool(false, "Log Signals (Pine Logs)",  group="Debug")
+i_debugPos   = input.string("bottom_right", "Table Position",
+    options=["top_left","top_center","top_right",
+             "bottom_left","bottom_center","bottom_right"], group="Debug")
+i_debugRows  = input.int(20, "Max Table Rows", minval=5, maxval=50, group="Debug")
+
+// ─── Session Detection (US Eastern) ───────────────────────
+TZ           = "America/New_York"
+isPremarket  = not na(time(timeframe.period, "0400-0930:23456", TZ))
+isRegular    = not na(time(timeframe.period, "0930-1600:23456", TZ))
+isORBwin     = not na(time(timeframe.period, "0930-0935:23456", TZ))
+newPremarket = isPremarket and not isPremarket[1]
+newRegular   = isRegular   and not isRegular[1]
+isSetupWindow = not na(time(timeframe.period, i_setupWindow + ":23456", TZ))
+isAfternoon   = isRegular and hour(time, TZ) >= 11
+bool isPre950 = hour(time, TZ) == 9 and minute(time, TZ) < 50
+
+// ─── Level Calculation ────────────────────────────────────
+
+// Premarket High/Low — track during premarket, freeze at 9:30
+var float pmHigh = na
+var float pmLow  = na
+if newPremarket
+    pmHigh := high
+    pmLow  := low
+else if isPremarket
+    pmHigh := math.max(pmHigh, high)
+    pmLow  := math.min(pmLow, low)
+
+// ─── Filter Helpers ──────────────────────────────────────
+// ADX extraction for request.security (ta.dmi returns tuple)
+f_adx() =>
+    [_, _, adx] = ta.dmi(14, 14)
+    adx
+
+// Yesterday OHLC (non-repainting) — tuple reduces request.security calls
+[yestHigh, yestLow, yestOpen, yestClose, todayOpen] = request.security(syminfo.tickerid, "D",
+     [high[1], low[1], open[1], close[1], open], lookahead = barmerge.lookahead_on)
+
+// Last Week OHLC (non-repainting) — tuple reduces request.security calls
+[weekHigh, weekLow, weekOpen, weekClose] = request.security(syminfo.tickerid, "W",
+     [high[1], low[1], open[1], close[1]], lookahead = barmerge.lookahead_on)
+
+// Month Open (non-repainting)
+monthOpen = request.security(syminfo.tickerid, "M", open, lookahead = barmerge.lookahead_on)
+
+// Daily ATR + Average Volume (non-repainting)
+dailyATR    = request.security(syminfo.tickerid, "D", ta.atr(14)[1], lookahead = barmerge.lookahead_on)
+dailyVolSma = request.security(syminfo.tickerid, "D", ta.sma(volume, i_volLen)[1], lookahead = barmerge.lookahead_on)
+
+// ─── Evidence Stack Filter Data (v2.5) ───────────────────
+// 5m EMA(20), EMA(50), ADX — single call, non-repainting
+[ema20_5m, ema50_5m, adx_5m] = request.security(syminfo.tickerid, "5",
+     [ta.ema(close, 20)[1], ta.ema(close, 50)[1], f_adx()[1]], lookahead = barmerge.lookahead_on)
+// SPY intraday data for relative strength
+spyClose     = request.security("SPY", i_signalTF, close[1], lookahead = barmerge.lookahead_on)
+spyClosePrev = request.security("SPY", i_signalTF, close[2], lookahead = barmerge.lookahead_on)
+spyVwap      = request.security("SPY", i_signalTF, ta.vwap[1], lookahead = barmerge.lookahead_on)
+spyDayOpen   = request.security("SPY", "D", open, lookahead = barmerge.lookahead_on)
+
+// ORB High/Low — first 5-min bar(s) of regular session
+var float orbHigh = na
+var float orbLow  = na
+if isORBwin
+    if not isORBwin[1]
+        orbHigh := high
+        orbLow  := low
+    else
+        orbHigh := math.max(orbHigh, high)
+        orbLow  := math.min(orbLow, low)
+
+// Prior Day Last-Hour Low/High + Mid-Range (v3.0; High added v3.4)
+var float pdLastHrLow  = na
+var float pdLastHrHigh = na   // v3.4: PD Last-Hr High for bull BRK
+var float pdMid = na
+var float _lastHrLow  = na
+var float _lastHrHigh = na    // v3.4
+var bool _inLastHr = false
+
+// Track last hour of each day (15:00-16:00 ET)
+_inLastHr := isRegular and hour(time, TZ) == 15
+if _inLastHr
+    if not _inLastHr[1]
+        _lastHrLow  := low
+        _lastHrHigh := high
+    else
+        _lastHrLow  := math.min(_lastHrLow, low)
+        _lastHrHigh := math.max(_lastHrHigh, high)
+
+// At session open, freeze yesterday's last-hour low/high and compute PD Mid
+if newRegular
+    pdLastHrLow  := _lastHrLow
+    pdLastHrHigh := _lastHrHigh
+    pdMid := not na(yestHigh) and not na(yestLow) ? (yestHigh + yestLow) / 2.0 : na
+
+// ─── Intraday Range Tracking (v3.3) ─────────────────────
+// Track today's high/low for ATR-consumed and exhaustion detection
+var float dayRangeHi = na
+var float dayRangeLo = na
+if newRegular
+    dayRangeHi := high
+    dayRangeLo := low
+else if isRegular
+    dayRangeHi := math.max(nz(dayRangeHi), high)
+    dayRangeLo := math.min(nz(dayRangeLo), low)
+float atrConsumed = not na(dayRangeHi) and not na(dailyATR) and dailyATR > 0 ? (dayRangeHi - dayRangeLo) / dailyATR : 0.0
+
+// ─── Special Day Detection (v3.4) ────────────────────────
+// Detects high-volatility days for manual sizing decisions.
+// Uses first regular bar: gap, range, volume. Precision ~5-7%, visual indicator only.
+float gapPct = not na(close[1]) and close[1] > 0 ? math.abs(open - close[1]) / close[1] : 0.0
+float fbRangeAtr = not na(dailyATR) and dailyATR > 0 ? (high - low) / dailyATR : 0.0
+float _volSma20   = ta.sma(volume, 20)[1]
+float fbVolRatio  = volume > 0 and _volSma20 > 0 ? volume / _volSma20 : 1.0
+var bool isSpecialDay = false
+if newRegular
+    int score = (gapPct > 0.02 ? 1 : 0) + (fbRangeAtr > 0.5 ? 1 : 0) + (fbVolRatio > 2.0 ? 1 : 0)
+    isSpecialDay := score >= 2
+
+bgcolor(isSpecialDay ? color.new(color.yellow, 92) : na, title="Special Day")
+
+if newRegular and isSpecialDay and barstate.isconfirmed
+    label.new(bar_index, high, "★ SPECIAL DAY", yloc=yloc.abovebar,
+              style=label.style_label_down, color=color.new(color.orange, 60),
+              textcolor=color.white, size=size.small)
+
+// ─── ORB Signal Guard ────────────────────────────────────
+// Skip ORB signals on the first signal bar after the ORB window:
+// that bar's data IS the ORB-forming bar (self-referencing).
+var bool orbFirstDone = false
+
+// ─── Zone Bounds ───────────────────────────────────────
+// D/W levels: body edge from candle OHLC. PM/ORB: ATR-derived width.
+// When zones OFF: body = wick (zone collapses to single line).
+zoneWidth = i_useZones and not na(dailyATR) ? dailyATR * i_zoneATRPct / 100.0 : 0.0
+pmHBody   = i_useZones ? pmHigh - zoneWidth : pmHigh
+pmLBody   = i_useZones ? pmLow  + zoneWidth : pmLow
+yestHBody = i_useZones and not na(yestOpen) ? math.max(yestOpen, yestClose) : yestHigh
+yestLBody = i_useZones and not na(yestOpen) ? math.min(yestOpen, yestClose) : yestLow
+weekHBody = i_useZones ? weekHigh - zoneWidth : weekHigh
+weekLBody = i_useZones ? weekLow  + zoneWidth : weekLow
+orbHBody  = i_useZones ? orbHigh - zoneWidth : orbHigh
+orbLBody  = i_useZones ? orbLow  + zoneWidth : orbLow
+pdMidBody   = i_useZones ? (not na(pdMid) ? pdMid - zoneWidth : na) : pdMid
+pdMidBodyHi = i_useZones ? (not na(pdMid) ? pdMid + zoneWidth : na) : pdMid
+pdLHBody    = i_useZones ? (not na(pdLastHrLow)  ? pdLastHrLow  + zoneWidth : na) : pdLastHrLow
+pdLHHBody   = i_useZones ? (not na(pdLastHrHigh) ? pdLastHrHigh - zoneWidth : na) : pdLastHrHigh  // v3.4: bull BRK zone body edge
+
+// ─── Breakout Flags (reset each regular session) ────────
+var bool xPMH = false
+var bool xPML = false
+var bool xYH  = false
+var bool xYL  = false
+var bool xWH  = false
+var bool xWL  = false
+var bool xOH  = false
+var bool xOL  = false
+var bool xVWAPBull = false
+var bool xVWAPBear = false
+var bool xPDMid = false
+var bool xPDLH  = false
+var bool xVWBL  = false
+var bool xWO  = false   // Week Open
+var bool xMO  = false   // Month Open
+
+// ─── Reversal Flags (reset each regular session) ──────
+var bool rPMH = false
+var bool rPML = false
+var bool rYH  = false
+var bool rYL  = false
+var bool rWH  = false
+var bool rWL  = false
+var bool rOH  = false
+var bool rOL  = false
+var bool rPDLH  = false
+var bool rVWBL  = false
+var bool rTodayOpen = false
+var bool rPDClose   = false
+
+// ─── Level Freshness Counters (v3.3) ────────────────────
+// Track signal fires per level per session. Research: z=-0.51 for level_tests_today.
+// 1st-2nd test = fresh (full signal). 3rd-4th = dim. 5th+ = suppress.
+var int tcPMH = 0, var int tcPML = 0
+var int tcYH  = 0, var int tcYL  = 0
+var int tcWH  = 0, var int tcWL  = 0
+var int tcOH  = 0, var int tcOL  = 0
+var int tcPDMid = 0, var int tcPDLH = 0
+var int tcTodayOpen = 0, var int tcPDClose = 0
+var int tcWO = 0, var int tcMO = 0
+
+// Reset at session open (alongside firstOnly flags)
+if newRegular
+    tcPMH := 0, tcPML := 0, tcYH := 0, tcYL := 0
+    tcWH := 0, tcWL := 0, tcOH := 0, tcOL := 0
+    tcPDMid := 0, tcPDLH := 0
+    tcTodayOpen := 0, tcPDClose := 0, tcWO := 0, tcMO := 0
+
+// ─── Reclaim Context (was this level broken + invalidated?) ──
+var bool hadBrkPMH = false
+var bool hadBrkPML = false
+var bool hadBrkYH  = false
+var bool hadBrkYL  = false
+var bool hadBrkWH  = false
+var bool hadBrkWL  = false
+var bool hadBrkOH  = false
+var bool hadBrkOL  = false
+
+// ─── Reversal Label Tracking (gray out prior on supersede) ──
+var label revLblPML = na
+var label revLblYL  = na
+var label revLblWL  = na
+var label revLblOL  = na
+var label revLblPMH = na
+var label revLblYH  = na
+var label revLblWH  = na
+var label revLblOH  = na
+
+// ─── Post-Breakout Confirmation State ───────────────────
+// Per-level retest tracking: 4 bull levels (PMH,YH,WH,OH), 4 bear (PML,YL,WL,OL)
+var bool[]   bRT     = array.new_bool(4, false)   // retested?
+var int[]    bRTBar  = array.new_int(4, 0)        // bar of retest
+var string[] bRTInfo = array.new_string(4, "")    // quality string at retest
+var float[]  bRTLvl  = array.new_float(4, na)     // level value being tracked
+var label    bRTLbl  = na                          // breakout label ref
+var string   bRTBase = ""                          // base label text
+var int      bRTStart = 0                          // bar_index of breakout
+var float    bRTConsLvl = na                       // most conservative level (lowest for bull)
+var int      bRTState = 0                          // 0=none, 1=monitoring, -1=failed
+var int      bRTPrev  = 0                          // previous state (for alert transitions)
+var int      bRTBar0  = 0                          // chart-TF bar_index of breakout (skip self-retest)
+var float    bRTVolRatio = na                      // stored vol ratio for CONF visual tier
+var int      bRTClosePos = na                      // stored close position for CONF visual tier
+
+var bool[]   sRT     = array.new_bool(4, false)
+var int[]    sRTBar  = array.new_int(4, 0)
+var string[] sRTInfo = array.new_string(4, "")
+var float[]  sRTLvl  = array.new_float(4, na)
+var label    sRTLbl  = na
+var string   sRTBase = ""
+var int      sRTStart = 0
+var float    sRTConsLvl = na
+var int      sRTState = 0
+var int      sRTPrev  = 0
+var int      sRTBar0  = 0                          // chart-TF bar_index of breakout (skip self-retest)
+var float    sRTVolRatio = na                      // stored vol ratio for CONF visual tier
+var int      sRTClosePos = na                      // stored close position for CONF visual tier
+
+// ─── Chop Day Warning State ─────────────────────────
+var int  confFailStreak = 0
+var int  confPassCount  = 0
+var bool chopWarned     = false
+
+// Reset chop warning at session start
+if newRegular
+    confFailStreak := 0
+    confPassCount  := 0
+    chopWarned     := false
+
+// ─── VWAP Cross Exit State ─────────────────────────
+var bool vwapExitBull = false   // tracking a confirmed bull position for VWAP exit
+var bool vwapExitBear = false   // tracking a confirmed bear position for VWAP exit
+
+// ─── 5-Minute Checkpoint State ─────────────────────────
+var float checkpointEntry = na     // entry price at CONF time
+var int   checkpointBar   = na     // bar_index when CONF fired
+var label checkpointLbl   = na     // the label to update
+var int   checkpointDir   = 0      // +1 bull, -1 bear
+
+// ─── QBS Session + CONF State (v2.8) ──────────────
+var bool qbsBullFired = false
+var bool qbsBearFired = false
+var int   qmcRTState    = 0       // 0=inactive, 1=monitoring, -1=failed
+var label qmcRTLbl      = na
+var string qmcRTBase    = ""
+var float qmcRTEntry    = na
+var int   qmcRTDir      = 0       // +1 bull, -1 bear
+var int   qmcRTStart    = 0
+var float qmcRTVolRatio = na
+var int   qmcRTClosePos = na
+
+// FADE state (v3.2): counter-EMA signal crossback
+// Watches for ANY signal that fired counter-EMA, then price crosses back through level
+var float fadeWatchLevel  = na     // the level to watch for crossback
+var int   fadeWatchDir    = 0      // original signal direction: +1=bull, -1=bear
+var int   fadeWatchExpiry = 0      // bar_index when 6-bar window expires
+var bool  fadeWatchActive = false  // is a watch currently active?
+var bool  fadeFired       = false  // did FADE already fire this watch?
+
+// Range+Vol state (v3.0)
+var bool rngBullFired = false
+var bool rngBearFired = false
+
+if newRegular
+    vwapExitBull := false
+    vwapExitBear := false
+    checkpointEntry := na
+    checkpointBar   := na
+    checkpointLbl   := na
+    checkpointDir   := 0
+    qbsBullFired := false
+    qbsBearFired := false
+    qmcRTState   := 0
+    qmcRTLbl     := na
+    qmcRTBase    := ""
+    qmcRTEntry   := na
+    qmcRTDir     := 0
+    qmcRTStart   := 0
+    fadeWatchLevel  := na
+    fadeWatchDir    := 0
+    fadeWatchExpiry := 0
+    fadeWatchActive := false
+    fadeFired       := false
+    rngBullFired := false
+    rngBearFired := false
+
+// ─── Debug Signal Log Arrays ─────────────────────────
+var array<int>    dbTime       = array.new<int>()
+var array<string> dbDir        = array.new<string>()
+var array<string> dbType       = array.new<string>()
+var array<string> dbLevels     = array.new<string>()
+var array<float>  dbVol        = array.new<float>()
+var array<int>    dbClsPos     = array.new<int>()
+var array<string> dbConf       = array.new<string>()
+var array<string> dbOHLC       = array.new<string>()
+// Log-only extended data
+var array<float>  dbATR        = array.new<float>()
+var array<float>  dbVolRaw     = array.new<float>()
+var array<float>  dbVolSMA     = array.new<float>()
+var array<float>  dbBuffer     = array.new<float>()
+var array<string> dbLvlPrices  = array.new<string>()
+// Confirmation tracking indices
+var int dbConfBullIdx = -1
+var int dbConfBearIdx = -1
+// Table object (persists across ticks, deleted+recreated on last bar)
+var table dbTbl = na
+
+if newRegular
+    xPMH := false
+    xPML := false
+    xYH  := false
+    xYL  := false
+    xWH  := false
+    xWL  := false
+    xOH  := false
+    xOL  := false
+    xVWAPBull := false
+    xVWAPBear := false
+    xPDMid := false
+    xPDLH  := false
+    xVWBL  := false
+    xWO  := false
+    xMO  := false
+    // Reset reversal flags
+    rPMH := false
+    rPML := false
+    rYH  := false
+    rYL  := false
+    rWH  := false
+    rWL  := false
+    rOH  := false
+    rOL  := false
+    rPDLH  := false
+    rVWBL  := false
+    rTodayOpen := false
+    rPDClose   := false
+    // Reset ORB signal guard
+    orbFirstDone := false
+    // Reset reclaim context
+    hadBrkPMH := false
+    hadBrkPML := false
+    hadBrkYH  := false
+    hadBrkYL  := false
+    hadBrkWH  := false
+    hadBrkWL  := false
+    hadBrkOH  := false
+    hadBrkOL  := false
+    // Reset reversal label tracking
+    revLblPML := na
+    revLblYL  := na
+    revLblWL  := na
+    revLblOL  := na
+    revLblPMH := na
+    revLblYH  := na
+    revLblWH  := na
+    revLblOH  := na
+    // Reset per-level retest state at session open
+    if i_confirm
+        for i = 0 to 3
+            array.set(bRT, i, false)
+            array.set(bRTLvl, i, na)
+            array.set(sRT, i, false)
+            array.set(sRTLvl, i, na)
+        bRTState := 0
+        bRTPrev  := 0
+        sRTState := 0
+        sRTPrev  := 0
+    // Reset debug arrays at session open
+    if i_debugTable or i_debugLog
+        array.clear(dbTime)
+        array.clear(dbDir)
+        array.clear(dbType)
+        array.clear(dbLevels)
+        array.clear(dbVol)
+        array.clear(dbClsPos)
+        array.clear(dbConf)
+        array.clear(dbOHLC)
+        array.clear(dbATR)
+        array.clear(dbVolRaw)
+        array.clear(dbVolSMA)
+        array.clear(dbBuffer)
+        array.clear(dbLvlPrices)
+        dbConfBullIdx := -1
+        dbConfBearIdx := -1
+
+// ─── Signal Timeframe Data (confirmed bar only) ──────────
+// Previous completed signal-TF bar's OHLC — non-repainting
+[sigC, sigO, sigH, sigL, sigPC, sigPC2, sigVol, sigVolPrev, sigVolSma, sigVol2, sigVol3, sigVol4, sigVol5, sigATR14] = request.security(syminfo.tickerid, i_signalTF,
+     [close[1], open[1], high[1], low[1], close[2], close[3], volume[1], volume[2], ta.sma(volume, i_volLen)[1], volume[3], volume[4], volume[5], volume[6], ta.atr(14)[1]], lookahead = barmerge.lookahead_on)
+
+// VWAP at signal timeframe — for VWAP Reclaim signal (v3.7)
+sigVwap = request.security(syminfo.tickerid, i_signalTF, ta.vwap[1], lookahead = barmerge.lookahead_on)
+
+// Range+Vol: 12-bar range PRIOR to signal bar (v3.0)
+// [2] offset excludes signal bar — [1] caused impossible condition (high[1] >= close[1] always)
+[rngH12, rngL12] = request.security(syminfo.tickerid, i_signalTF,
+     [ta.highest(high, 12)[2], ta.lowest(low, 12)[2]], lookahead = barmerge.lookahead_on)
+
+// Detect when a new signal-TF bar starts (previous one just closed)
+_sigT     = time(i_signalTF)
+_sigChg   = ta.change(_sigT)
+newSigBar = not na(_sigChg) and _sigChg != 0
+
+// Offset shapes back by 1 so the marker sits on the candle where
+// the signal-TF bar closed (breakout candle on 5m, last 1m of the
+// 5m period on a 1m chart)
+shapeOff = -1
+
+// Signal-TF bar counter — ensures bar counts & monitoring are chart-TF independent
+var int sigBarIdx = 0
+if newSigBar
+    sigBarIdx += 1
+
+// ─── Filter Computations ────────────────────────────────
+vwapVal  = ta.vwap
+breakBuf = i_atrBuf and not na(dailyATR) ? dailyATR * i_atrPct / 100.0 : 0.0
+rearmBuf = i_atrBuf and not na(dailyATR) ? dailyATR * i_atrRearm / 100.0 : 0.0
+
+// VWAP zone: ±0.1 ATR around VWAP (data: best follow-through at this distance)
+float vwapZoneWidth = not na(dailyATR) ? dailyATR * 0.10 : 0.0
+float vwapZoneHi    = not na(vwapVal) ? vwapVal + vwapZoneWidth : na
+float vwapZoneLo    = not na(vwapVal) ? vwapVal - vwapZoneWidth : na
+
+// VWAP Lower Band (dynamic) (v3.0)
+float vwapLowerBand = not na(vwapVal) and not na(dailyATR) ? vwapVal - dailyATR : na
+
+// ─── Evidence Stack Filter Flags (v2.5) ──────────────────
+// Filter 1: 5m EMA alignment (trend direction)
+fEMA_bull = ema20_5m > ema50_5m
+fEMA_bear = ema20_5m < ema50_5m
+
+// Regime Score (v3.0): EMA aligned + VWAP aligned = 0-2
+int regimeBull = (fEMA_bull ? 1 : 0) + (not na(vwapVal) and sigC > vwapVal ? 1 : 0)
+int regimeBear = (fEMA_bear ? 1 : 0) + (not na(vwapVal) and sigC < vwapVal ? 1 : 0)
+
+// Filter 2: Intraday RS vs SPY
+// SPY/QQQ/GLD/SLV: skip RS filter (always pass)
+bool rsSkip = syminfo.ticker == "SPY" or syminfo.ticker == "QQQ" or syminfo.ticker == "GLD" or syminfo.ticker == "SLV"
+stockChg = not na(todayOpen) and todayOpen > 0 ? (sigC - todayOpen) / todayOpen : 0.0
+spyChg   = not na(spyDayOpen) and spyDayOpen > 0 ? (spyClose - spyDayOpen) / spyDayOpen : 0.0
+// v3.1: SPY Market Regime (BULL/NEUTRAL/BEAR) — drives BAIL modifier
+int spyRegime = spyChg > 0.003 ? 1 : spyChg < -0.003 ? -1 : 0
+rsVsSpy  = stockChg - spyChg
+fRS_bull = rsSkip or rsVsSpy > 0
+fRS_bear = rsSkip or rsVsSpy < 0
+
+// Filter 3: ADX trend strength (5m)
+fADX = not na(adx_5m) ? adx_5m > 20 : true
+
+// Filter 4: Candle body quality
+candleRange = sigH - sigL
+bodyRatio   = candleRange > 0 ? math.abs(sigC - sigO) / candleRange : 0.0
+closeLoc_bull = candleRange > 0 ? (sigC - sigL) / candleRange : 0.0
+closeLoc_bear = candleRange > 0 ? (sigH - sigC) / candleRange : 0.0
+fCandle_bull = bodyRatio > 0.3 and closeLoc_bull > 0.3
+fCandle_bear = bodyRatio > 0.3 and closeLoc_bear > 0.3
+bool bodyWarn = bodyRatio >= 0.8
+
+// Combined evidence stack pass (per direction)
+evStackBull = (not i_fEMA or fEMA_bull) and (not i_fRS or fRS_bull) and (not i_fADX or fADX) and (not i_fCandle or fCandle_bull)
+evStackBear = (not i_fEMA or fEMA_bear) and (not i_fRS or fRS_bear) and (not i_fADX or fADX) and (not i_fCandle or fCandle_bear)
+// Reversal stack: ADX + Body only (EMA/RS are trend-following; reversals are counter-trend by nature)
+evStackBull_rev = (not i_fADX or fADX) and (not i_fCandle or fCandle_bull)
+evStackBear_rev = (not i_fADX or fADX) and (not i_fCandle or fCandle_bear)
+
+// Suppress gate: blocks signal generation entirely when filter fails
+fGateBull     = i_fMode == "Suppress" ? evStackBull : true
+fGateBear     = i_fMode == "Suppress" ? evStackBear : true
+fGateBull_rev = i_fMode == "Suppress" ? evStackBull_rev : true
+fGateBear_rev = i_fMode == "Suppress" ? evStackBear_rev : true
+
+// EMA Hard Gate (v3.0): suppress non-EMA signals entirely after 9:50, dim before 9:50
+bool emaGateBull = not i_emaGate or fEMA_bull
+bool emaGateBear = not i_emaGate or fEMA_bear
+bool emaGateBull_dim = i_emaGate and not fEMA_bull and isPre950
+bool emaGateBear_dim = i_emaGate and not fEMA_bear and isPre950
+
+// EXREV bypass: bear REV with tiny body (< 30%) = strong rejection wick
+// Bypasses BOTH candle quality filter AND EMA gate (v3.2)
+bool exrevBypass = i_exrevGate and bodyRatio < 0.30 and candleRange > 0
+
+retestBuf      = not na(dailyATR) ? dailyATR * i_retestProx / 100.0 : rearmBuf
+retestMaxElapsed = i_retestWindow == "Short (50 min)" ? 10 : i_retestWindow == "Extended (2.5 hr)" ? 30 : 99999
+
+tfSecs      = timeframe.in_seconds(i_signalTF)
+barsPerDay  = tfSecs > 0 ? 23400.0 / tfSecs : 1.0
+dailyBarVol = barsPerDay > 0 ? dailyVolSma / barsPerDay : na
+volBase     = i_volMode == "Signal TF SMA" ? sigVolSma : dailyBarVol
+volThreshold = not na(volBase) ? volBase * i_volMult : na
+// Directional volume: borrow prior bar only if it moved in the same direction
+sigVolBull   = sigPC > sigPC2 ? math.max(nz(sigVol), nz(sigVolPrev)) : nz(sigVol)
+sigVolBear   = sigPC < sigPC2 ? math.max(nz(sigVol), nz(sigVolPrev)) : nz(sigVol)
+volPassBull  = not i_volFilter or na(volThreshold) or sigVolBull > volThreshold
+volPassBear  = not i_volFilter or na(volThreshold) or sigVolBear > volThreshold
+volRatioBull = not na(volBase) and volBase > 0 ? sigVolBull / volBase : na
+volRatioBear = not na(volBase) and volBase > 0 ? sigVolBear / volBase : na
+bullVolAlpha = i_volFilter and not na(volRatioBull) ? math.max(0, math.round(60 - volRatioBull * 10)) : 0
+bearVolAlpha = i_volFilter and not na(volRatioBear) ? math.max(0, math.round(60 - volRatioBear * 10)) : 0
+
+// ─── Pre-Move Volume Ramp (v2.8) ───────────────────────
+float recentVol3 = (nz(sigVol) + nz(sigVolPrev) + nz(sigVol2)) / 3.0
+float priorVol3  = (nz(sigVol3) + nz(sigVol4) + nz(sigVol5)) / 3.0
+float preVolRamp = priorVol3 > 0 ? recentVol3 / priorVol3 : 1.0
+bool isVolDrying    = preVolRamp < 0.5
+bool isVolExplosive = preVolRamp > 5.0
+bool isVolModerate  = preVolRamp >= 1.0 and preVolRamp < 2.0
+// v3.3: Exhaustion volume — trigger vol > 5x avg = likely exhaustion move (15.8% noise rate)
+bool isVolExhaustBull = not na(volRatioBull) and volRatioBull > 5.0
+bool isVolExhaustBear = not na(volRatioBear) and volRatioBear > 5.0
+
+// Signal-TF ATR for big-move detection (v2.8)
+float sigRangeATR = not na(sigATR14) and sigATR14 > 0 ? (sigH - sigL) / sigATR14 : 0
+bool isBigMove = sigRangeATR >= 2.0
+// v3.3: Quiet Coil — drying volume + small range = compression before breakout (35.8% great, 1.8x lift)
+bool isQuietCoil = isVolDrying and sigRangeATR < 0.5
+// v3.3b: Broad Coil — small trigger + SPY moving = whole market is going (32.1% great, 1.6x, 1.0% noise)
+bool isBroadCoil = sigRangeATR < 0.5 and math.abs(spyChg) > 0.003
+string volRampGlyph = isVolDrying ? "🔇" : ""
+string bigMoveGlyph = isBigMove ? "⚡" : ""
+
+// ─── Runner Score (v3.0 redesign) ─────────────────────
+// 6 validated factors: EMA aligned, regime=2, vol≥10x, morning, SPY-aligned, CONF pass (added later)
+int etHour = hour(time, TZ)
+int etMin = minute(time, TZ)
+bool isMorning       = etHour < 11
+bool isMidday        = etHour >= 11 and etHour < 14
+bool isTrueAfternoon = etHour >= 14  // 14:00–16:00 ET (distinct from isAfternoon which means 11+)
+// v3.3b: Midday + flat EMA boost — 31.1% great (1.55x), 2.2% noise, N=541
+bool isMiddayFlat = isMidday and not na(ema20_5m) and not na(dailyATR) and dailyATR > 0 and math.abs(ema20_5m - nz(ema20_5m[6])) / dailyATR < 0.02
+// v3.3: Exhaustion filter — C6 cluster: 30% noise, 5% great when market is spent
+// Triggers: afternoon (1pm+) + range > 1.5 ATR consumed + SPY moved > 0.8%
+bool isExhausted = etHour >= 13 and atrConsumed > 1.5 and math.abs(spyChg) > 0.008
+// Factor 6 (CONF pass) added after CONF evaluation — max 5 at signal time
+int scoreBull = (fEMA_bull ? 1 : 0) + (regimeBull == 2 ? 1 : 0) + (not na(volRatioBull) and volRatioBull >= 10.0 ? 1 : 0) + (isMorning ? 1 : 0) + (spyRegime == 1 ? 1 : 0)
+int scoreBear = (fEMA_bear ? 1 : 0) + (regimeBear == 2 ? 1 : 0) + (not na(volRatioBear) and volRatioBear >= 10.0 ? 1 : 0) + (isMorning ? 1 : 0) + (spyRegime == -1 ? 1 : 0)
+string[] SCORE_GLYPHS = array.from("", "①", "②", "③", "④", "⑤", "⑥")
+
+// ─── SL Line Bars (5 min on any chart TF) ────────────
+int slBars = math.max(1, math.round(1800 / timeframe.in_seconds()))
+bullColor    = color.new(color.green, bullVolAlpha)
+bearColor    = color.new(color.red, bearVolAlpha)
+
+// Close position: where did the close land within the bar's range? (0-100%)
+sigRng       = sigH - sigL
+bullClosePos = sigRng > 0 ? math.round((sigC - sigL) / sigRng * 100) : na
+bearClosePos = sigRng > 0 ? math.round((sigH - sigC) / sigRng * 100) : na
+
+// ─── Helper: integer to superscript string ──────────────
+toSup(int n) =>
+    string s = str.tostring(n)
+    string r = ""
+    for i = 0 to str.length(s) - 1
+        string c = str.substring(s, i, i + 1)
+        r += c == "0" ? "⁰" : c == "1" ? "¹" : c == "2" ? "²" : c == "3" ? "³" : c == "4" ? "⁴" : c == "5" ? "⁵" : c == "6" ? "⁶" : c == "7" ? "⁷" : c == "8" ? "⁸" : "⁹"
+    r
+
+// ─── Helper: signal-TF quality string (for breakout labels) ─────
+sigQual(bool isBull) =>
+    float vr = isBull ? volRatioBull : volRatioBear
+    string vol = not na(vr) ? str.tostring(vr, "#.#") + "x" : ""
+    int pos = isBull ? bullClosePos : bearClosePos
+    string pa = not na(pos) ? (isBull ? "^" : "v") + str.tostring(pos) : ""
+    vol + (vol != "" and pa != "" ? " " : "") + pa
+
+// ─── Helper: chart-TF quality string (for retests) ─────
+chartQual(bool isBull) =>
+    float rng = high - low
+    float vr = not na(volBase) and volBase > 0 ? volume / volBase : na
+    string vol = not na(vr) ? str.tostring(vr, "#.#") + "x" : ""
+    int pos = rng > 0 ? math.round((isBull ? (close - low) : (high - close)) / rng * 100) : na
+    string pa = not na(pos) ? (isBull ? "^" : "v") + str.tostring(pos) : ""
+    vol + (vol != "" and pa != "" ? " " : "") + pa
+
+// ─── Debug: format time as HH:MM ET ─────────────────
+fmtTime(int t) =>
+    int h = hour(t, "America/New_York")
+    int m = minute(t, "America/New_York")
+    str.tostring(h) + ":" + (m < 10 ? "0" : "") + str.tostring(m)
+
+// ─── Debug: append signal to arrays + optional log ───
+dbAppend(string dir, string typ, string levels, float vol, int clsPos, string conf, string lvlPrices) =>
+    if i_debugTable or i_debugLog
+        array.push(dbTime, time)
+        array.push(dbDir, dir)
+        array.push(dbType, typ)
+        array.push(dbLevels, levels)
+        array.push(dbVol, vol)
+        array.push(dbClsPos, clsPos)
+        array.push(dbConf, conf)
+        string ohlc = "O" + str.tostring(sigO, "#.##") + " H" + str.tostring(sigH, "#.##") + " L" + str.tostring(sigL, "#.##") + " C" + str.tostring(sigC, "#.##")
+        array.push(dbOHLC, ohlc)
+        array.push(dbATR, nz(dailyATR))
+        array.push(dbVolRaw, nz(sigVol))
+        array.push(dbVolSMA, nz(volBase))
+        array.push(dbBuffer, breakBuf)
+        array.push(dbLvlPrices, lvlPrices)
+        if i_debugLog and barstate.isconfirmed
+            string posStr = na(clsPos) ? "" : (dir == "▲" ? "^" : "v") + str.tostring(clsPos)
+            string volStr = na(vol) ? "" : str.tostring(vol, "#.#") + "x"
+            string vwapStr = not na(vwapVal) ? (sigC > vwapVal ? "above" : "below") : "na"
+            string emaStr = not na(ema20_5m) ? (ema20_5m > ema50_5m ? "bull" : "bear") : "na"
+            string rsStr  = not na(rsVsSpy) ? (rsVsSpy >= 0 ? "+" : "") + str.tostring(rsVsSpy * 100, "#.#") + "%" : "na"
+            string adxStr = not na(adx_5m) ? str.tostring(adx_5m, "#") : "na"
+            string bodyStr = str.tostring(math.round(bodyRatio * 100)) + "%"
+            // v3.5: Adaptive SL — morning 0.10 ATR (tight/fast), midday 0.25 ATR (room to breathe)
+            // Research: optimal SL by window: morning=0.10 (+0.011/sig), midday=0.25 (+0.013/sig)
+            float _slW = isMorning ? 0.08 : isMidday ? 0.20 : 0.10
+            float _slH = isMorning ? 0.10 : isMidday ? 0.25 : 0.15
+            float slWarn = dir == "▲" ? sigC - nz(dailyATR) * _slW : sigC + nz(dailyATR) * _slW
+            float slHard = dir == "▲" ? sigC - nz(dailyATR) * _slH : sigC + nz(dailyATR) * _slH
+            string rampStr = str.tostring(preVolRamp, "#.#") + "x"
+            string flagStr = (isBigMove ? " ⚡" : "") + (bodyWarn ? " ⚠" : "") + (isVolDrying ? " 🔇" : "")
+            string msg = "[KLB] " + fmtTime(time) + " " + dir + " " + typ + " " + levels + " vol=" + volStr + " pos=" + posStr + " vwap=" + vwapStr + " ema=" + emaStr + " rs=" + rsStr + " adx=" + adxStr + " body=" + bodyStr + " ramp=" + rampStr + " rangeATR=" + str.tostring(sigRangeATR, "#.#") + flagStr + " " + ohlc + " ATR=" + str.tostring(nz(dailyATR), "#.##") + " SL=" + str.tostring(slWarn, "#.##") + "/" + str.tostring(slHard, "#.##") + " rawVol=" + str.tostring(nz(sigVol), "#") + " volSMA=" + str.tostring(nz(volBase), "#") + " buf=" + str.tostring(breakBuf, "#.###") + " prices=" + lvlPrices
+            log.info(msg)
+    array.size(dbTime) - 1
+
+// ─── Debug: build level prices string for a signal ───
+dbLvlPriceStr(bool isPMH, bool isPML, bool isYH, bool isYL, bool isWH, bool isWL, bool isOH, bool isOL) =>
+    string s = ""
+    if isPMH and not na(pmHigh)
+        s += (s != "" ? "/" : "") + str.tostring(pmHigh, "#.##")
+    if isPML and not na(pmLow)
+        s += (s != "" ? "/" : "") + str.tostring(pmLow, "#.##")
+    if isYH and not na(yestHigh)
+        s += (s != "" ? "/" : "") + str.tostring(yestHigh, "#.##")
+    if isYL and not na(yestLow)
+        s += (s != "" ? "/" : "") + str.tostring(yestLow, "#.##")
+    if isWH and not na(weekHigh)
+        s += (s != "" ? "/" : "") + str.tostring(weekHigh, "#.##")
+    if isWL and not na(weekLow)
+        s += (s != "" ? "/" : "") + str.tostring(weekLow, "#.##")
+    if isOH and not na(orbHigh)
+        s += (s != "" ? "/" : "") + str.tostring(orbHigh, "#.##")
+    if isOL and not na(orbLow)
+        s += (s != "" ? "/" : "") + str.tostring(orbLow, "#.##")
+    s
+
+// Level name arrays for retest label building
+bullLvlNames = array.from("PM H", "Yest H", "Week H", "ORB H")
+bearLvlNames = array.from("PM L", "Yest L", "Week L", "ORB L")
+
+// ─── Invalidation: re-arm when price closes back through level ──
+if i_firstOnly and newSigBar
+    if xPMH and not na(pmHigh) and sigC <= (pmHigh - rearmBuf)
+        xPMH := false
+        hadBrkPMH := true
+        rPMH := false                                // re-arm bear reversal — new setup
+    if xPML and not na(pmLow) and sigC >= (pmLow + rearmBuf)
+        xPML := false
+        hadBrkPML := true
+        rPML := false                                // re-arm bull reversal — new setup
+    if xYH and not na(yestHigh) and sigC <= (yestHigh - rearmBuf)
+        xYH := false
+        hadBrkYH := true
+        rYH := false                                 // re-arm bear reversal — new setup
+    if xYL and not na(yestLow) and sigC >= (yestLow + rearmBuf)
+        xYL := false
+        hadBrkYL := true
+        rYL := false                                 // re-arm bull reversal — new setup
+    if xWH and not na(weekHigh) and sigC <= (weekHigh - rearmBuf)
+        xWH := false
+        hadBrkWH := true
+        rWH := false                                 // re-arm bear reversal — new setup
+    if xWL and not na(weekLow) and sigC >= (weekLow + rearmBuf)
+        xWL := false
+        hadBrkWL := true
+        rWL := false                                 // re-arm bull reversal — new setup
+    if xOH and not na(orbHigh) and sigC <= (orbHigh - rearmBuf)
+        xOH := false
+        hadBrkOH := true
+        rOH := false                                 // re-arm bear reversal — new setup
+    if xOL and not na(orbLow) and sigC >= (orbLow + rearmBuf)
+        xOL := false
+        hadBrkOL := true
+        rOL := false                                 // re-arm bull reversal — new setup
+    // Reversal re-arm: price moved away from the rejection zone in either direction
+    // (above = rejection failed; below = pulled away, fresh approach is new setup)
+    if rPMH and not na(pmHigh) and (sigC > (pmHigh + rearmBuf) or sigC < (pmHigh - rearmBuf))
+        rPMH := false
+    if rPML and not na(pmLow) and (sigC < (pmLow - rearmBuf) or sigC > (pmLow + rearmBuf))
+        rPML := false
+    if rYH and not na(yestHigh) and (sigC > (yestHigh + rearmBuf) or sigC < (yestHigh - rearmBuf))
+        rYH := false
+    if rYL and not na(yestLow) and (sigC < (yestLow - rearmBuf) or sigC > (yestLow + rearmBuf))
+        rYL := false
+    if rWH and not na(weekHigh) and (sigC > (weekHigh + rearmBuf) or sigC < (weekHigh - rearmBuf))
+        rWH := false
+    if rWL and not na(weekLow) and (sigC < (weekLow - rearmBuf) or sigC > (weekLow + rearmBuf))
+        rWL := false
+    if rOH and not na(orbHigh) and (sigC > (orbHigh + rearmBuf) or sigC < (orbHigh - rearmBuf))
+        rOH := false
+    if rOL and not na(orbLow) and (sigC < (orbLow - rearmBuf) or sigC > (orbLow + rearmBuf))
+        rOL := false
+    if xPDMid and not na(pdMid) and (sigC >= (pdMid + rearmBuf) or sigC <= (pdMid - rearmBuf))
+        xPDMid := false
+    if xPDLH and not na(pdLastHrLow) and sigC >= (pdLastHrLow + rearmBuf)
+        xPDLH := false
+        rPDLH := false
+    if xVWBL and not na(vwapLowerBand) and sigC >= (vwapLowerBand + rearmBuf)
+        xVWBL := false
+        rVWBL := false
+
+// ─── Breakout Helpers ─────────────────────────────────────
+// 2-bar lookback: if EITHER of the two prior closes was on the other
+// side of the level, the cross is valid.  This prevents a scenario
+// where a bearish candle crosses the level first, making sigPC already
+// past the level so the subsequent bullish breakout never fires.
+bullBreak(float level) =>
+    float effLvl = level + breakBuf
+    not na(level) and isRegular and newSigBar and sigC > sigO
+     and sigC > level and sigH > effLvl
+     and sigO <= effLvl
+     and (sigPC <= effLvl or sigPC2 <= effLvl) and volPassBull
+
+bearBreak(float level) =>
+    float effLvl = level - breakBuf
+    not na(level) and isRegular and newSigBar and sigC < sigO
+     and sigC < level and sigL < effLvl
+     and sigO >= effLvl
+     and (sigPC >= effLvl or sigPC2 >= effLvl) and volPassBear
+
+// ─── Reversal Helpers ───────────────────────────────────
+// Bull reversal at LOW level: wick dips into zone, close rejects above body edge.
+// Bear reversal at HIGH level: wick pushes into zone, close rejects below body edge.
+bullRev(float wick, float body) =>
+    not na(wick) and not na(body) and isRegular and newSigBar
+     and (not i_limitRevWin or isSetupWindow)
+     and sigC > sigO and sigL <= body and sigC > body
+     and (not i_vwapFilter or not na(vwapVal) and sigC > vwapVal)
+
+bearRev(float wick, float body) =>
+    float _proxTol = nz(dailyATR) * i_proxTolerance
+    not na(wick) and not na(body) and isRegular and newSigBar
+     and (not i_limitRevWin or isSetupWindow)
+     and sigC < sigO and sigH >= body - _proxTol and sigC < body
+     and (not i_vwapFilter or not na(vwapVal) and sigC < vwapVal)
+
+// ─── Raw Signals ──────────────────────────────────────────
+rBullPMH = false  // v3.2: PM H moved to REV (magnet, not barrier)
+rBearPML = i_showPM   and bearBreak(pmLow)
+rBullYH  = false  // v3.2: Yest H moved to REV
+rBearYL  = i_showYest  and bearBreak(yestLow)
+rBullWH  = false  // v3.2: Week H moved to REV
+rBearWL  = i_showWeek  and bearBreak(weekLow)
+rBullOH  = false  // v3.2: ORB H moved to REV
+rBearOL  = i_showORB   and not isORBwin and orbFirstDone and bearBreak(orbLow)
+rBullWO = i_showWeekOpen  and bullBreak(weekOpen)
+rBearWO = i_showWeekOpen  and bearBreak(weekOpen)
+rBullMO = i_showMonthOpen and bullBreak(monthOpen)
+rBearMO = i_showMonthOpen and bearBreak(monthOpen)
+
+// New level signals (v3.0; PD Mid → REV in v3.1 — magnet level, not barrier)
+// PD Mid REV: inline (no VWAP filter — midrange level; use pdMid directly — not zone edges)
+rRevBullPDMid = i_showPDMid and not na(pdMid) and isRegular and newSigBar
+     and (not i_limitRevWin or isSetupWindow)
+     and sigC > sigO and sigL <= pdMid and sigC > pdMid
+rRevBearPDMid = i_showPDMid and not na(pdMid) and isRegular and newSigBar
+     and (not i_limitRevWin or isSetupWindow)
+     and sigC < sigO and sigH >= pdMid and sigC < pdMid
+rBullPDLH  = i_showPDMid and bullBreak(pdLastHrHigh)   // v3.4: bull BRK above PD Last-Hr High
+rBearPDLH  = i_showPDMid and bearBreak(pdLastHrLow)
+rBearVWBL  = i_showVWBand and bearBreak(vwapLowerBand)
+
+// Today's Open REV: inline touch-and-turn (magnet level, no VWAP filter)
+rRevBullTodayOpen = i_showTodayOpen and not na(todayOpen) and isRegular and newSigBar
+     and (not i_limitRevWin or isSetupWindow)
+     and sigC > sigO and sigL <= todayOpen and sigC > todayOpen
+rRevBearTodayOpen = i_showTodayOpen and not na(todayOpen) and isRegular and newSigBar
+     and (not i_limitRevWin or isSetupWindow)
+     and sigC < sigO and sigH >= todayOpen and sigC < todayOpen
+
+// PD Close REV: inline touch-and-turn (magnet level, no VWAP filter)
+rRevBullPDClose = i_showPDClose and not na(yestClose) and isRegular and newSigBar
+     and (not i_limitRevWin or isSetupWindow)
+     and sigC > sigO and sigL <= yestClose and sigC > yestClose
+rRevBearPDClose = i_showPDClose and not na(yestClose) and isRegular and newSigBar
+     and (not i_limitRevWin or isSetupWindow)
+     and sigC < sigO and sigH >= yestClose and sigC < yestClose
+
+// v3.3b: Unified EMA pass — includes pre-9:50 bypass AND quiet coil bypass (aggressive)
+// Quiet coil (drying vol + small range) bypasses EMA gate — catches Tier S monsters (40% EMA-misaligned)
+bool emaPassBull = emaGateBull or isPre950 or isQuietCoil
+bool emaPassBear = emaGateBear or isPre950 or isQuietCoil
+
+// ─── Filtered Signals (suppressed when flag active) ──────
+sigBullPMH = rBullPMH and (not i_firstOnly or not xPMH) and fGateBull and emaPassBull
+sigBearPML = rBearPML and (not i_firstOnly or not xPML) and fGateBear and emaPassBear
+sigBullYH  = rBullYH  and (not i_firstOnly or not xYH)  and fGateBull and emaPassBull
+sigBearYL  = rBearYL  and (not i_firstOnly or not xYL)  and fGateBear and emaPassBear
+sigBullWH  = rBullWH  and (not i_firstOnly or not xWH)  and fGateBull and emaPassBull
+sigBearWL  = rBearWL  and (not i_firstOnly or not xWL)  and fGateBear and emaPassBear
+sigBullOH  = rBullOH  and (not i_firstOnly or not xOH)  and fGateBull and emaPassBull
+sigBearOL  = rBearOL  and (not i_firstOnly or not xOL)  and fGateBear and emaPassBear
+sigBullPDLH  = rBullPDLH  and (not i_firstOnly or not xPDLH)  and fGateBull and emaPassBull  // v3.4
+sigBearPDLH  = rBearPDLH  and (not i_firstOnly or not xPDLH)  and fGateBear and emaPassBear
+sigBearVWBL  = rBearVWBL  and (not i_firstOnly or not xVWBL)  and fGateBear and emaPassBear
+sigBullWO = rBullWO and (not i_firstOnly or not xWO) and fGateBull and emaPassBull
+sigBearWO = rBearWO and (not i_firstOnly or not xWO) and fGateBear and emaPassBear
+sigBullMO = rBullMO and (not i_firstOnly or not xMO) and fGateBull and emaPassBull
+sigBearMO = rBearMO and (not i_firstOnly or not xMO) and fGateBear and emaPassBear
+
+// Update flags after signal evaluation
+if rBullPMH
+    xPMH := true
+if rBearPML
+    xPML := true
+if rBullYH
+    xYH := true
+if rBearYL
+    xYL := true
+if rBullWH
+    xWH := true
+if rBearWL
+    xWL := true
+if rBullOH
+    xOH := true
+if rBearOL
+    xOL := true
+if rRevBullPDMid or rRevBearPDMid
+    xPDMid := true
+if rBullPDLH or rBearPDLH
+    xPDLH := true
+if rBearVWBL
+    xVWBL := true
+if rBullWO or rBearWO
+    xWO := true
+if rBullMO or rBearMO
+    xMO := true
+
+// ─── Raw Reversal Signals ──────────────────────────────
+// Bull reversal fires at LOW levels (rejection = buy). Bear at HIGH (rejection = sell).
+rRevBullPML = i_showReversal and i_showPM   and i_revPM   and bullRev(pmLow,  pmLBody)
+rRevBullYL  = i_showReversal and i_showYest  and i_revYest and bullRev(yestLow, yestLBody)
+rRevBullWL  = i_showReversal and i_showWeek  and i_revWeek and bullRev(weekLow, weekLBody)
+rRevBullOL  = i_showReversal and i_showORB   and i_revORB  and not isORBwin and orbFirstDone and bullRev(orbLow, orbLBody)
+
+rRevBearPMH = i_showReversal and i_showPM   and i_revPM   and bearRev(pmHigh,  pmHBody)
+rRevBearYH  = i_showReversal and i_showYest  and i_revYest and bearRev(yestHigh, yestHBody)
+rRevBearWH  = i_showReversal and i_showWeek  and i_revWeek and bearRev(weekHigh, weekHBody)
+rRevBearOH  = i_showReversal and i_showORB   and i_revORB  and not isORBwin and orbFirstDone and bearRev(orbHigh, orbHBody)
+
+// v3.3c: Bull REV at HIGH levels REMOVED — magnets don't provide support
+// Data: bull REV at PM H/ORB H/Yest H/Week H = -699 ATR, 37-44% win, 3.3x loss/win asymmetry
+// Bear REV at highs KEPT (lines 901-904) — rejection at resistance = +697 ATR
+
+// Bull reversal at new LOW levels (v3.0)
+rRevBullPDLH = i_showReversal and i_showPDMid and bullRev(pdLastHrLow, pdLHBody)
+rRevBullVWBL = i_showReversal and i_showVWBand and bullRev(vwapLowerBand, not na(vwapLowerBand) ? vwapLowerBand + zoneWidth : na)
+
+// ─── VWAP Zone Reversals ────────────────────────────────
+// Bull: wick dips into VWAP zone from above, close rejects above zone top
+rRevBullVWAP = i_vwapSignal and not na(vwapZoneHi) and isRegular and newSigBar
+     and sigC > sigO and sigL <= vwapZoneHi and sigC > vwapZoneHi
+     and (not i_vwapFilter or not na(vwapVal) and sigC > vwapVal)
+
+// Bear: wick pushes into VWAP zone from below, close rejects below zone bottom
+rRevBearVWAP = i_vwapSignal and not na(vwapZoneLo) and isRegular and newSigBar
+     and sigC < sigO and sigH >= vwapZoneLo and sigC < vwapZoneLo
+     and (not i_vwapFilter or not na(vwapVal) and sigC < vwapVal)
+
+// VWAP Reclaim (v3.7): 2 consecutive 5m bars on one side of VWAP → close crosses to other side
+// No EMA gate — regime-shift signal; counter-EMA context is expected
+bool rVWAPReclaimBull = i_vwapSignal and not na(sigVwap) and isRegular and newSigBar
+     and sigC > sigO and sigC > sigVwap
+     and sigPC < sigVwap and sigPC2 < sigVwap
+bool rVWAPReclaimBear = i_vwapSignal and not na(sigVwap) and isRegular and newSigBar
+     and sigC < sigO and sigC < sigVwap
+     and sigPC > sigVwap and sigPC2 > sigVwap
+
+// Arm ORB signals after skipping the first signal bar post-ORB
+if not isORBwin and newSigBar
+    orbFirstDone := true
+
+// ─── Filtered Reversal Signals (reversal gate + EMA gate) ──────────
+// v3.1: EMA gate KEPT on REVs — backtest showed counter-EMA REVs = -11.8 ATR (35% win)
+sigRevBullPML = rRevBullPML and (not i_firstOnly or not rPML) and fGateBull_rev and emaPassBull
+sigRevBullYL  = rRevBullYL  and (not i_firstOnly or not rYL)  and fGateBull_rev and emaPassBull
+sigRevBullWL  = rRevBullWL  and (not i_firstOnly or not rWL)  and fGateBull_rev and emaPassBull
+// v3.4: ORB Low Reclaim re-enabled for midday only — 27.2% great, 3.4% noise, +0.296 ATR/signal
+// NO EMA gate — bear EMA is 74% of occurrences and BETTER (2.1% noise vs 8.3% EMA-aligned)
+sigRevBullOL = rRevBullOL and isMidday and (not i_firstOnly or not rOL) and fGateBull_rev
+
+sigRevBearPMH = rRevBearPMH and (not i_firstOnly or not rPMH) and (fGateBear_rev or exrevBypass) and (emaGateBear or isPre950 or exrevBypass)
+sigRevBearYH  = rRevBearYH  and (not i_firstOnly or not rYH)  and (fGateBear_rev or exrevBypass) and (emaGateBear or isPre950 or exrevBypass)
+sigRevBearWH  = rRevBearWH  and (not i_firstOnly or not rWH)  and (fGateBear_rev or exrevBypass) and (emaGateBear or isPre950 or exrevBypass)
+sigRevBearOH  = rRevBearOH  and (not i_firstOnly or not rOH)  and (fGateBear_rev or exrevBypass) and (emaGateBear or isPre950 or exrevBypass)
+
+// v3.3c: Bull REV at HIGH levels suppressed — magnets attract, they don't repel
+sigRevBullPMH = false
+sigRevBullYH  = false
+sigRevBullWH  = false
+sigRevBullOH  = false
+
+// VWAP filtered signals (reversal stack + EMA gate)
+sigRevBullVWAP = rRevBullVWAP and not xVWAPBull and fGateBull_rev and emaPassBull
+// VWAP Reclaim — no EMA gate by design
+bool sigVWAPReclaimBull = rVWAPReclaimBull and not xVWAPBull and fGateBull_rev
+bool sigVWAPReclaimBear = rVWAPReclaimBear and not xVWAPBear and fGateBear_rev
+sigRevBearVWAP = rRevBearVWAP and not xVWAPBear and fGateBear_rev and emaPassBear
+
+sigRevBullPDLH = rRevBullPDLH and (not i_firstOnly or not rPDLH) and fGateBull_rev and emaPassBull
+sigRevBullVWBL = rRevBullVWBL and (not i_firstOnly or not rVWBL) and fGateBull_rev and emaPassBull
+// PD Mid REV: no EMA gate — magnet level, reversal is the correct signal type
+sigRevBullPDMid = rRevBullPDMid and (not i_firstOnly or not xPDMid) and fGateBull_rev
+sigRevBearPDMid = rRevBearPDMid and (not i_firstOnly or not xPDMid) and fGateBear_rev
+// Today's Open + PD Close REV: no EMA gate — magnet levels (same pattern as PD Mid)
+sigRevBullTodayOpen = rRevBullTodayOpen and (not i_firstOnly or not rTodayOpen) and fGateBull_rev
+sigRevBearTodayOpen = rRevBearTodayOpen and (not i_firstOnly or not rTodayOpen) and fGateBear_rev
+sigRevBullPDClose   = rRevBullPDClose   and (not i_firstOnly or not rPDClose)   and fGateBull_rev
+sigRevBearPDClose   = rRevBearPDClose   and (not i_firstOnly or not rPDClose)   and fGateBear_rev
+
+// v3.3d: NVDA bull REV suppressed entirely — momentum stock, failed reversals run -12+ ATR
+// Data: Win%=25.3%, Net=-707 ATR, Asymmetry=12.6x (vs 4.4x for HIGHs suppressed in v3.3c)
+// Structural: NVDA's one-directional momentum means bear REV works (+1,105 ATR), bull REV fails
+bool isNotNVDA = syminfo.ticker != "NVDA"
+sigRevBullPML       := sigRevBullPML       and isNotNVDA
+sigRevBullYL        := sigRevBullYL        and isNotNVDA
+sigRevBullWL        := sigRevBullWL        and isNotNVDA
+sigRevBullVWAP      := sigRevBullVWAP      and isNotNVDA
+sigRevBullPDLH      := sigRevBullPDLH      and isNotNVDA
+sigRevBullVWBL      := sigRevBullVWBL      and isNotNVDA
+sigRevBullPDMid     := sigRevBullPDMid     and isNotNVDA
+sigRevBullTodayOpen := sigRevBullTodayOpen and isNotNVDA
+sigRevBullPDClose   := sigRevBullPDClose   and isNotNVDA
+sigVWAPReclaimBull  := sigVWAPReclaimBull  and isNotNVDA
+
+// Update reversal flags
+if rRevBullPML
+    rPML := true
+if rRevBullYL
+    rYL := true
+if rRevBullWL
+    rWL := true
+if rRevBullOL
+    rOL := true
+if rRevBearPMH
+    rPMH := true
+if rRevBearYH
+    rYH := true
+if rRevBearWH
+    rWH := true
+if rRevBearOH
+    rOH := true
+// v3.3c: bull REV at HIGH levels removed — first-occurrence flags now set only by bear REV (above)
+if sigRevBullVWAP or sigVWAPReclaimBull
+    xVWAPBull := true
+if sigRevBearVWAP or sigVWAPReclaimBear
+    xVWAPBear := true
+if rRevBullPDLH
+    rPDLH := true
+if rRevBullVWBL
+    rVWBL := true
+if rRevBullTodayOpen or rRevBearTodayOpen
+    rTodayOpen := true
+if rRevBullPDClose or rRevBearPDClose
+    rPDClose := true
+
+// ─── QBS Volume Ramp Signals (v2.8, MC removed v3.0) ──────────────────
+bool rQBS_bull = i_qbsSignal and isVolDrying and sigRangeATR >= 1.5
+     and sigC > sigO and isRegular and newSigBar
+bool rQBS_bear = i_qbsSignal and isVolDrying and sigRangeATR >= 1.5
+     and sigC < sigO and isRegular and newSigBar
+bool sigQBS_bull = rQBS_bull and not qbsBullFired and fGateBull_rev and emaPassBull
+bool sigQBS_bear = rQBS_bear and not qbsBearFired and fGateBear_rev and emaPassBear
+bool qbsFired = sigQBS_bull or sigQBS_bear
+if sigQBS_bull
+    qbsBullFired := true
+if sigQBS_bear
+    qbsBearFired := true
+
+// ─── Combined Signals ────────────────────────────────────
+anyBull     = sigBullPDLH or sigBullWO or sigBullMO  // v3.2: HIGH levels moved to REV; v3.4: +PDLH
+anyBear     = sigBearPML or sigBearYL or sigBearWL or sigBearOL or sigBearPDLH or sigBearVWBL or sigBearWO or sigBearMO
+anyBreakout = anyBull or anyBear
+
+anyRevBull  = sigRevBullPML or sigRevBullYL or sigRevBullWL or sigRevBullOL or sigRevBullVWAP or sigRevBullPDLH or sigRevBullVWBL or sigRevBullPDMid or sigRevBullTodayOpen or sigRevBullPDClose or sigRevBullPMH or sigRevBullYH or sigRevBullWH or sigRevBullOH or sigVWAPReclaimBull
+anyRevBear  = sigRevBearPMH or sigRevBearYH or sigRevBearWH or sigRevBearOH or sigRevBearVWAP or sigRevBearPDMid or sigRevBearTodayOpen or sigRevBearPDClose or sigVWAPReclaimBear
+anyReversal = anyRevBull or anyRevBear
+// FADE signal detection (v3.2): counter-EMA crossback
+// Original was bull (counter-EMA) → price falls back through level → FADE fires BEAR (with EMA)
+// Original was bear (counter-EMA) → price rises back through level → FADE fires BULL (with EMA)
+bool sigFadeBull = false
+bool sigFadeBear = false
+if fadeWatchActive and not fadeFired and newSigBar and isRegular
+    if bar_index > fadeWatchExpiry
+        fadeWatchActive := false  // window expired
+    else if fadeWatchDir == -1 and sigC > fadeWatchLevel  // was bear, now crossing back up = BULL FADE
+        sigFadeBull := true
+        fadeFired   := true
+    else if fadeWatchDir == 1 and sigC < fadeWatchLevel   // was bull, now crossing back down = BEAR FADE
+        sigFadeBear := true
+        fadeFired   := true
+bool anyFade = sigFadeBull or sigFadeBear
+
+// Range+Vol signals (v3.0b): 12-bar range breakout + vol ≥ 3x. NO EMA requirement.
+// Morning only (before 11:00 ET) — afternoon RNG: 16.7% win in data
+bool rngVolOK = not na(volBase) and volBase > 0 and nz(sigVol) >= volBase * 3.0
+bool rngTimeOK = etHour < 11
+bool sigRNG_bull = i_rngSignal and isRegular and newSigBar
+     and rngTimeOK
+     and sigC > sigO and sigC > rngH12
+     and rngVolOK
+     and not rngBullFired
+bool sigRNG_bear = i_rngSignal and isRegular and newSigBar
+     and rngTimeOK
+     and sigC < sigO and sigC < rngL12
+     and rngVolOK
+     and not rngBearFired
+if sigRNG_bull
+    rngBullFired := true
+if sigRNG_bear
+    rngBearFired := true
+bool anyRNG = sigRNG_bull or sigRNG_bear
+
+anyQBSMC    = qbsFired
+
+// FADE watch setup (v3.2): any counter-EMA signal starts a 6-bar watch
+// Counter-EMA = bull signal when EMA=bear, or bear signal when EMA=bull
+bool _fadeBullSig = anyBull or anyRevBull
+bool _fadeBearSig = anyBear or anyRevBear
+
+// Determine the primary level for the watch (first matching level price)
+float _fadeBullLvl = sigBullPMH ? pmHigh : sigBullYH ? yestHigh : sigBullWH ? weekHigh : sigBullOH ? orbHigh : sigBullPDLH ? pdLastHrHigh : sigBullWO ? weekOpen : sigBullMO ? monthOpen : sigRevBullPML ? pmLow : sigRevBullYL ? yestLow : sigRevBullWL ? weekLow : sigRevBullOL ? orbLow : sigRevBullPDLH ? pdLastHrLow : sigRevBullVWBL ? vwapLowerBand : sigRevBullPDMid ? pdMid : sigRevBullTodayOpen ? todayOpen : sigRevBullPDClose ? yestClose : na
+float _fadeBearLvl = sigBearPML ? pmLow : sigBearYL ? yestLow : sigBearWL ? weekLow : sigBearOL ? orbLow : sigBearPDLH ? pdLastHrLow : sigBearVWBL ? vwapLowerBand : sigBearWO ? weekOpen : sigBearMO ? monthOpen : sigRevBearPMH ? pmHigh : sigRevBearYH ? yestHigh : sigRevBearWH ? weekHigh : sigRevBearOH ? orbHigh : sigRevBearPDMid ? pdMid : sigRevBearTodayOpen ? todayOpen : sigRevBearPDClose ? yestClose : na
+
+// Set up watch when counter-EMA signal fires
+if _fadeBullSig and not fEMA_bull and not na(_fadeBullLvl)
+    fadeWatchLevel  := _fadeBullLvl
+    fadeWatchDir    := 1   // original was bull
+    fadeWatchExpiry := bar_index + 6
+    fadeWatchActive := true
+    fadeFired       := false
+if _fadeBearSig and not fEMA_bear and not na(_fadeBearLvl)
+    fadeWatchLevel  := _fadeBearLvl
+    fadeWatchDir    := -1  // original was bear
+    fadeWatchExpiry := bar_index + 6
+    fadeWatchActive := true
+    fadeFired       := false
+
+// ─── Signal Labels (confluent levels merged) ────────────────
+bullText = ""
+if sigBullPMH
+    bullText := bullText + (bullText != "" ? " + " : "") + "PM H"
+if sigBullYH
+    bullText := bullText + (bullText != "" ? " + " : "") + "Yest H"
+if sigBullWH
+    bullText := bullText + (bullText != "" ? " + " : "") + "Week H"
+if sigBullOH
+    bullText := bullText + (bullText != "" ? " + " : "") + "ORB H"
+if sigBullPDLH
+    bullText := bullText + (bullText != "" ? " + " : "") + "PD LH H"  // v3.4
+if sigBullWO
+    bullText := bullText + (bullText != "" ? " + " : "") + "Week O"
+if sigBullMO
+    bullText := bullText + (bullText != "" ? " + " : "") + "Month O"
+
+bearText = ""
+if sigBearPML
+    bearText := bearText + (bearText != "" ? " + " : "") + "PM L"
+if sigBearYL
+    bearText := bearText + (bearText != "" ? " + " : "") + "Yest L"
+if sigBearWL
+    bearText := bearText + (bearText != "" ? " + " : "") + "Week L"
+if sigBearOL
+    bearText := bearText + (bearText != "" ? " + " : "") + "ORB L"
+if sigBearPDLH
+    bearText := bearText + (bearText != "" ? " + " : "") + "PD LH L"
+if sigBearVWBL
+    bearText := bearText + (bearText != "" ? " + " : "") + "VW Band"
+if sigBearWO
+    bearText := bearText + (bearText != "" ? " + " : "") + "Week O"
+if sigBearMO
+    bearText := bearText + (bearText != "" ? " + " : "") + "Month O"
+
+// Quality line: volume + close position on separate line
+bullVolTrim = i_volFilter and not na(volRatioBull) ? str.tostring(volRatioBull, "#.#") + "x" : ""
+bullPosTrim = i_closePos and not na(bullClosePos) ? "^" + str.tostring(bullClosePos) : ""
+bullQualLine = bullVolTrim + (bullVolTrim != "" and bullPosTrim != "" ? " " : "") + bullPosTrim
+
+bearVolTrim = i_volFilter and not na(volRatioBear) ? str.tostring(volRatioBear, "#.#") + "x" : ""
+bearPosTrim = i_closePos and not na(bearClosePos) ? "v" + str.tostring(bearClosePos) : ""
+bearQualLine = bearVolTrim + (bearVolTrim != "" and bearPosTrim != "" ? " " : "") + bearPosTrim
+
+bullCount = (sigBullPDLH ? 1 : 0) + (sigBullWO ? 1 : 0) + (sigBullMO ? 1 : 0)  // v3.2: HIGH levels moved to REV; v3.4: +PDLH
+bearCount = (sigBearPML ? 1 : 0) + (sigBearYL ? 1 : 0) + (sigBearWL ? 1 : 0) + (sigBearOL ? 1 : 0) + (sigBearPDLH ? 1 : 0) + (sigBearVWBL ? 1 : 0) + (sigBearWO ? 1 : 0) + (sigBearMO ? 1 : 0)
+
+// Runner Score: max 5 at signal time (6th factor = CONF pass, added later)
+int finalScoreBull = math.min(scoreBull, 6)
+int finalScoreBear = math.min(scoreBear, 6)
+if i_runnerScore and finalScoreBull >= 1 and bullQualLine != ""
+    bullQualLine += " " + array.get(SCORE_GLYPHS, finalScoreBull)
+if i_runnerScore and finalScoreBear >= 1 and bearQualLine != ""
+    bearQualLine += " " + array.get(SCORE_GLYPHS, finalScoreBear)
+// Regime Score display (v3.0)
+string[] REGIME_GLYPHS = array.from("R0", "R1", "R2")
+if bullQualLine != ""
+    bullQualLine += " " + array.get(REGIME_GLYPHS, math.min(regimeBull, 2))
+if bearQualLine != ""
+    bearQualLine += " " + array.get(REGIME_GLYPHS, math.min(regimeBear, 2))
+
+// ─── Reversal/Reclaim Label Text ──────────────────────
+// Reclaim requires CONF failure on the original breakout (when CONF enabled)
+bool rclBullOK = not i_confirm or sRTState == -1  // bear BRK failed → bull reclaim valid
+bool rclBearOK = not i_confirm or bRTState == -1  // bull BRK failed → bear reclaim valid
+revBullText = ""
+revBullHasReclaim = false
+if sigRevBullPML
+    string pfx = i_showReclaim and hadBrkPML and rclBullOK ? "~~ " : "~ "
+    revBullText := revBullText + (revBullText != "" ? " + " : "") + pfx + "PM L"
+    if i_showReclaim and hadBrkPML and rclBullOK
+        revBullHasReclaim := true
+if sigRevBullYL
+    string pfx = i_showReclaim and hadBrkYL and rclBullOK ? "~~ " : "~ "
+    revBullText := revBullText + (revBullText != "" ? " + " : "") + pfx + "Yest L"
+    if i_showReclaim and hadBrkYL and rclBullOK
+        revBullHasReclaim := true
+if sigRevBullWL
+    string pfx = i_showReclaim and hadBrkWL and rclBullOK ? "~~ " : "~ "
+    revBullText := revBullText + (revBullText != "" ? " + " : "") + pfx + "Week L"
+    if i_showReclaim and hadBrkWL and rclBullOK
+        revBullHasReclaim := true
+if sigRevBullOL
+    string pfx = i_showReclaim and hadBrkOL and rclBullOK ? "~~ " : "~ "
+    revBullText := revBullText + (revBullText != "" ? " + " : "") + pfx + "ORB L"
+    if i_showReclaim and hadBrkOL and rclBullOK
+        revBullHasReclaim := true
+if sigRevBullVWAP
+    revBullText := revBullText + (revBullText != "" ? "\n" : "") + "~ VWAP"
+if sigVWAPReclaimBull
+    revBullText := revBullText + (revBullText != "" ? "\n" : "") + "~> VWAP"
+if sigRevBullPDLH
+    revBullText := revBullText + (revBullText != "" ? " + " : "") + "~ PD LH L"
+if sigRevBullVWBL
+    revBullText := revBullText + (revBullText != "" ? " + " : "") + "~ VW Band"
+if sigRevBullPDMid
+    revBullText := revBullText + (revBullText != "" ? " + " : "") + "~ PD Mid"
+if sigRevBullTodayOpen
+    revBullText := revBullText + (revBullText != "" ? " + " : "") + "~ Today O"
+if sigRevBullPDClose
+    revBullText := revBullText + (revBullText != "" ? " + " : "") + "~ PD Cls"
+if sigRevBullPMH
+    revBullText := revBullText + (revBullText != "" ? " + " : "") + "~ PM H"
+if sigRevBullYH
+    revBullText := revBullText + (revBullText != "" ? " + " : "") + "~ Yest H"
+if sigRevBullWH
+    revBullText := revBullText + (revBullText != "" ? " + " : "") + "~ Week H"
+if sigRevBullOH
+    revBullText := revBullText + (revBullText != "" ? " + " : "") + "~ ORB H"
+
+revBearText = ""
+revBearHasReclaim = false
+if sigRevBearPMH
+    string pfx = exrevBypass ? "x~ " : (i_showReclaim and hadBrkPMH and rclBearOK ? "~~ " : "~ ")
+    revBearText := revBearText + (revBearText != "" ? " + " : "") + pfx + "PM H"
+    if i_showReclaim and hadBrkPMH and rclBearOK
+        revBearHasReclaim := true
+if sigRevBearYH
+    string pfx = exrevBypass ? "x~ " : (i_showReclaim and hadBrkYH and rclBearOK ? "~~ " : "~ ")
+    revBearText := revBearText + (revBearText != "" ? " + " : "") + pfx + "Yest H"
+    if i_showReclaim and hadBrkYH and rclBearOK
+        revBearHasReclaim := true
+if sigRevBearWH
+    string pfx = exrevBypass ? "x~ " : (i_showReclaim and hadBrkWH and rclBearOK ? "~~ " : "~ ")
+    revBearText := revBearText + (revBearText != "" ? " + " : "") + pfx + "Week H"
+    if i_showReclaim and hadBrkWH and rclBearOK
+        revBearHasReclaim := true
+if sigRevBearOH
+    string pfx = exrevBypass ? "x~ " : (i_showReclaim and hadBrkOH and rclBearOK ? "~~ " : "~ ")
+    revBearText := revBearText + (revBearText != "" ? " + " : "") + pfx + "ORB H"
+    if i_showReclaim and hadBrkOH and rclBearOK
+        revBearHasReclaim := true
+if sigRevBearVWAP
+    revBearText := revBearText + (revBearText != "" ? "\n" : "") + "~ VWAP"
+if sigVWAPReclaimBear
+    revBearText := revBearText + (revBearText != "" ? "\n" : "") + "~> VWAP"
+if sigRevBearPDMid
+    revBearText := revBearText + (revBearText != "" ? " + " : "") + "~ PD Mid"
+if sigRevBearTodayOpen
+    revBearText := revBearText + (revBearText != "" ? " + " : "") + "~ Today O"
+if sigRevBearPDClose
+    revBearText := revBearText + (revBearText != "" ? " + " : "") + "~ PD Cls"
+
+revBullCount = (sigRevBullPML ? 1 : 0) + (sigRevBullYL ? 1 : 0) + (sigRevBullWL ? 1 : 0) + (sigRevBullOL ? 1 : 0) + (sigRevBullVWAP ? 1 : 0) + (sigRevBullPDLH ? 1 : 0) + (sigRevBullVWBL ? 1 : 0) + (sigRevBullPDMid ? 1 : 0) + (sigRevBullTodayOpen ? 1 : 0) + (sigRevBullPDClose ? 1 : 0) + (sigRevBullPMH ? 1 : 0) + (sigRevBullYH ? 1 : 0) + (sigRevBullWH ? 1 : 0) + (sigRevBullOH ? 1 : 0) + (sigVWAPReclaimBull ? 1 : 0)
+revBearCount = (sigRevBearPMH ? 1 : 0) + (sigRevBearYH ? 1 : 0) + (sigRevBearWH ? 1 : 0) + (sigRevBearOH ? 1 : 0) + (sigRevBearVWAP ? 1 : 0) + (sigRevBearPDMid ? 1 : 0) + (sigRevBearTodayOpen ? 1 : 0) + (sigRevBearPDClose ? 1 : 0) + (sigVWAPReclaimBear ? 1 : 0)
+
+// ─── Level Freshness: increment on any signal fire (v3.3) ──
+// A level is "tested" each time any signal (BRK or REV) fires at it.
+// 1st-2nd = fresh (full). 3rd-4th = dim. Research: z=-0.51 level_tests_today.
+if sigBullPMH or sigRevBullPMH or sigRevBearPMH
+    tcPMH += 1
+if sigBearPML or sigRevBullPML
+    tcPML += 1
+if sigBullYH or sigRevBullYH or sigRevBearYH
+    tcYH += 1
+if sigBearYL or sigRevBullYL
+    tcYL += 1
+if sigBullWH or sigRevBullWH or sigRevBearWH
+    tcWH += 1
+if sigBearWL or sigRevBullWL
+    tcWL += 1
+if sigBullOH or sigRevBullOH or sigRevBearOH
+    tcOH += 1
+if sigBearOL or sigRevBullOL
+    tcOL += 1
+if sigRevBullPDMid or sigRevBearPDMid
+    tcPDMid += 1
+if sigBullPDLH or sigBearPDLH or sigRevBullPDLH
+    tcPDLH += 1
+if sigRevBullTodayOpen or sigRevBearTodayOpen
+    tcTodayOpen += 1
+if sigRevBullPDClose or sigRevBearPDClose
+    tcPDClose += 1
+if sigBullWO or sigBearWO
+    tcWO += 1
+if sigBullMO or sigBearMO
+    tcMO += 1
+
+// Level freshness dim: any firing level tested 3+ times today → dim
+bool _fbBull = (sigBullPMH and tcPMH >= 3) or (sigBullYH and tcYH >= 3) or (sigBullWH and tcWH >= 3) or (sigBullOH and tcOH >= 3) or (sigBullPDLH and tcPDLH >= 3) or (sigBullWO and tcWO >= 3) or (sigBullMO and tcMO >= 3)
+bool _frBull = (sigRevBullPML and tcPML >= 3) or (sigRevBullYL and tcYL >= 3) or (sigRevBullWL and tcWL >= 3) or (sigRevBullPDLH and tcPDLH >= 3) or (sigRevBullPDMid and tcPDMid >= 3) or (sigRevBullTodayOpen and tcTodayOpen >= 3) or (sigRevBullPDClose and tcPDClose >= 3) or (sigRevBullPMH and tcPMH >= 3) or (sigRevBullYH and tcYH >= 3) or (sigRevBullWH and tcWH >= 3) or (sigRevBullOH and tcOH >= 3)
+bool isFreshDimBull = _fbBull or _frBull
+bool _fbBear = (sigBearPML and tcPML >= 3) or (sigBearYL and tcYL >= 3) or (sigBearWL and tcWL >= 3) or (sigBearOL and tcOL >= 3) or (sigBearPDLH and tcPDLH >= 3) or (sigBearWO and tcWO >= 3) or (sigBearMO and tcMO >= 3)
+bool _frBear = (sigRevBearPMH and tcPMH >= 3) or (sigRevBearYH and tcYH >= 3) or (sigRevBearWH and tcWH >= 3) or (sigRevBearOH and tcOH >= 3) or (sigRevBearPDMid and tcPDMid >= 3) or (sigRevBearTodayOpen and tcTodayOpen >= 3) or (sigRevBearPDClose and tcPDClose >= 3)
+bool isFreshDimBear = _fbBear or _frBear
+
+var int lastBullSigBar = -999
+var int lastBearSigBar = -999
+var int lastBullLblBar = -999
+var int lastBearLblBar = -999
+
+// Scale fade threshold by TF ratio so "100 signal bars" means the same duration on any chart TF
+sigTFRatio = math.max(1, timeframe.in_seconds(i_signalTF) / timeframe.in_seconds(timeframe.period))
+isOld = i_fadeOld and (last_bar_index - bar_index) > i_fadeAge * sigTFRatio
+
+revBullAlpha = revBullHasReclaim ? math.max(0, bullVolAlpha - 10) : bullVolAlpha
+revBearAlpha = revBearHasReclaim ? math.max(0, bearVolAlpha - 10) : bearVolAlpha
+revBullColor = color.new(color.aqua, revBullAlpha)
+revBearColor = color.new(color.orange, revBearAlpha)
+
+// ─── QBS Labels (v2.8, MC removed v3.0) ────────────────────────────────
+if sigQBS_bull
+    string qmType = "🔇 QBS"
+    string rampStr = str.tostring(preVolRamp, "#.#") + "x"
+    int score = finalScoreBull
+    string scoreStr = i_runnerScore and score >= 1 ? " " + array.get(SCORE_GLYPHS, math.min(score, 6)) : ""
+    string qmText = qmType + "\nBull " + rampStr + scoreStr
+    bool isDimQM = i_fMode == "Dim" and not evStackBull_rev
+    bool isModDim = isVolModerate
+    if isDimQM or isModDim
+        qmText += "\n?"
+    color qmColor = isDimQM or isModDim ? color.new(color.gray, 70) : color.new(color.teal, 0)
+    color qmTextColor = isDimQM or isModDim ? color.new(color.gray, 50) : color.black
+    string qmSize = size.normal
+    label qmLbl = label.new(bar_index + shapeOff, na, qmText,
+         yloc=yloc.belowbar, style=label.style_label_up,
+         color=qmColor, textcolor=qmTextColor, size=qmSize)
+    if i_debugLog and barstate.isconfirmed
+        string qmVolStr = not na(volRatioBull) ? str.tostring(volRatioBull, "#.#") + "x" : ""
+        string qmPosStr = not na(bullClosePos) ? "^" + str.tostring(bullClosePos) : ""
+        string qmVwapStr = not na(vwapVal) ? (sigC > vwapVal ? "above" : "below") : "na"
+        string qmEmaStr = not na(ema20_5m) ? (ema20_5m > ema50_5m ? "bull" : "bear") : "na"
+        string qmAdxStr = not na(adx_5m) ? str.tostring(adx_5m, "#") : "na"
+        string qmBodyStr = str.tostring(math.round(bodyRatio * 100)) + "%"
+        string qmOhlc = "O" + str.tostring(sigO, "#.##") + " H" + str.tostring(sigH, "#.##") + " L" + str.tostring(sigL, "#.##") + " C" + str.tostring(sigC, "#.##")
+        string dimStr = isDimQM ? " dim" : isModDim ? " moddim" : ""
+        log.info("[KLB] " + fmtTime(time) + " ▲ " + qmType + " ramp=" + rampStr + " vol=" + qmVolStr + " pos=" + qmPosStr + " vwap=" + qmVwapStr + " ema=" + qmEmaStr + " adx=" + qmAdxStr + " body=" + qmBodyStr + " rangeATR=" + str.tostring(sigRangeATR, "#.#") + (isBigMove ? " ⚡" : "") + dimStr + " " + qmOhlc + " ATR=" + str.tostring(nz(dailyATR), "#.##"))
+    if i_confirm and not isOld
+        qmcRTState    := 1
+        qmcRTLbl      := qmLbl
+        qmcRTBase     := qmText
+        qmcRTEntry    := sigC
+        qmcRTDir      := 1
+        qmcRTStart    := sigBarIdx
+        qmcRTVolRatio := volRatioBull
+        qmcRTClosePos := bullClosePos
+
+if sigQBS_bear
+    string qmType = "🔇 QBS"
+    string rampStr = str.tostring(preVolRamp, "#.#") + "x"
+    int score = finalScoreBear
+    string scoreStr = i_runnerScore and score >= 1 ? " " + array.get(SCORE_GLYPHS, math.min(score, 6)) : ""
+    string qmText = qmType + "\nBear " + rampStr + scoreStr
+    bool isDimQM = i_fMode == "Dim" and not evStackBear_rev
+    bool isModDim = isVolModerate
+    if isDimQM or isModDim
+        qmText += "\n?"
+    color qmColor = isDimQM or isModDim ? color.new(color.gray, 70) : color.new(color.teal, 0)
+    color qmTextColor = isDimQM or isModDim ? color.new(color.gray, 50) : color.black
+    string qmSize = size.normal
+    label qmLbl = label.new(bar_index + shapeOff, na, qmText,
+         yloc=yloc.abovebar, style=label.style_label_down,
+         color=qmColor, textcolor=qmTextColor, size=qmSize)
+    if i_debugLog and barstate.isconfirmed
+        string qmVolStr = not na(volRatioBear) ? str.tostring(volRatioBear, "#.#") + "x" : ""
+        string qmPosStr = not na(bearClosePos) ? "v" + str.tostring(bearClosePos) : ""
+        string qmVwapStr = not na(vwapVal) ? (sigC > vwapVal ? "above" : "below") : "na"
+        string qmEmaStr = not na(ema20_5m) ? (ema20_5m > ema50_5m ? "bull" : "bear") : "na"
+        string qmAdxStr = not na(adx_5m) ? str.tostring(adx_5m, "#") : "na"
+        string qmBodyStr = str.tostring(math.round(bodyRatio * 100)) + "%"
+        string qmOhlc = "O" + str.tostring(sigO, "#.##") + " H" + str.tostring(sigH, "#.##") + " L" + str.tostring(sigL, "#.##") + " C" + str.tostring(sigC, "#.##")
+        string dimStr = isDimQM ? " dim" : isModDim ? " moddim" : ""
+        log.info("[KLB] " + fmtTime(time) + " ▼ " + qmType + " ramp=" + rampStr + " vol=" + qmVolStr + " pos=" + qmPosStr + " vwap=" + qmVwapStr + " ema=" + qmEmaStr + " adx=" + qmAdxStr + " body=" + qmBodyStr + " rangeATR=" + str.tostring(sigRangeATR, "#.#") + (isBigMove ? " ⚡" : "") + dimStr + " " + qmOhlc + " ATR=" + str.tostring(nz(dailyATR), "#.##"))
+    if i_confirm and not isOld
+        qmcRTState    := 1
+        qmcRTLbl      := qmLbl
+        qmcRTBase     := qmText
+        qmcRTEntry    := sigC
+        qmcRTDir      := -1
+        qmcRTStart    := sigBarIdx
+        qmcRTVolRatio := volRatioBear
+        qmcRTClosePos := bearClosePos
+
+// FADE labels (v3.2) — purple/magenta
+if sigFadeBull
+    string fadeText = "FADE ▲\n~ " + str.tostring(fadeWatchLevel, "#.##")
+    fadeText += "\n" + (not na(volRatioBull) ? str.tostring(volRatioBull, "#.#") + "x" : "")
+    label.new(bar_index + shapeOff, na, fadeText,
+         yloc=yloc.belowbar, style=label.style_label_up,
+         color=color.new(#9C27B0, 0), textcolor=color.white, size=size.small)
+    if i_debugLog and barstate.isconfirmed
+        log.info("[KLB] {0} ▲ FADE at {1}", fmtTime(time), str.tostring(fadeWatchLevel, "#.##"))
+    alert("FADE ▲ Bull fade at " + str.tostring(fadeWatchLevel, "#.##"), alert.freq_once_per_bar)
+
+if sigFadeBear
+    string fadeText = "FADE ▼\n~ " + str.tostring(fadeWatchLevel, "#.##")
+    fadeText += "\n" + (not na(volRatioBear) ? str.tostring(volRatioBear, "#.#") + "x" : "")
+    label.new(bar_index + shapeOff, na, fadeText,
+         yloc=yloc.abovebar, style=label.style_label_down,
+         color=color.new(#9C27B0, 0), textcolor=color.white, size=size.small)
+    if i_debugLog and barstate.isconfirmed
+        log.info("[KLB] {0} ▼ FADE at {1}", fmtTime(time), str.tostring(fadeWatchLevel, "#.##"))
+    alert("FADE ▼ Bear fade at " + str.tostring(fadeWatchLevel, "#.##"), alert.freq_once_per_bar)
+
+// RNG labels (v3.0) — teal/cyan
+if sigRNG_bull
+    string rngQual = not na(volRatioBull) ? str.tostring(volRatioBull, "#.#") + "x" : ""
+    string rngText = "RNG ▲\n" + rngQual
+    label.new(bar_index + shapeOff, na, rngText,
+         yloc=yloc.belowbar, style=label.style_label_up,
+         color=color.new(#00BCD4, 0), textcolor=color.black, size=size.small)
+    if i_debugLog and barstate.isconfirmed
+        log.info("[KLB] {0} ▲ RNG range break vol={1}x", fmtTime(time), not na(volRatioBull) ? str.tostring(volRatioBull, "#.#") : "na")
+    alert("RNG ▲ Range+Vol breakout " + rngQual, alert.freq_once_per_bar)
+
+if sigRNG_bear
+    string rngQual = not na(volRatioBear) ? str.tostring(volRatioBear, "#.#") + "x" : ""
+    string rngText = "RNG ▼\n" + rngQual
+    label.new(bar_index + shapeOff, na, rngText,
+         yloc=yloc.abovebar, style=label.style_label_down,
+         color=color.new(#00BCD4, 0), textcolor=color.black, size=size.small)
+    if i_debugLog and barstate.isconfirmed
+        log.info("[KLB] {0} ▼ RNG range break vol={1}x", fmtTime(time), not na(volRatioBear) ? str.tostring(volRatioBear, "#.#") : "na")
+    alert("RNG ▼ Range+Vol breakout " + rngQual, alert.freq_once_per_bar)
+
+// ─── Combined Bull Label ─────────────────────────────────
+string combinedBullText = ""
+if bullText != ""
+    combinedBullText := bullText
+if revBullText != ""
+    // Gray out prior reversal/reclaim labels at the same levels (superseded)
+    if not isOld
+        if sigRevBullPML and not na(revLblPML)
+            label.set_color(revLblPML, color.new(color.gray, 80))
+            label.set_textcolor(revLblPML, color.new(color.gray, 60))
+        if sigRevBullYL and not na(revLblYL)
+            label.set_color(revLblYL, color.new(color.gray, 80))
+            label.set_textcolor(revLblYL, color.new(color.gray, 60))
+        if sigRevBullWL and not na(revLblWL)
+            label.set_color(revLblWL, color.new(color.gray, 80))
+            label.set_textcolor(revLblWL, color.new(color.gray, 60))
+        if sigRevBullOL and not na(revLblOL)
+            label.set_color(revLblOL, color.new(color.gray, 80))
+            label.set_textcolor(revLblOL, color.new(color.gray, 60))
+    combinedBullText := combinedBullText + (combinedBullText != "" ? "\n" : "") + revBullText
+
+// v3.7: top-level scope — used in both bull and bear rendering blocks
+bool isBigCandle = sigRangeATR >= 2.0
+bool spySustainedReclaim = not na(spyVwap) and spyClose > spyVwap and spyClosePrev > spyVwap
+bool isSpyReclaimDimBear = spySustainedReclaim and (isMidday or rsVsSpy > 0)
+
+if combinedBullText != "" and not (i_suppressAfternoon and isTrueAfternoon)
+    string bwSuffix = bodyWarn ? " ⚠" : ""
+    string sigGlyphs = bigMoveGlyph + volRampGlyph
+    string glyphPfx = sigGlyphs != "" ? sigGlyphs + " " : ""
+    combinedBullText += bullQualLine != "" ? "\n" + glyphPfx + bullQualLine + bwSuffix : (sigGlyphs != "" or bwSuffix != "" ? "\n" + sigGlyphs + bwSuffix : "")
+    // Evidence stack dim mode: use breakout stack if breakout present, reversal stack if reversal-only
+    bool isRegimeDimBull = i_emaGate and regimeBull == 1  // R1 bull = dim (data: 31.2% win, -0.176 P&L)
+    bool isDimBull = ((i_fMode == "Dim" and not (bullText != "" ? evStackBull : evStackBull_rev)) or isVolModerate or emaGateBull_dim or isRegimeDimBull or isVolExhaustBull or isExhausted or isFreshDimBull) and not isQuietCoil and not isMiddayFlat and not isBroadCoil and not isBigCandle
+    if isDimBull
+        combinedBullText += "\n?"
+    // Determine color: breakout color if breakout present, reversal color if reversal-only
+    color lblColor = bullText != "" ? bullColor : revBullColor
+    int totalCount = bullCount + revBullCount
+    // Cooldown + afternoon dimming
+    bool isCooled = i_cooldownBars > 0 and (sigBarIdx - lastBullSigBar) <= i_cooldownBars
+    bool isAftn   = i_dimAfternoon and isAfternoon and not isOld and not isCooled
+    color finalColor = isDimBull ? color.new(color.gray, 70) : isCooled ? color.new(color.gray, 70) : isAftn ? color.new(lblColor, 60) : (isOld ? color.new(color.gray, 90) : lblColor)
+    color finalText  = isDimBull ? color.new(color.gray, 50) : isCooled ? color.new(color.gray, 50) : isAftn ? color.new(color.gray, 30) : (isOld ? color.new(color.gray, 70) : color.black)
+    string finalSize = isDimBull ? size.tiny : isCooled ? size.tiny : isAftn ? size.tiny : (totalCount >= 2 ? size.large : size.small)
+    // Vertical offset for adjacent labels
+    bool needsOffset = (bar_index + shapeOff - lastBullLblBar) <= 1 and lastBullLblBar >= 0
+
+    if i_retestOnly and bullText != "" and revBullText == "" and not isOld
+        // Retest-only: suppress breakout-only label, show small gray dot
+        label.new(bar_index + shapeOff, na, "·",
+             yloc=yloc.belowbar, style=label.style_label_up,
+             color=color.new(color.gray, 80), textcolor=color.new(color.gray, 60),
+             size=size.tiny)
+    else
+        label lbl = na
+        if needsOffset and not na(dailyATR)
+            lbl := label.new(bar_index + shapeOff, low - dailyATR * 0.15,
+                 combinedBullText, yloc=yloc.price, style=label.style_label_up,
+                 color=finalColor, textcolor=finalText, size=finalSize)
+        else
+            lbl := label.new(bar_index + shapeOff, na, combinedBullText,
+                 yloc=yloc.belowbar, style=label.style_label_up,
+                 color=finalColor, textcolor=finalText, size=finalSize)
+        // Track reversal label references on the combined label
+        if not isOld and revBullText != ""
+            if sigRevBullPML
+                revLblPML := lbl
+            if sigRevBullYL
+                revLblYL := lbl
+            if sigRevBullWL
+                revLblWL := lbl
+            if sigRevBullOL
+                revLblOL := lbl
+        // Capture for confirmation tracking
+        if i_confirm and not isOld and bullText != ""
+            bRTLbl  := lbl
+            bRTBase := combinedBullText
+
+    // Update cooldown + offset trackers
+    if not isOld and not isCooled
+        lastBullSigBar := sigBarIdx
+    if not isOld
+        lastBullLblBar := bar_index + shapeOff
+
+    // Debug append — bull breakout and/or reversal
+    if (i_debugTable or i_debugLog) and not isOld
+        if bullText != ""
+            string prices = dbLvlPriceStr(sigBullPMH, false, sigBullYH, false, sigBullWH, false, sigBullOH, false)
+            int idx = dbAppend("▲", "BRK", bullText, volRatioBull, bullClosePos, "…", prices)
+            if i_confirm
+                dbConfBullIdx := idx
+        if revBullText != ""
+            string revType = revBullHasReclaim ? "~~" : "~"
+            string prices = dbLvlPriceStr(false, sigRevBullPML, false, sigRevBullYL, false, sigRevBullWL, false, sigRevBullOL)
+            dbAppend("▲", revType, revBullText, volRatioBull, bullClosePos, "—", prices)
+
+    // Confirmation setup (breakout tracking)
+    if bullText != "" and i_confirm and not isOld
+        // Auto-promote previous monitoring
+        if bRTState == 1 and not i_retestOnly and not na(bRTLbl)
+            int confHour = hour(time, TZ)
+            bool highConv = not na(bRTVolRatio) and bRTVolRatio < 5.0 and (confHour == 9 or confHour == 10)
+            if highConv
+                label.set_text(bRTLbl, bRTBase + "\n✓★")
+                label.set_color(bRTLbl, color.new(#FFD700, 0))
+                label.set_textcolor(bRTLbl, color.black)
+                label.set_size(bRTLbl, size.normal)
+            else
+                label.set_text(bRTLbl, bRTBase + "\n✓")
+                label.set_color(bRTLbl, color.new(color.green, 0))
+                label.set_textcolor(bRTLbl, color.white)
+                label.set_size(bRTLbl, size.normal)
+            confPassCount  += 1
+            confFailStreak := 0
+            vwapExitBull   := true
+            vwapExitBear   := false
+            // Start 5-minute checkpoint
+            checkpointEntry := sigC
+            checkpointBar   := bar_index
+            checkpointLbl   := bRTLbl
+            checkpointDir   := 1
+            // SL reference lines at CONF time (using new breakout's sigC as entry proxy)
+            if i_showSL and not na(dailyATR)
+                float _slW_b = isMorning ? 0.08 : isMidday ? 0.20 : 0.10
+                float _slH_b = isMorning ? 0.10 : isMidday ? 0.25 : 0.15
+                line.new(bar_index, sigC - dailyATR * _slW_b, bar_index + slBars, sigC - dailyATR * _slW_b, color=color.new(color.orange, 40), style=line.style_dashed, width=1)
+                line.new(bar_index, sigC - dailyATR * _slH_b, bar_index + slBars, sigC - dailyATR * _slH_b, color=color.new(color.red, 30),    style=line.style_solid,  width=1)
+            if dbConfBullIdx >= 0 and dbConfBullIdx < array.size(dbConf)
+                array.set(dbConf, dbConfBullIdx, highConv ? "✓★" : "✓")
+                if i_debugLog and barstate.isconfirmed
+                    log.info("[KLB] CONF {0} ▲ BRK → {1} (auto-promote)", fmtTime(time), highConv ? "✓★" : "✓")
+        // Set up per-level tracking
+        for i = 0 to 3
+            array.set(bRT, i, false)
+            array.set(bRTInfo, i, "")
+        array.set(bRTLvl, 0, sigBullPMH ? pmHigh : na)
+        array.set(bRTLvl, 1, sigBullYH  ? yestHigh : na)
+        array.set(bRTLvl, 2, sigBullWH  ? weekHigh : na)
+        array.set(bRTLvl, 3, sigBullOH  ? orbHigh : na)
+        // Track highest broken level for bull (last resistance to clear must hold)
+        float lvl = na
+        if sigBullPMH
+            lvl := na(lvl) ? pmHigh : math.max(lvl, pmHigh)
+        if sigBullYH
+            lvl := na(lvl) ? yestHigh : math.max(lvl, yestHigh)
+        if sigBullWH
+            lvl := na(lvl) ? weekHigh : math.max(lvl, weekHigh)
+        if sigBullOH
+            lvl := na(lvl) ? orbHigh : math.max(lvl, orbHigh)
+        bRTConsLvl    := lvl
+        bRTStart      := sigBarIdx
+        bRTBar0       := bar_index - 1
+        bRTState      := 1
+        bRTVolRatio   := volRatioBull
+        bRTClosePos   := bullClosePos
+        // Auto-Confirm R1 (v3.0b): EMA aligned → instant CONF pass (no time mask — HOLD is the gatekeeper)
+        bool autoConfBull = fEMA_bull
+        if autoConfBull
+            label.set_text(bRTLbl, bRTBase + "\n✓")
+            label.set_color(bRTLbl, color.new(color.green, 0))
+            label.set_textcolor(bRTLbl, color.white)
+            label.set_size(bRTLbl, size.normal)
+            confPassCount  += 1
+            confFailStreak := 0
+            vwapExitBull   := true
+            vwapExitBear   := false
+            checkpointEntry := sigC
+            checkpointBar   := bar_index
+            checkpointLbl   := bRTLbl
+            checkpointDir   := 1
+            if i_showSL and not na(dailyATR)
+                float _slW_b = isMorning ? 0.08 : isMidday ? 0.20 : 0.10
+                float _slH_b = isMorning ? 0.10 : isMidday ? 0.25 : 0.15
+                line.new(bar_index, sigC - dailyATR * _slW_b, bar_index + slBars, sigC - dailyATR * _slW_b, color=color.new(color.orange, 40), style=line.style_dashed, width=1)
+                line.new(bar_index, sigC - dailyATR * _slH_b, bar_index + slBars, sigC - dailyATR * _slH_b, color=color.new(color.red, 30),    style=line.style_solid,  width=1)
+            if dbConfBullIdx >= 0 and dbConfBullIdx < array.size(dbConf)
+                array.set(dbConf, dbConfBullIdx, "✓")
+                if i_debugLog and barstate.isconfirmed
+                    log.info("[KLB] CONF {0} ▲ BRK → ✓ (auto-R1: EMA)", fmtTime(time))
+            bRTState := 0  // skip monitoring — already confirmed
+
+// ─── Combined Bear Label ─────────────────────────────────
+string combinedBearText = ""
+if bearText != ""
+    combinedBearText := bearText
+if revBearText != ""
+    // Gray out prior reversal/reclaim labels at the same levels (superseded)
+    if not isOld
+        if sigRevBearPMH and not na(revLblPMH)
+            label.set_color(revLblPMH, color.new(color.gray, 80))
+            label.set_textcolor(revLblPMH, color.new(color.gray, 60))
+        if sigRevBearYH and not na(revLblYH)
+            label.set_color(revLblYH, color.new(color.gray, 80))
+            label.set_textcolor(revLblYH, color.new(color.gray, 60))
+        if sigRevBearWH and not na(revLblWH)
+            label.set_color(revLblWH, color.new(color.gray, 80))
+            label.set_textcolor(revLblWH, color.new(color.gray, 60))
+        if sigRevBearOH and not na(revLblOH)
+            label.set_color(revLblOH, color.new(color.gray, 80))
+            label.set_textcolor(revLblOH, color.new(color.gray, 60))
+    combinedBearText := combinedBearText + (combinedBearText != "" ? "\n" : "") + revBearText
+
+if combinedBearText != "" and not (i_suppressAfternoon and isTrueAfternoon)
+    string bwSuffix = bodyWarn ? " ⚠" : ""
+    string sigGlyphs = bigMoveGlyph + volRampGlyph
+    string glyphPfx = sigGlyphs != "" ? sigGlyphs + " " : ""
+    combinedBearText += bearQualLine != "" ? "\n" + glyphPfx + bearQualLine + bwSuffix : (sigGlyphs != "" or bwSuffix != "" ? "\n" + sigGlyphs + bwSuffix : "")
+    // v3.4: NVDA bear = 2x size signal (Win%=51.7%, +450 ATR on normal days)
+    if syminfo.ticker == "NVDA" and anyRevBear
+        combinedBearText += " ★2x"
+    // Evidence stack dim mode: use breakout stack if breakout present, reversal stack if reversal-only
+    bool isRegimeDimBear = i_emaGate and regimeBear == 1
+    bool isDimBear = ((i_fMode == "Dim" and not (bearText != "" ? evStackBear : evStackBear_rev)) or isVolModerate or emaGateBear_dim or isRegimeDimBear or isVolExhaustBear or isExhausted or isFreshDimBear or isSpyReclaimDimBear) and not isQuietCoil and not isMiddayFlat and not isBroadCoil and not isBigCandle
+    if isDimBear
+        combinedBearText += "\n?"
+    // Determine color: breakout color if breakout present, reversal color if reversal-only
+    color lblColor = bearText != "" ? bearColor : revBearColor
+    int totalCount = bearCount + revBearCount
+    // Cooldown + afternoon dimming
+    bool isCooled = i_cooldownBars > 0 and (sigBarIdx - lastBearSigBar) <= i_cooldownBars
+    bool isAftn   = i_dimAfternoon and isAfternoon and not isOld and not isCooled
+    color finalColor = isDimBear ? color.new(color.gray, 70) : isCooled ? color.new(color.gray, 70) : isAftn ? color.new(lblColor, 60) : (isOld ? color.new(color.gray, 90) : lblColor)
+    color finalText  = isDimBear ? color.new(color.gray, 50) : isCooled ? color.new(color.gray, 50) : isAftn ? color.new(color.gray, 30) : (isOld ? color.new(color.gray, 70) : color.black)
+    string finalSize = isDimBear ? size.tiny : isCooled ? size.tiny : isAftn ? size.tiny : (totalCount >= 2 ? size.large : size.small)
+    // Vertical offset for adjacent labels
+    bool needsOffset = (bar_index + shapeOff - lastBearLblBar) <= 1 and lastBearLblBar >= 0
+
+    if i_retestOnly and bearText != "" and revBearText == "" and not isOld
+        // Retest-only: suppress breakout-only label, show small gray dot
+        label.new(bar_index + shapeOff, na, "·",
+             yloc=yloc.abovebar, style=label.style_label_down,
+             color=color.new(color.gray, 80), textcolor=color.new(color.gray, 60),
+             size=size.tiny)
+    else
+        label lbl = na
+        if needsOffset and not na(dailyATR)
+            lbl := label.new(bar_index + shapeOff, high + dailyATR * 0.15,
+                 combinedBearText, yloc=yloc.price, style=label.style_label_down,
+                 color=finalColor, textcolor=finalText, size=finalSize)
+        else
+            lbl := label.new(bar_index + shapeOff, na, combinedBearText,
+                 yloc=yloc.abovebar, style=label.style_label_down,
+                 color=finalColor, textcolor=finalText, size=finalSize)
+        // Track reversal label references on the combined label
+        if not isOld and revBearText != ""
+            if sigRevBearPMH
+                revLblPMH := lbl
+            if sigRevBearYH
+                revLblYH := lbl
+            if sigRevBearWH
+                revLblWH := lbl
+            if sigRevBearOH
+                revLblOH := lbl
+        // Capture for confirmation tracking
+        if i_confirm and not isOld and bearText != ""
+            sRTLbl  := lbl
+            sRTBase := combinedBearText
+
+    // Update cooldown + offset trackers
+    if not isOld and not isCooled
+        lastBearSigBar := sigBarIdx
+    if not isOld
+        lastBearLblBar := bar_index + shapeOff
+
+    // Debug append — bear breakout and/or reversal
+    if (i_debugTable or i_debugLog) and not isOld
+        if bearText != ""
+            string prices = dbLvlPriceStr(false, sigBearPML, false, sigBearYL, false, sigBearWL, false, sigBearOL)
+            int idx = dbAppend("▼", "BRK", bearText, volRatioBear, bearClosePos, "…", prices)
+            if i_confirm
+                dbConfBearIdx := idx
+        if revBearText != ""
+            string revType = revBearHasReclaim ? "~~" : "~"
+            string prices = dbLvlPriceStr(sigRevBearPMH, false, sigRevBearYH, false, sigRevBearWH, false, sigRevBearOH, false)
+            dbAppend("▼", revType, revBearText, volRatioBear, bearClosePos, "—", prices)
+
+    // Confirmation setup (breakout tracking)
+    if bearText != "" and i_confirm and not isOld
+        // Auto-promote previous monitoring
+        if sRTState == 1 and not i_retestOnly and not na(sRTLbl)
+            int confHour = hour(time, TZ)
+            bool highConv = not na(sRTVolRatio) and sRTVolRatio < 5.0 and (confHour == 9 or confHour == 10)
+            if highConv
+                label.set_text(sRTLbl, sRTBase + "\n✓★")
+                label.set_color(sRTLbl, color.new(#FFD700, 0))
+                label.set_textcolor(sRTLbl, color.black)
+                label.set_size(sRTLbl, size.normal)
+            else
+                label.set_text(sRTLbl, sRTBase + "\n✓")
+                label.set_color(sRTLbl, color.new(color.red, 0))
+                label.set_textcolor(sRTLbl, color.white)
+                label.set_size(sRTLbl, size.normal)
+            confPassCount  += 1
+            confFailStreak := 0
+            vwapExitBear   := true
+            vwapExitBull   := false
+            // Start 5-minute checkpoint
+            checkpointEntry := sigC
+            checkpointBar   := bar_index
+            checkpointLbl   := sRTLbl
+            checkpointDir   := -1
+            // SL reference lines at CONF time (using new breakout's sigC as entry proxy)
+            if i_showSL and not na(dailyATR)
+                float _slW_s = isMorning ? 0.08 : isMidday ? 0.20 : 0.10
+                float _slH_s = isMorning ? 0.10 : isMidday ? 0.25 : 0.15
+                line.new(bar_index, sigC + dailyATR * _slW_s, bar_index + slBars, sigC + dailyATR * _slW_s, color=color.new(color.orange, 40), style=line.style_dashed, width=1)
+                line.new(bar_index, sigC + dailyATR * _slH_s, bar_index + slBars, sigC + dailyATR * _slH_s, color=color.new(color.red, 30),    style=line.style_solid,  width=1)
+            if dbConfBearIdx >= 0 and dbConfBearIdx < array.size(dbConf)
+                array.set(dbConf, dbConfBearIdx, highConv ? "✓★" : "✓")
+                if i_debugLog and barstate.isconfirmed
+                    log.info("[KLB] CONF {0} ▼ BRK → {1} (auto-promote)", fmtTime(time), highConv ? "✓★" : "✓")
+        // Set up per-level tracking
+        for i = 0 to 3
+            array.set(sRT, i, false)
+            array.set(sRTInfo, i, "")
+        array.set(sRTLvl, 0, sigBearPML ? pmLow : na)
+        array.set(sRTLvl, 1, sigBearYL  ? yestLow : na)
+        array.set(sRTLvl, 2, sigBearWL  ? weekLow : na)
+        array.set(sRTLvl, 3, sigBearOL  ? orbLow : na)
+        // Track lowest broken level for bear (last support to break must hold)
+        float lvl = na
+        if sigBearPML
+            lvl := na(lvl) ? pmLow : math.min(lvl, pmLow)
+        if sigBearYL
+            lvl := na(lvl) ? yestLow : math.min(lvl, yestLow)
+        if sigBearWL
+            lvl := na(lvl) ? weekLow : math.min(lvl, weekLow)
+        if sigBearOL
+            lvl := na(lvl) ? orbLow : math.min(lvl, orbLow)
+        sRTConsLvl    := lvl
+        sRTStart      := sigBarIdx
+        sRTBar0       := bar_index - 1
+        sRTState      := 1
+        sRTVolRatio   := volRatioBear
+        sRTClosePos   := bearClosePos
+        // Auto-Confirm R1 (v3.0b): EMA aligned → instant CONF pass (no time mask — HOLD is the gatekeeper)
+        bool autoConfBear = fEMA_bear
+        if autoConfBear
+            label.set_text(sRTLbl, sRTBase + "\n✓")
+            label.set_color(sRTLbl, color.new(color.red, 0))
+            label.set_textcolor(sRTLbl, color.white)
+            label.set_size(sRTLbl, size.normal)
+            confPassCount  += 1
+            confFailStreak := 0
+            vwapExitBear   := true
+            vwapExitBull   := false
+            checkpointEntry := sigC
+            checkpointBar   := bar_index
+            checkpointLbl   := sRTLbl
+            checkpointDir   := -1
+            if i_showSL and not na(dailyATR)
+                float _slW_s = isMorning ? 0.08 : isMidday ? 0.20 : 0.10
+                float _slH_s = isMorning ? 0.10 : isMidday ? 0.25 : 0.15
+                line.new(bar_index, sigC + dailyATR * _slW_s, bar_index + slBars, sigC + dailyATR * _slW_s, color=color.new(color.orange, 40), style=line.style_dashed, width=1)
+                line.new(bar_index, sigC + dailyATR * _slH_s, bar_index + slBars, sigC + dailyATR * _slH_s, color=color.new(color.red, 30),    style=line.style_solid,  width=1)
+            if dbConfBearIdx >= 0 and dbConfBearIdx < array.size(dbConf)
+                array.set(dbConf, dbConfBearIdx, "✓")
+                if i_debugLog and barstate.isconfirmed
+                    log.info("[KLB] CONF {0} ▼ BRK → ✓ (auto-R1: EMA)", fmtTime(time))
+            sRTState := 0  // skip monitoring — already confirmed
+
+// ─── 5-Minute Checkpoint ────────────────────────────────
+// Evaluate 1 signal bar after CONF pass: is price still positive?
+if not na(checkpointBar) and newSigBar and bar_index > checkpointBar
+    float pnl = checkpointDir == 1
+         ? (sigC - checkpointEntry) / dailyATR
+         : (checkpointEntry - sigC) / dailyATR
+
+    // v3.1: SPY regime-aware BAIL threshold
+    // Signal matches SPY direction → never BAIL (let it run)
+    // SPY neutral → loose BAIL (only cut if losing > 0.10 ATR)
+    // Signal opposes SPY → strict BAIL (must be positive)
+    // v3.4: Positive guard — if pnl≥0 at check, always HOLD (data: pnl≥0 BAIL = 49% accuracy = coin flip)
+    bool spyAligned = (checkpointDir == 1 and spyRegime == 1) or (checkpointDir == -1 and spyRegime == -1)
+    bool spyOpposed = (checkpointDir == 1 and spyRegime == -1) or (checkpointDir == -1 and spyRegime == 1)
+    float bailThresh = spyAligned ? na : spyOpposed ? 0.05 : -0.10
+    bool hold = pnl >= 0 or spyAligned or (not na(pnl) and not na(bailThresh) and pnl > bailThresh)
+
+    // Update existing CONF label
+    if not na(checkpointLbl)
+        string curText = label.get_text(checkpointLbl)
+        string regTag = spyAligned ? "✓" : spyOpposed ? "✗" : "~"
+        label.set_text(checkpointLbl, curText + (hold ? "\n5m✓ " + regTag : "\n5m✗ " + regTag))
+
+    // Alert
+    string dir = checkpointDir == 1 ? "▲" : "▼"
+    string pnlStr = str.tostring(math.round(pnl, 2))
+    if hold
+        alert("5m HOLD " + dir + " +" + pnlStr + " ATR", alert.freq_once_per_bar)
+    else
+        alert("5m BAIL " + dir + " " + pnlStr + " ATR", alert.freq_once_per_bar)
+
+    // Log
+    string regStr = spyAligned ? "SPY✓" : spyOpposed ? "SPY✗" : "SPY~"
+    if i_debugLog and barstate.isconfirmed
+        log.info("[KLB] 5m CHECK {0} {1} pnl={2} {3} → {4}",
+            fmtTime(time), dir, pnlStr, regStr, hold ? "HOLD" : "BAIL")
+
+    // Reset
+    checkpointEntry := na
+    checkpointBar   := na
+    checkpointLbl   := na
+    checkpointDir   := 0
+
+// ─── QBS Confirmation (v2.8, MC removed v3.0) ────────────────────────
+if qmcRTState == 1 and newSigBar and isRegular
+    int elapsed = sigBarIdx - qmcRTStart
+    if elapsed > 0
+        bool continues = qmcRTDir == 1 ? sigC > qmcRTEntry : sigC < qmcRTEntry
+        if continues
+            bool highConv = false  // QBS: always plain ✓ (✓★ was net negative per v2.8b analysis)
+            if not na(qmcRTLbl)
+                label.set_text(qmcRTLbl, qmcRTBase + "\n✓")
+                label.set_color(qmcRTLbl, qmcRTDir == 1 ? color.new(color.green, 0) : color.new(color.red, 0))
+                label.set_textcolor(qmcRTLbl, color.white)
+            confPassCount  += 1
+            confFailStreak := 0
+            if i_debugLog and barstate.isconfirmed
+                string dirStr = qmcRTDir == 1 ? "▲" : "▼"
+                log.info("[KLB] CONF {0} {1} QBS → {2} (auto-promote)", fmtTime(time), dirStr, highConv ? "✓★" : "✓")
+            if qmcRTDir == 1
+                vwapExitBull := true
+                vwapExitBear := false
+            else
+                vwapExitBear := true
+                vwapExitBull := false
+            checkpointEntry := sigC
+            checkpointBar   := bar_index
+            checkpointLbl   := qmcRTLbl
+            checkpointDir   := qmcRTDir
+            qmcRTState := 0
+        else if elapsed > 2
+            qmcRTState := -1
+            confFailStreak += 1
+            if i_debugLog and barstate.isconfirmed
+                string dirStr = qmcRTDir == 1 ? "▲" : "▼"
+                log.info("[KLB] CONF {0} {1} QBS → ✗ (failed)", fmtTime(time), dirStr)
+            if not na(qmcRTLbl)
+                label.set_text(qmcRTLbl, qmcRTBase + "\n✗")
+                label.set_color(qmcRTLbl, color.new(color.gray, 60))
+                label.set_textcolor(qmcRTLbl, color.new(color.gray, 40))
+
+// ─── Per-Level Retest Monitoring ─────────────────────────
+// Runs every signal-TF bar for chart-TF independent monitoring.
+// Helper: build retest suffix lines from per-level arrays
+buildRetestSuffix(bool[] rt, int[] rtBar, string[] rtInfo, float[] rtLvl, string[] names, int startBar, bool isBull) =>
+    string suffix = ""
+    for i = 0 to 3
+        if array.get(rt, i) and not na(array.get(rtLvl, i))
+            int bars = array.get(rtBar, i) - startBar
+            string line = "◆" + toSup(bars) + " " + array.get(names, i)
+            string qi = array.get(rtInfo, i)
+            if qi != ""
+                line += " " + qi
+            suffix += "\n" + line
+    suffix
+
+// Bull retest monitoring (chart-TF precision)
+if i_confirm and bRTState == 1 and not na(bRTConsLvl) and isRegular
+    int elapsed = sigBarIdx - bRTStart
+    if elapsed > 2 and close < bRTConsLvl - rearmBuf
+        bRTState := -1
+        confFailStreak += 1
+        if not na(bRTLbl)
+            label.set_text(bRTLbl, bRTBase + "\n✗")
+            label.set_color(bRTLbl, color.new(color.gray, 60))
+            label.set_textcolor(bRTLbl, color.new(color.gray, 40))
+        if dbConfBullIdx >= 0 and dbConfBullIdx < array.size(dbConf)
+            array.set(dbConf, dbConfBullIdx, "✗")
+            if i_debugLog and barstate.isconfirmed
+                log.info("[KLB] CONF {0} ▲ BRK → ✗ (failed)", fmtTime(time))
+        // Chop day warning (suppressed when ADX filter is active — it already detects chop)
+        if i_chopWarn and not i_fADX and confFailStreak >= 3 and confPassCount == 0 and not chopWarned and not isOld
+            label.new(bar_index, high + nz(dailyATR) * 0.3, "CHOP?",
+                 yloc=yloc.price, style=label.style_label_down,
+                 color=color.new(color.orange, 20), textcolor=color.black, size=size.small)
+            chopWarned := true
+    else
+        bool anyNew = false
+        for i = 0 to 3
+            float lvl = array.get(bRTLvl, i)
+            if not na(lvl) and not array.get(bRT, i) and bar_index > bRTBar0
+                if low <= lvl + retestBuf and close > lvl - rearmBuf
+                    array.set(bRT, i, true)
+                    array.set(bRTBar, i, bar_index)
+                    array.set(bRTInfo, i, chartQual(true))
+                    anyNew := true
+        if anyNew
+            string suffix = buildRetestSuffix(bRT, bRTBar, bRTInfo, bRTLvl, bullLvlNames, bRTBar0, true)
+            string rtText = str.substring(suffix, 1)  // skip leading \n
+            // Independent retest label + alert (always, unless old)
+            if not isOld
+                label.new(bar_index, low - nz(dailyATR) * 0.3, rtText,
+                     yloc=yloc.price, style=label.style_label_up,
+                     color=bullColor, textcolor=color.black, size=size.small)
+                alert("Retest: " + rtText, alert.freq_once_per_bar_close)
+                // Debug: log retest
+                if i_debugTable or i_debugLog
+                    dbAppend("▲", "◆", rtText, na, na, "—", "")
+            // Also update original breakout label (unless retest-only mode)
+            if not i_retestOnly and not na(bRTLbl)
+                label.set_text(bRTLbl, bRTBase + suffix)
+
+// Bear retest monitoring (chart-TF precision)
+if i_confirm and sRTState == 1 and not na(sRTConsLvl) and isRegular
+    int elapsed = sigBarIdx - sRTStart
+    if elapsed > 2 and close > sRTConsLvl + rearmBuf
+        sRTState := -1
+        confFailStreak += 1
+        if not na(sRTLbl)
+            label.set_text(sRTLbl, sRTBase + "\n✗")
+            label.set_color(sRTLbl, color.new(color.gray, 60))
+            label.set_textcolor(sRTLbl, color.new(color.gray, 40))
+        if dbConfBearIdx >= 0 and dbConfBearIdx < array.size(dbConf)
+            array.set(dbConf, dbConfBearIdx, "✗")
+            if i_debugLog and barstate.isconfirmed
+                log.info("[KLB] CONF {0} ▼ BRK → ✗ (failed)", fmtTime(time))
+        // Chop day warning (suppressed when ADX filter is active — it already detects chop)
+        if i_chopWarn and not i_fADX and confFailStreak >= 3 and confPassCount == 0 and not chopWarned and not isOld
+            label.new(bar_index, high + nz(dailyATR) * 0.3, "CHOP?",
+                 yloc=yloc.price, style=label.style_label_down,
+                 color=color.new(color.orange, 20), textcolor=color.black, size=size.small)
+            chopWarned := true
+    else
+        bool anyNew = false
+        for i = 0 to 3
+            float lvl = array.get(sRTLvl, i)
+            if not na(lvl) and not array.get(sRT, i) and bar_index > sRTBar0
+                if high >= lvl - retestBuf and close < lvl + rearmBuf
+                    array.set(sRT, i, true)
+                    array.set(sRTBar, i, bar_index)
+                    array.set(sRTInfo, i, chartQual(false))
+                    anyNew := true
+        if anyNew
+            string suffix = buildRetestSuffix(sRT, sRTBar, sRTInfo, sRTLvl, bearLvlNames, sRTBar0, false)
+            string rtText = str.substring(suffix, 1)  // skip leading \n
+            // Independent retest label + alert (always, unless old)
+            if not isOld
+                label.new(bar_index, high + nz(dailyATR) * 0.3, rtText,
+                     yloc=yloc.price, style=label.style_label_down,
+                     color=bearColor, textcolor=color.black, size=size.small)
+                alert("Retest: " + rtText, alert.freq_once_per_bar_close)
+                // Debug: log retest
+                if i_debugTable or i_debugLog
+                    dbAppend("▼", "◆", rtText, na, na, "—", "")
+            // Also update original breakout label (unless retest-only mode)
+            if not i_retestOnly and not na(sRTLbl)
+                label.set_text(sRTLbl, sRTBase + suffix)
+
+// Retest state transition alerts
+if i_confirm
+    if bRTState != bRTPrev
+        if bRTState == -1
+            alert("Failed: " + bRTBase, alert.freq_once_per_bar_close)
+        bRTPrev := bRTState
+    if sRTState != sRTPrev
+        if sRTState == -1
+            alert("Failed: " + sRTBase, alert.freq_once_per_bar_close)
+        sRTPrev := sRTState
+
+// ─── Debug Signal Table ──────────────────────────────
+if i_debugTable and barstate.islast
+    posMap = i_debugPos == "top_left" ? position.top_left :
+             i_debugPos == "top_center" ? position.top_center :
+             i_debugPos == "top_right" ? position.top_right :
+             i_debugPos == "bottom_left" ? position.bottom_left :
+             i_debugPos == "bottom_center" ? position.bottom_center :
+             position.bottom_right
+
+    if not na(dbTbl)
+        table.delete(dbTbl)
+
+    int totalRows = array.size(dbTime)
+    int startIdx  = math.max(0, totalRows - i_debugRows)
+    int showRows  = totalRows - startIdx
+
+    dbTbl := table.new(posMap, 8, showRows + 1,
+         bgcolor=color.new(color.black, 80), border_width=1,
+         border_color=color.new(color.gray, 60))
+
+    // Header row
+    table.cell(dbTbl, 0, 0, "Time",  text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.gray, 30))
+    table.cell(dbTbl, 1, 0, "Dir",   text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.gray, 30))
+    table.cell(dbTbl, 2, 0, "Type",  text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.gray, 30))
+    table.cell(dbTbl, 3, 0, "Levels",text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.gray, 30))
+    table.cell(dbTbl, 4, 0, "Vol",   text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.gray, 30))
+    table.cell(dbTbl, 5, 0, "Pos",   text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.gray, 30))
+    table.cell(dbTbl, 6, 0, "Conf",  text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.gray, 30))
+    table.cell(dbTbl, 7, 0, "OHLC",  text_color=color.white, text_size=size.tiny, bgcolor=color.new(color.gray, 30))
+
+    // Data rows
+    for i = startIdx to totalRows - 1
+        int row = i - startIdx + 1
+        string dir  = array.get(dbDir, i)
+        string typ  = array.get(dbType, i)
+        string conf = array.get(dbConf, i)
+        bool isBull = dir == "▲"
+        bool isFailed = conf == "✗"
+
+        // Row background color
+        color rowBg = isFailed ? color.new(color.gray, 85) :
+             typ == "BRK" ? (isBull ? color.new(color.green, 88) : color.new(color.red, 88)) :
+             typ == "~" or typ == "~~" ? (isBull ? color.new(color.aqua, 88) : color.new(color.orange, 88)) :
+             color.new(color.black, 88)
+        color rowTxt = isFailed ? color.new(color.gray, 40) : color.white
+
+        string timeStr = fmtTime(array.get(dbTime, i))
+        float vol = array.get(dbVol, i)
+        string volStr = not na(vol) ? str.tostring(vol, "#.#") + "x" : "—"
+        int pos = array.get(dbClsPos, i)
+        string posStr = na(pos) ? "—" : (isBull ? "^" : "v") + str.tostring(pos)
+
+        table.cell(dbTbl, 0, row, timeStr,                    text_color=rowTxt, text_size=size.tiny, bgcolor=rowBg)
+        table.cell(dbTbl, 1, row, dir,                         text_color=isBull ? color.green : color.red, text_size=size.tiny, bgcolor=rowBg)
+        table.cell(dbTbl, 2, row, typ,                         text_color=rowTxt, text_size=size.tiny, bgcolor=rowBg)
+        table.cell(dbTbl, 3, row, array.get(dbLevels, i),     text_color=rowTxt, text_size=size.tiny, bgcolor=rowBg, text_halign=text.align_left)
+        table.cell(dbTbl, 4, row, volStr,                      text_color=rowTxt, text_size=size.tiny, bgcolor=rowBg)
+        table.cell(dbTbl, 5, row, posStr,                      text_color=rowTxt, text_size=size.tiny, bgcolor=rowBg)
+        table.cell(dbTbl, 6, row, conf,                        text_color=conf == "✓" ? color.lime : conf == "✗" ? color.red : color.gray, text_size=size.tiny, bgcolor=rowBg)
+        table.cell(dbTbl, 7, row, array.get(dbOHLC, i),       text_color=rowTxt, text_size=size.tiny, bgcolor=rowBg, text_halign=text.align_left)
+
+// ─── VWAP Cross Exit Alert (v2.6) ────────────────────────
+// After CONF ✓/✓★, alert when price crosses VWAP against the confirmed direction
+bool vwapBullCross = vwapExitBull and not na(vwapVal) and close < vwapVal and close[1] >= vwapVal[1]
+bool vwapBearCross = vwapExitBear and not na(vwapVal) and close > vwapVal and close[1] <= vwapVal[1]
+if vwapBullCross
+    alert("VWAP exit ▼ — bull CONF position crossed below VWAP", alert.freq_once_per_bar_close)
+    vwapExitBull := false
+if vwapBearCross
+    alert("VWAP exit ▲ — bear CONF position crossed above VWAP", alert.freq_once_per_bar_close)
+    vwapExitBear := false
+alertcondition(vwapBullCross or vwapBearCross, "VWAP Exit Signal", "Price crossed VWAP against confirmed position")
+
+// ─── Level Lines (optional, off by default) ───────────────
+plot(i_showVWAP and isRegular ? vwapVal : na, "VWAP", color.new(#FF6D00, 60), 2, plot.style_linebr)
+pPMH  = plot(i_showLines and i_showPM   and isRegular ? pmHigh   : na, "PM High",   color.new(color.orange, 40), 1, plot.style_linebr)
+pPML  = plot(i_showLines and i_showPM   and isRegular ? pmLow    : na, "PM Low",    color.new(color.orange, 40), 1, plot.style_linebr)
+pYH   = plot(i_showLines and i_showYest and isRegular ? yestHigh : na, "Yest High", color.new(color.blue, 40),   1, plot.style_linebr)
+pYL   = plot(i_showLines and i_showYest and isRegular ? yestLow  : na, "Yest Low",  color.new(color.blue, 40),   1, plot.style_linebr)
+pWH   = plot(i_showLines and i_showWeek and isRegular ? weekHigh : na, "Week High", color.new(color.purple, 40), 1, plot.style_linebr)
+pWL   = plot(i_showLines and i_showWeek and isRegular ? weekLow  : na, "Week Low",  color.new(color.purple, 40), 1, plot.style_linebr)
+pOH   = plot(i_showLines and i_showORB  and isRegular ? orbHigh  : na, "ORB High",  color.new(color.teal, 40),   1, plot.style_linebr)
+pOL   = plot(i_showLines and i_showORB  and isRegular ? orbLow   : na, "ORB Low",   color.new(color.teal, 40),   1, plot.style_linebr)
+plot(i_showLines and i_showPDMid  and isRegular ? pdMid : na, "PD Mid", color.new(color.yellow, 40), 1, plot.style_linebr)
+plot(i_showLines and i_showPDMid  and isRegular ? pdLastHrLow : na, "PD Last Hr L", color.new(color.yellow, 40), 1, plot.style_linebr)
+plot(i_showLines and i_showVWBand and isRegular ? vwapLowerBand : na, "VWAP Lower", color.new(#FF6D00, 40), 1, plot.style_linebr)
+plot(i_showLines and i_showTodayOpen and isRegular ? todayOpen : na, "Today Open", color.new(color.lime, 40), 1, plot.style_linebr)
+plot(i_showLines and i_showPDClose   and isRegular ? yestClose : na, "PD Close",   color.new(color.lime, 40), 1, plot.style_linebr)
+plot(i_showLines and i_showWeekOpen  and isRegular ? weekOpen  : na, "Week Open",  color.new(color.fuchsia, 40), 1, plot.style_linebr)
+plot(i_showLines and i_showMonthOpen and isRegular ? monthOpen : na, "Month Open", color.new(color.fuchsia, 40), 1, plot.style_linebr)
+
+// ─── Zone Band Visualization ──────────────────────────────
+// Body-edge plots (hidden lines used as fill boundary)
+showZones = i_showLines and i_useZones
+pPMHb = plot(showZones and i_showPM   and isRegular ? pmHBody   : na, "PM High Body",   color.new(color.orange, 100), 1, plot.style_linebr, display=display.none)
+pPMLb = plot(showZones and i_showPM   and isRegular ? pmLBody   : na, "PM Low Body",    color.new(color.orange, 100), 1, plot.style_linebr, display=display.none)
+pYHb  = plot(showZones and i_showYest and isRegular ? yestHBody : na, "Yest High Body", color.new(color.blue, 100),   1, plot.style_linebr, display=display.none)
+pYLb  = plot(showZones and i_showYest and isRegular ? yestLBody : na, "Yest Low Body",  color.new(color.blue, 100),   1, plot.style_linebr, display=display.none)
+pWHb  = plot(showZones and i_showWeek and isRegular ? weekHBody : na, "Week High Body", color.new(color.purple, 100), 1, plot.style_linebr, display=display.none)
+pWLb  = plot(showZones and i_showWeek and isRegular ? weekLBody : na, "Week Low Body",  color.new(color.purple, 100), 1, plot.style_linebr, display=display.none)
+pOHb  = plot(showZones and i_showORB  and isRegular ? orbHBody  : na, "ORB High Body",  color.new(color.teal, 100),   1, plot.style_linebr, display=display.none)
+pOLb  = plot(showZones and i_showORB  and isRegular ? orbLBody  : na, "ORB Low Body",   color.new(color.teal, 100),   1, plot.style_linebr, display=display.none)
+
+// Zone fills between wick line and body-edge line
+fill(pPMH, pPMHb, color=color.new(color.orange, 85), title="PM High Zone")
+fill(pPML, pPMLb, color=color.new(color.orange, 85), title="PM Low Zone")
+fill(pYH,  pYHb,  color=color.new(color.blue, 85),   title="Yest High Zone")
+fill(pYL,  pYLb,  color=color.new(color.blue, 85),   title="Yest Low Zone")
+fill(pWH,  pWHb,  color=color.new(color.purple, 85), title="Week High Zone")
+fill(pWL,  pWLb,  color=color.new(color.purple, 85), title="Week Low Zone")
+fill(pOH,  pOHb,  color=color.new(color.teal, 85),   title="ORB High Zone")
+fill(pOL,  pOLb,  color=color.new(color.teal, 85),   title="ORB Low Zone")
+
+// ─── Programmatic Alerts (merged like labels) ───────────
+if bullText != "" and not i_retestOnly
+    alert("Bullish breakout: " + bullText + " " + bullQualLine, alert.freq_once_per_bar)
+if bearText != "" and not i_retestOnly
+    alert("Bearish breakout: " + bearText + " " + bearQualLine, alert.freq_once_per_bar)
+if revBullText != ""
+    alert("Bullish reversal: " + revBullText + " " + bullQualLine, alert.freq_once_per_bar)
+if revBearText != ""
+    alert("Bearish reversal: " + revBearText + " " + bearQualLine, alert.freq_once_per_bar)
+if sigQBS_bull
+    alert("🔇 QBS Bull: vol drying → explosion " + str.tostring(preVolRamp, "#.#") + "x", alert.freq_once_per_bar)
+if sigQBS_bear
+    alert("🔇 QBS Bear: vol drying → explosion " + str.tostring(preVolRamp, "#.#") + "x", alert.freq_once_per_bar)
+
+// ─── Alert Conditions ───────────────────────────────────────
+// Note: per-level alertconditions removed — "Any alert() function call"
+// catches both alert() and alertcondition(), causing duplicate notifications.
+// Use "Any alert() function call" for merged alerts (recommended).
+// Use the conditions below for simple bull/bear/any filtering.
+alertcondition(anyBull,     "Any Bullish Breakout",       "Bullish breakout detected")
+alertcondition(anyBear,     "Any Bearish Breakout",       "Bearish breakout detected")
+alertcondition(anyBreakout, "Any Breakout",               "Breakout detected (bull or bear)")
+alertcondition(anyRevBull,  "Any Bullish Reversal",       "Bullish reversal detected")
+alertcondition(anyRevBear,  "Any Bearish Reversal",       "Bearish reversal detected")
+alertcondition(anyReversal, "Any Reversal",               "Reversal detected (bull or bear)")
+alertcondition(qbsFired, "QBS — Quiet Before Storm", "🔇 Quiet Before Storm: vol drying → explosion")
+alertcondition(anyFade, "FADE — Failed Breakout Fade", "Failed breakout → price reversed through level")
+alertcondition(anyRNG, "RNG — Range+Vol Breakout", "Range breakout with 3x+ volume")
+alertcondition(anyBreakout or anyReversal or anyQBSMC or anyFade or anyRNG, "Any Setup", "Any signal detected")

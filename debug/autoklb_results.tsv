@@ -1,0 +1,24 @@
+commit	train_score	val_score	train_n	val_n	rd_train_score	rd_val_score	rd_train_n	rd_val_n	status	description
+b739c71	443.9	223.5	1300	664	keep	v3.6 baseline
+99d21a5	727.4	343.2	1982	961	keep	VOL_RATIO_MIN 1.0→0.5
+778cf1e	787.8	358.2	2115	999	keep	VOL_RATIO_MIN 0.5→0.0
+50fde34	787.8	358.2	2115	999	discard	FRESHNESS_MAX_TESTS 3→2 (no-op)
+a56af4f	863.4	399.7	2364	1124	keep	BODY_PCT_MIN 30→20
+52e9be1	921.8	439.6	2585	1239	keep	BODY_PCT_MIN 20→10
+b2d0a0c	978.1	468.4	2778	1328	keep	BODY_PCT_MIN 10→0.0 (remove gate)
+7f6b731	1285.9	592.8	3580	1641	keep	ADX_MIN 20→15
+6a752fc	1398.3	636.4	3861	1759	keep	ADX_MIN 15→10
+954acba	1403.1	638.6	3872	1764	keep	ADX_MIN 10→0.0 (remove gate)
+00ac737	1464.7	660.8	4059	1827	keep	LEVEL_PROXIMITY_ATR 0.10→0.12
+76f673d	1534.7	689.2	4232	1923	keep	LEVEL_PROXIMITY_ATR 0.12→0.15
+524fa2e	1585.6	711.6	4396	1993	keep	LEVEL_PROXIMITY_ATR 0.15→0.20
+0005342	1585.6	711.6	4396	1993	discard	bull REV proximity tolerance (no-op, 0.03<0.20)
+ba77de7	1620.3	741.7	4494	2067	keep	add PM High + Week High to BRK_BULL_LEVELS
+6852ae1	1789.8	807.6	4928	2230	keep	add PD High + ORB High to BRK_BULL_LEVELS
+9c0b11b	1789.8	807.6	4928	2230	discard	ORB_LOW_RECLAIM_MIDDAY_ONLY False (no-op, disabled)
+323f412	1797.5	811.1	4953	2242	keep	re-enable ORB Low bull REV (all timings)
+a60913f	1797.5	811.1	4953	2242	discard	add Today Open+PD Close to BRK_BEAR (no-op)
+125bdd2	1808.2	815.2	4991	2259	keep	add Today Open + PD Close to BRK_BULL_LEVELS
+9335051	1810.8	817.5	5004	2265				keep	add PD Mid to BRK_BULL_LEVELS
+478716b	540.8	295.7	1652	944	761.9	456.7	6655	3036	keep	v3.7 dual-eval baseline (big-candle bypass + VRC + SPY reclaim DIM)
+—	—	—	—	—	83.1	620.4	16210	3068	keep	v3.8 baseline: native 5m signals (2yr), 15sec val MFE/MAE — branch autoklb/v38-realdata

@@ -1,0 +1,72 @@
+# Key Level Breakout — Multi-Symbol Scanner
+
+Monitors up to 8 tickers from a single chart. One alert covers all symbols and levels. A status table shows today's signals at a glance.
+
+## Features
+
+- **8 symbol slots** with individual enable toggles (defaults: SPY, QQQ, TSLA, TSM, AMD, NVDA on; GOOGL, AAPL off)
+- **Status table** in top-right corner — shows each symbol's last signal, highlighted green (bull) or red (bear)
+- **Single alert setup** — one `alert()` covers all symbols; messages include the ticker name
+- **All 4 level types** tracked per symbol (Premarket, Yesterday, Last Week, ORB)
+- **Once Per Breakout** per symbol per level — re-arms after invalidation
+- Uses 24 of 40 allowed `request.security()` calls (3 per symbol)
+
+## Setup
+
+1. Add `KeyLevelScanner.pine` to a **5-min** US stock chart (the chart symbol doesn't matter, but the chart timeframe must be 5m since the scanner evaluates breakouts on chart-timeframe candles)
+2. Enable **Extended Trading Hours** in chart settings
+3. Configure tickers in the **Watchlist** input group
+4. Add **one alert** → Condition: `Key Level Breakout Scanner` → `Any alert() function call`
+5. Toggle that single alert on/off to enable/disable all scanning
+
+## Inputs
+
+| Input | Default | Description |
+|-------|---------|-------------|
+| Premarket High/Low | On | Track premarket levels for all symbols |
+| Yesterday High/Low | On | Track previous day levels for all symbols |
+| Last Week High/Low | On | Track previous week levels for all symbols |
+| ORB High/Low | On | Track opening range levels for all symbols |
+| Once Per Breakout | On | One signal per level per symbol; re-arms after invalidation |
+| Symbol 1–6 | SPY, QQQ, TSLA, TSM, AMD, NVDA | Enabled by default |
+| Symbol 7–8 | GOOGL, AAPL | Disabled by default |
+
+## Once Per Breakout (Invalidation Logic)
+
+When enabled (default), each level per symbol fires **one signal** then stays suppressed until **invalidated**:
+
+- Bullish breakout above PM High fires — suppressed while price holds above
+- Price closes back below PM High — **invalidated** (re-armed)
+- Next bullish close above PM High — fires again
+
+Each level is tracked independently — a suppressed PM High does not block a subsequent Yesterday High breakout. All flags reset at each regular session open. Turn **off** to fire on every qualifying cross (useful for backtesting).
+
+## Alert Messages
+
+Messages include the ticker and direction:
+- `SPY ▲ PM High`
+- `TSLA ▼ Yest Low`
+- `NVDA ▲ Week High`
+
+## Status Table
+
+The top-right table updates on each bar:
+
+| Symbol | Signal |
+|--------|--------|
+| SPY    | ▲ PM H |
+| QQQ    | —      |
+| TSLA   | ▼ Yest L |
+| TSM    | —      |
+
+Cells turn green for bullish signals, red for bearish, gray for no signal. Resets at each regular session open.
+
+## Updating
+
+Edit the script in Pine Editor and click **Save** — all charts using the indicator update automatically. Don't click "Add to chart" again (that creates a duplicate).
+
+## Changelog
+
+- **v1.2** — Invalidation-based signal logic: re-arms after price closes back through the level (replaces first-cross-only-per-day)
+- **v1.1** — Updated default watchlist: SPY, QQQ, TSLA, TSM, AMD, NVDA on; GOOGL, AAPL off
+- **v1.0** — Initial release: 8-symbol scanner, status table, unified `alert()` setup, all 4 level types per symbol

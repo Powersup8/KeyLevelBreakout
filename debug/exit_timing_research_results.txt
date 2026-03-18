@@ -1,0 +1,304 @@
+==========================================================================
+KLB Exit Timing Research — Optimal Exit for Winning Signals
+v3.3c logs  |  1m IB price path  |  60-min forward window
+==========================================================================
+
+Step 1: Loading v3.3c pine logs...
+  Found 17 v3.3c log files
+    1a06d: NFLX — 610 signals
+    40640: TSLA — 607 signals
+    4a6b0: AMZN — 615 signals
+    60338: GLD — 598 signals
+    66ecd: SPY — 663 signals
+    6900d: NVDA — 564 signals
+    837ad: QQQ — 571 signals
+    83daf: QQQ — 571 signals
+    96b1d: TSM — 642 signals
+    a3963: XLE — 781 signals
+    a66ad: NVDA — 622 signals
+    ae3ef: AAPL — 575 signals
+    bacec: META — 630 signals
+    bd5dd: MSFT — 582 signals
+    c9b83: AMD — 671 signals
+    e4a23: GOOGL — 623 signals
+    e633d: SLV — 547 signals
+  Total raw signals: 10472
+  After v3.3c suppression: 10472
+
+Step 2: Loading IB 1m data + ATR...
+  AAPL... 164190 bars
+  AMD... 100260 bars
+  AMZN... 145860 bars
+  GLD... 145500 bars
+  GOOGL... 145858 bars
+  META... 106470 bars
+  MSFT... 109198 bars
+  NFLX... 66538 bars
+  NVDA... 106468 bars
+  QQQ... 106470 bars
+  SLV... 106109 bars
+  SPY... 106290 bars
+  TSLA... 106469 bars
+  TSM... 54240 bars
+  XLE... 106109 bars
+
+Step 3: Measuring MFE/MAE (60m window) and building P&L paths...
+  Total winning signals with P&L paths: 4209
+
+==========================================================================
+SECTION A — P&L PATH (average P&L if you exited at exactly Nm)
+--------------------------------------------------------------------------
+
+  All winning signals (N=4209):
+    Exit@:   5m=+0.510   10m=+0.541   15m=+0.566   20m=+0.584   25m=+0.601   30m=+0.615   45m=+0.639   60m=+0.652
+    Peak:  avg_peak=0.793 ATR  avg_peak_minute=35.6m  avg_decay=0.141 ATR
+
+  Breakdown by signal type:
+
+  BRK (N=1125) (N=1125):
+    Exit@:   5m=+0.639   10m=+0.671   15m=+0.695   20m=+0.712   25m=+0.732   30m=+0.748   45m=+0.780   60m=+0.794
+    Peak:  avg_peak=0.942 ATR  avg_peak_minute=36.0m  avg_decay=0.148 ATR
+
+  FADE (N=401) (N=401):
+    Exit@:   5m=+0.470   10m=+0.482   15m=+0.499   20m=+0.514   25m=+0.518   30m=+0.525   45m=+0.533   60m=+0.544
+    Peak:  avg_peak=0.691 ATR  avg_peak_minute=33.9m  avg_decay=0.147 ATR
+
+  QBS (N=51) (N=51):
+    Exit@:   5m=+0.466   10m=+0.469   15m=+0.519   20m=+0.516   25m=+0.541   30m=+0.547   45m=+0.585   60m=+0.592
+    Peak:  avg_peak=0.728 ATR  avg_peak_minute=36.1m  avg_decay=0.136 ATR
+
+  REV (N=2632) (N=2632):
+    Exit@:   5m=+0.462   10m=+0.496   15m=+0.521   20m=+0.541   25m=+0.558   30m=+0.574   45m=+0.596   60m=+0.610
+    Peak:  avg_peak=0.746 ATR  avg_peak_minute=35.6m  avg_decay=0.137 ATR
+
+==========================================================================
+SECTION B — TIME-TO-PEAK DISTRIBUTION
+--------------------------------------------------------------------------
+
+  Time-to-Peak Distribution — All winning signals (N=4209):
+     0- 5m:  209 (  5.0%)  cumul=  5.0%  ██
+     5-10m:  291 (  6.9%)  cumul= 11.9%  ███
+    10-15m:  301 (  7.2%)  cumul= 19.0%  ███
+    15-20m:  302 (  7.2%)  cumul= 26.2%  ███
+    20-30m:  575 ( 13.7%)  cumul= 39.9%  ██████
+    30-45m:  944 ( 22.4%)  cumul= 62.3%  ███████████
+    45-60m: 1587 ( 37.7%)  cumul=100.0%  ██████████████████
+    >60m:     0 (  0.0%)
+    Peaked by 10m: 11.9%
+    Peaked by 15m: 19.0%
+    Peaked by 20m: 26.2%
+    Peaked by 30m: 39.9%
+
+  By signal type:
+
+  Time-to-Peak Distribution — BRK (N=1125):
+     0- 5m:   53 (  4.7%)  cumul=  4.7%  ██
+     5-10m:   85 (  7.6%)  cumul= 12.3%  ███
+    10-15m:   80 (  7.1%)  cumul= 19.4%  ███
+    15-20m:   74 (  6.6%)  cumul= 26.0%  ███
+    20-30m:  151 ( 13.4%)  cumul= 39.4%  ██████
+    30-45m:  245 ( 21.8%)  cumul= 61.2%  ██████████
+    45-60m:  437 ( 38.8%)  cumul=100.0%  ███████████████████
+    >60m:     0 (  0.0%)
+    Peaked by 10m: 12.3%
+    Peaked by 15m: 19.4%
+    Peaked by 20m: 26.0%
+    Peaked by 30m: 39.4%
+
+  Time-to-Peak Distribution — FADE (N=401):
+     0- 5m:   39 (  9.7%)  cumul=  9.7%  ████
+     5-10m:   33 (  8.2%)  cumul= 18.0%  ████
+    10-15m:   22 (  5.5%)  cumul= 23.4%  ██
+    15-20m:   29 (  7.2%)  cumul= 30.7%  ███
+    20-30m:   54 ( 13.5%)  cumul= 44.1%  ██████
+    30-45m:   76 ( 19.0%)  cumul= 63.1%  █████████
+    45-60m:  148 ( 36.9%)  cumul=100.0%  ██████████████████
+    >60m:     0 (  0.0%)
+    Peaked by 10m: 18.0%
+    Peaked by 15m: 23.4%
+    Peaked by 20m: 30.7%
+    Peaked by 30m: 44.1%
+
+  Time-to-Peak Distribution — QBS (N=51):
+     0- 5m:    5 (  9.8%)  cumul=  9.8%  ████
+     5-10m:    4 (  7.8%)  cumul= 17.6%  ███
+    10-15m:    2 (  3.9%)  cumul= 21.6%  █
+    15-20m:    3 (  5.9%)  cumul= 27.5%  ██
+    20-30m:    5 (  9.8%)  cumul= 37.3%  ████
+    30-45m:   12 ( 23.5%)  cumul= 60.8%  ███████████
+    45-60m:   20 ( 39.2%)  cumul=100.0%  ███████████████████
+    >60m:     0 (  0.0%)
+    Peaked by 10m: 17.6%
+    Peaked by 15m: 21.6%
+    Peaked by 20m: 27.5%
+    Peaked by 30m: 37.3%
+
+  Time-to-Peak Distribution — REV (N=2632):
+     0- 5m:  112 (  4.3%)  cumul=  4.3%  ██
+     5-10m:  169 (  6.4%)  cumul= 10.7%  ███
+    10-15m:  197 (  7.5%)  cumul= 18.2%  ███
+    15-20m:  196 (  7.4%)  cumul= 25.6%  ███
+    20-30m:  365 ( 13.9%)  cumul= 39.5%  ██████
+    30-45m:  611 ( 23.2%)  cumul= 62.7%  ███████████
+    45-60m:  982 ( 37.3%)  cumul=100.0%  ██████████████████
+    >60m:     0 (  0.0%)
+    Peaked by 10m: 10.7%
+    Peaked by 15m: 18.2%
+    Peaked by 20m: 25.6%
+    Peaked by 30m: 39.5%
+
+==========================================================================
+SECTION C — P&L DECAY ANALYSIS
+--------------------------------------------------------------------------
+
+  Early peak (0-15m) (N=801):
+    Avg peak P&L:  1.007 ATR
+    Avg at 60m:    0.802 ATR
+    Avg decay:     0.205 ATR (20.4% of peak given back)
+
+  Mid peak (15-30m) (N=877):
+    Avg peak P&L:  0.658 ATR
+    Avg at 60m:    0.453 ATR
+    Avg decay:     0.205 ATR (31.1% of peak given back)
+
+  Late peak (30m+) (N=2531):
+    Avg peak P&L:  0.772 ATR
+    Avg at 60m:    0.674 ATR
+    Avg decay:     0.098 ATR (12.7% of peak given back)
+
+==========================================================================
+SECTION D — BREAKDOWN BY SIGNAL TYPE
+--------------------------------------------------------------------------
+  Type         N  AvgPeak  PeakMin  Pnl@15m  Pnl@20m  Pnl@30m  Pnl@60m   Decay
+  ----------------------------------------------------------------------------
+  BRK       1125    0.942     36.0    0.695    0.712    0.748    0.794   0.148
+  FADE       401    0.691     33.9    0.499    0.514    0.525    0.544   0.147
+  QBS         51    0.728     36.1    0.519    0.516    0.547    0.592   0.136
+  REV       2632    0.746     35.6    0.521    0.541    0.574    0.610   0.137
+
+==========================================================================
+SECTION E — BREAKDOWN BY TIME-OF-DAY
+--------------------------------------------------------------------------
+  TOD              N  AvgPeak  PeakMin  Pnl@15m  Pnl@20m  Pnl@30m  Pnl@60m   Decay
+  --------------------------------------------------------------------------------
+  morning       3033    0.832     35.6    0.585    0.605    0.638    0.681   0.151
+  midday         771    0.725     37.8    0.525    0.541    0.570    0.595   0.130
+  afternoon      405    0.636     31.0    0.497    0.512    0.533    0.552   0.084
+
+==========================================================================
+SECTION F — BREAKDOWN BY TIER (great moves vs regular)
+--------------------------------------------------------------------------
+  Tier       N   AvgMFE  AvgPeak  PeakMin  Pnl@15m  Pnl@20m  Pnl@30m  Pnl@60m   Decay
+  -----------------------------------------------------------------------------------
+  S        878    2.768    2.739     40.1    2.360    2.398    2.490    2.588   0.151
+  A        795    0.483    0.454     38.0    0.169    0.199    0.230    0.280   0.173
+  B       2536    0.246    0.226     33.3    0.069    0.077    0.087    0.099   0.127
+
+  Tier S/A (N=1673): avg peak@39.1m  peaked_by_20m=19.3%
+  Tier B   (N=2536): avg peak@33.3m  peaked_by_20m=30.8%
+
+==========================================================================
+SECTION G — EXIT RULE SIMULATION (net ATR across all winning signals)
+--------------------------------------------------------------------------
+  NOTE: These are winning signals only (mfe_atr>=0.10). Net ATR reflects
+  how much of the winner's move is captured under each rule.
+
+  Rule                                       N   Net ATR   Avg P&L    %Pos    vs 60m
+  ----------------------------------------------------------------------------------
+  Hold 60m (baseline)                     4209  +2746.36   +0.6525    84.8%      +0.00
+  Fixed exit 15m                          4209  +2380.68   +0.5656    82.8%    -365.68
+  Fixed exit 20m                          4209  +2458.40   +0.5841    84.4%    -287.96
+  Fixed exit 25m                          4209  +2528.64   +0.6008    85.7%    -217.72
+  Fixed exit 30m                          4209  +2589.86   +0.6153    87.5%    -156.50
+  Trailing stop 0.10 ATR                  4209  +2305.35   +0.5477    74.6%    -441.01
+  Trailing stop 0.15 ATR                  4209  +2432.73   +0.5780    78.3%    -313.64
+  Trailing stop 0.20 ATR                  4209  +2532.97   +0.6018    80.1%    -213.39
+  Hybrid: exit@30m OR pnl≥0.25ATR         4209  +2538.06   +0.6030    89.5%    -208.30
+
+  Per-signal-type: best exit rule (max net ATR across fixed exits)
+
+  Type        N     @15m    @20m    @30m    @60m  trail0.15     best
+  ------------------------------------------------------------------
+  BRK      1125  +782.41  +801.46  +841.11  +893.46    +798.10      @60m
+  FADE      401  +199.98  +206.09  +210.61  +218.00    +200.67      @60m
+  QBS        51  +26.47  +26.33  +27.89  +30.22     +27.42      @60m
+  REV      2632  +1371.82  +1424.52  +1510.25  +1604.69   +1406.53      @60m
+
+==========================================================================
+SECTION H — MOVE CATALOG CROSS-REFERENCE (bars_to_mfe_1m)
+--------------------------------------------------------------------------
+  Move catalog: 72232 total, 27577 with bars_to_mfe_1m
+
+  All catalog moves with 1m data (N=27577):
+    Peak by 10m: 41.4%
+    Peak by 15m: 53.7%
+    Peak by 20m: 60.2%
+    Peak by 30m: 68.8%
+    Peak by 45m: 76.7%
+    Median peak: 15m  Mean: 39.8m
+
+  Catalog Tier S/A proxy (mfe_1m >= 0.40 ATR) (N=5655):
+    Peak by 10m: 22.0%
+    Peak by 15m: 32.4%
+    Peak by 20m: 35.7%
+    Peak by 30m: 40.7%
+    Peak by 45m: 47.5%
+    Median peak: 54m  Mean: 93.5m
+
+  Catalog Tier B proxy (mfe_1m < 0.40 ATR) (N=21922):
+    Peak by 10m: 46.4%
+    Peak by 15m: 59.2%
+    Peak by 20m: 66.5%
+    Peak by 30m: 76.1%
+    Peak by 45m: 84.3%
+    Median peak: 14m  Mean: 26.0m
+
+  Catalog morning (N=9961):
+    Peak by 10m: 51.2%
+    Peak by 15m: 62.8%
+    Peak by 20m: 69.7%
+    Peak by 30m: 78.0%
+    Peak by 45m: 84.3%
+    Median peak: 10m  Mean: 31.9m
+
+  Catalog midday (N=6477):
+    Peak by 10m: 28.5%
+    Peak by 15m: 37.0%
+    Peak by 20m: 43.5%
+    Peak by 30m: 54.2%
+    Peak by 45m: 64.9%
+    Median peak: 27m  Mean: 51.1m
+
+  Catalog afternoon (N=5820):
+    Peak by 10m: 36.3%
+    Peak by 15m: 44.3%
+    Peak by 20m: 50.0%
+    Peak by 30m: 59.8%
+    Peak by 45m: 71.2%
+    Median peak: 21m  Mean: 36.3m
+
+
+==========================================================================
+SECTION I — SUMMARY AND RECOMMENDATION
+--------------------------------------------------------------------------
+
+  Analysis based on 4209 winning signals (mfe_atr >= 0.10)
+
+  Best exit rule:  Hold 60m (baseline)
+  Net ATR:         +2746.36  (vs +2746.36 at 60m hold)
+  Gain vs 60m:     +0.00 ATR (+0.00% per signal)
+
+  Key findings:
+    26.2% of winners have peaked by 20m
+    39.9% of winners have peaked by 30m
+    Avg peak P&L: 0.793 ATR
+    Avg at 60m:   0.652 ATR
+    Avg decay:    0.141 ATR (17.7% of peak given back)
+
+  Signal-type optimal exits (max net ATR among fixed exits):
+    BRK      N=1125  best_fixed_exit=60m  net_ATR=+893.46  100% peaked by then
+    FADE     N=401  best_fixed_exit=60m  net_ATR=+218.00  100% peaked by then
+    QBS      N= 51  best_fixed_exit=60m  net_ATR=+30.22  100% peaked by then
+    REV      N=2632  best_fixed_exit=60m  net_ATR=+1604.69  100% peaked by then
+
+==========================================================================

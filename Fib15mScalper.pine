@@ -1,0 +1,259 @@
+// © 15m Fib Scalper
+// Detects liquidity candles on the 15m opening range
+// Signals reversal entries on 1m chart with Fibonacci TP
+//@version=6
+indicator("15m Fib Scalper", overlay=true, max_lines_count=500, max_labels_count=500)
+
+// ─── Inputs ────────────────────────────────────────────────
+i_tpLevel  = input.string("38.2%", "TP Level", options=["38.2%", "61.8%"], group="Parameters")
+i_atrLen   = input.int(14, "ATR Length (Daily)", minval=1, group="Parameters")
+i_session  = input.session("0930-1600", "Session", group="Parameters")
+
+// ─── Daily ATR (non-repainting) ────────────────────────────
+dailyATR = request.security(syminfo.tickerid, "D", ta.atr(i_atrLen)[1], lookahead=barmerge.lookahead_on)
+atrThreshold = dailyATR * 0.25
+
+// ─── 15m Opening Candle (confirmed bar only) ──────────────
+[o15, h15, l15, c15] = request.security(syminfo.tickerid, "15",
+     [open[1], high[1], low[1], close[1]], lookahead=barmerge.lookahead_on)
+
+// ─── Session & Opening Bar Detection ──────────────────────
+_t15       = time("15")
+_t15chg    = ta.change(_t15)
+new15bar   = not na(_t15chg) and _t15chg != 0
+
+inSession  = not na(time(timeframe.period, i_session))
+_sesChg    = ta.change(inSession ? 1 : 0)
+sessionOpen = _sesChg > 0  // first bar of session
+
+// ─── State Machine ────────────────────────────────────────
+// 0=WAITING_FOR_OPEN, 2=ARMED, 3=IN_TRADE, 4=DONE
+var int   state      = 0
+var float rangeHigh  = na
+var float rangeLow   = na
+var int   rangeBar   = na   // bar_index of the opening 15m bar close
+var int   direction  = 0    // 1=long, -1=short
+var float entryPrice = na
+var float tpPrice    = na
+var float slPrice    = na
+
+// ─── Visuals: Range Box + Fibonacci Lines ─────────────────
+var box   rangeBox  = na
+var line  fib382Ln  = na
+var line  fib500Ln  = na
+var line  fib618Ln  = na
+var line  entryLn   = na
+var line  tpLn      = na
+var line  slLn      = na
+
+// Reset at session open
+if sessionOpen
+    if not na(rangeBox)
+        box.delete(rangeBox)
+        rangeBox := na
+    if not na(fib382Ln)
+        line.delete(fib382Ln)
+        fib382Ln := na
+    if not na(fib500Ln)
+        line.delete(fib500Ln)
+        fib500Ln := na
+    if not na(fib618Ln)
+        line.delete(fib618Ln)
+        fib618Ln := na
+    if not na(entryLn)
+        line.delete(entryLn)
+        entryLn := na
+    if not na(tpLn)
+        line.delete(tpLn)
+        tpLn := na
+    if not na(slLn)
+        line.delete(slLn)
+        slLn := na
+    state := 0
+    rangeHigh  := na
+    rangeLow   := na
+    rangeBar   := na
+    direction  := 0
+    entryPrice := na
+    tpPrice    := na
+    slPrice    := na
+
+// ─── Qualifying: detect first completed 15m bar after open ─
+// The first new15bar AFTER sessionOpen captures the completed opening candle
+if state == 0 and new15bar and inSession and not sessionOpen
+    rangeHigh  := h15
+    rangeLow   := l15
+    rangeBar   := bar_index
+
+    candleRange = h15 - l15
+    qualified   = candleRange >= atrThreshold
+
+    if qualified
+        // Determine direction: opposite to opening candle
+        if c15 < o15   // bearish open → go long
+            direction := 1
+        else if c15 > o15  // bullish open → go short
+            direction := -1
+        else
+            direction := 0  // doji — skip
+
+        if direction != 0
+            state := 2  // skip to ARMED (qualification + arming in one step)
+            alert("15mFib: Qualified " + (direction == 1 ? "LONG" : "SHORT") + " setup – " + syminfo.ticker, alert.freq_once_per_bar_close)
+        else
+            state := 4  // DONE — doji, no trade
+    else
+        state := 4  // DONE — not qualified
+
+// ─── Qualification Labels ─────────────────────────────────
+var label qualLabel = na
+if sessionOpen and not na(qualLabel)
+    label.delete(qualLabel)
+    qualLabel := na
+if state == 2 and state[1] != 2
+    if not na(qualLabel)
+        label.delete(qualLabel)
+    dirText = direction == 1 ? "LONG" : "SHORT"
+    qualLabel := label.new(bar_index, direction == 1 ? low : high,
+         "Qualified: " + dirText,
+         style=direction == 1 ? label.style_label_up : label.style_label_down,
+         color=direction == 1 ? color.green : color.red,
+         textcolor=color.white, size=size.small)
+else if state == 4 and state[1] == 0 and not na(rangeBar)
+    if not na(qualLabel)
+        label.delete(qualLabel)
+    qualLabel := label.new(bar_index, high, "Not Qualified",
+         style=label.style_label_down, color=color.gray, textcolor=color.white, size=size.small)
+
+// ─── Draw Range Box + Fibonacci Lines ────────────────────
+// Draw on qualification (state just became 2 or 4 with valid range)
+if not na(rangeBar) and (state == 2 or state == 4) and na(rangeBox)
+    // Range box — extends to end of day (we'll use a far-right bar)
+    boxColor  = state == 2 ? color.new(color.blue, 90) : color.new(color.gray, 90)
+    borderClr = state == 2 ? color.new(color.blue, 60) : color.new(color.gray, 60)
+    rangeBox := box.new(rangeBar, rangeHigh, rangeBar + 390, rangeLow,
+         bgcolor=boxColor, border_color=borderClr, border_width=1)
+
+    if state == 2  // Only draw Fib lines for qualified setups
+        rng     = rangeHigh - rangeLow
+        fib382  = rangeLow + rng * 0.382
+        fib500  = rangeLow + rng * 0.5
+        fib618  = rangeLow + rng * 0.618
+        farBar  = rangeBar + 390
+
+        fib382Ln := line.new(rangeBar, fib382, farBar, fib382,
+             color=color.new(color.purple, 30), style=line.style_dashed, width=1)
+        fib500Ln := line.new(rangeBar, fib500, farBar, fib500,
+             color=color.new(color.gray, 50), style=line.style_dotted, width=1)
+        fib618Ln := line.new(rangeBar, fib618, farBar, fib618,
+             color=color.new(color.purple, 30), style=line.style_dashed, width=1)
+
+// ─── Trade Level Calculation + Lines ──────────────────────
+if state == 2 and state[1] != 2
+    rng      = rangeHigh - rangeLow
+    fibMult  = i_tpLevel == "38.2%" ? 0.382 : 0.618
+
+    if direction == 1  // LONG
+        entryPrice := rangeLow
+        tpPrice    := rangeLow + rng * fibMult
+        slPrice    := rangeLow - (tpPrice - rangeLow) / 2.0
+    else  // SHORT
+        entryPrice := rangeHigh
+        tpPrice    := rangeHigh - rng * fibMult
+        slPrice    := rangeHigh + (rangeHigh - tpPrice) / 2.0
+
+    farBar = rangeBar + 390
+
+    entryLn := line.new(rangeBar, entryPrice, farBar, entryPrice,
+         color=color.green, style=line.style_dashed, width=2)
+    tpLn    := line.new(rangeBar, tpPrice,    farBar, tpPrice,
+         color=color.blue,  style=line.style_dashed, width=2)
+    slLn    := line.new(rangeBar, slPrice,    farBar, slPrice,
+         color=color.red,   style=line.style_solid,  width=2)
+
+    label.new(farBar, entryPrice, "Entry",
+         style=label.style_label_left, color=color.new(color.green, 80), textcolor=color.green, size=size.small)
+    label.new(farBar, tpPrice, "TP " + i_tpLevel,
+         style=label.style_label_left, color=color.new(color.blue, 80), textcolor=color.blue, size=size.small)
+    label.new(farBar, slPrice, "SL",
+         style=label.style_label_left, color=color.new(color.red, 80), textcolor=color.red, size=size.small)
+
+// ─── Entry Fill Detection ─────────────────────────────────
+bool entryFilled = false
+
+if state == 2
+    // Check 90-minute-from-open timeout (75 bars from rangeBar on 1m chart,
+    // since the 15m opening candle takes the first 15 minutes)
+    if bar_index - rangeBar > 75
+        state := 4  // DONE — timeout
+        label.new(bar_index, direction == 1 ? low : high, "Timeout",
+             style=direction == 1 ? label.style_label_up : label.style_label_down,
+             color=color.gray, textcolor=color.white, size=size.small)
+        alert("15mFib: Timeout – " + syminfo.ticker, alert.freq_once_per_bar_close)
+    else
+        // Check if price touched entry level
+        if direction == 1 and low <= entryPrice
+            state := 3
+            entryFilled := true
+            alert("15mFib: Entry filled " + (direction == 1 ? "LONG" : "SHORT") + " – " + syminfo.ticker, alert.freq_once_per_bar_close)
+        else if direction == -1 and high >= entryPrice
+            state := 3
+            entryFilled := true
+            alert("15mFib: Entry filled " + (direction == 1 ? "LONG" : "SHORT") + " – " + syminfo.ticker, alert.freq_once_per_bar_close)
+
+    if entryFilled
+        label.new(bar_index, direction == 1 ? low : high,
+             direction == 1 ? "Long Fill" : "Short Fill",
+             style=direction == 1 ? label.style_label_up : label.style_label_down,
+             color=direction == 1 ? color.green : color.red,
+             textcolor=color.white, size=size.small)
+
+// ─── Trade Exit Monitoring ────────────────────────────────
+bool tpHit = false
+bool slHit = false
+
+if state == 3
+    if direction == 1  // LONG
+        if high >= tpPrice
+            state := 4
+            tpHit := true
+            label.new(bar_index, high, "TP",
+                 style=label.style_label_down, color=color.blue, textcolor=color.white, size=size.small)
+            alert("15mFib: TP hit – " + syminfo.ticker, alert.freq_once_per_bar_close)
+        else if low <= slPrice
+            state := 4
+            slHit := true
+            label.new(bar_index, low, "SL",
+                 style=label.style_label_up, color=color.red, textcolor=color.white, size=size.small)
+            alert("15mFib: SL hit – " + syminfo.ticker, alert.freq_once_per_bar_close)
+    else  // SHORT
+        if low <= tpPrice
+            state := 4
+            tpHit := true
+            label.new(bar_index, low, "TP",
+                 style=label.style_label_up, color=color.blue, textcolor=color.white, size=size.small)
+            alert("15mFib: TP hit – " + syminfo.ticker, alert.freq_once_per_bar_close)
+        else if high >= slPrice
+            state := 4
+            slHit := true
+            label.new(bar_index, high, "SL",
+                 style=label.style_label_down, color=color.red, textcolor=color.white, size=size.small)
+            alert("15mFib: SL hit – " + syminfo.ticker, alert.freq_once_per_bar_close)
+
+// ─── Plot Shapes ──────────────────────────────────────────
+plotshape(entryFilled and direction == 1,
+     "Long Entry", shape.triangleup, location.belowbar, color.green, size=size.small, text="Long")
+plotshape(entryFilled and direction == -1,
+     "Short Entry", shape.triangledown, location.abovebar, color.red, size=size.small, text="Short")
+
+// ─── Alert Conditions ─────────────────────────────────────
+alertcondition(state == 2 and state[1] != 2,
+     "Qualified Setup", "15mFib: Qualified setup")
+alertcondition(entryFilled,
+     "Entry Filled", "15mFib: Entry filled")
+alertcondition(tpHit,
+     "TP Hit", "15mFib: TP hit")
+alertcondition(slHit,
+     "SL Hit", "15mFib: SL hit")
+alertcondition(state == 4 and state[1] == 2,
+     "Timeout", "15mFib: Timeout")
