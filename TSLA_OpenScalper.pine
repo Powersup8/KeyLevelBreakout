@@ -1,9 +1,9 @@
 // © TSLA Open Scalper
-// 0DTE/1DTE opening trade decision system (v1.1i)
-// v1.1i: ORB-based breakout replaces fixed-time 5m BAIL
+// 0DTE/1DTE opening trade decision system (v1.1j)
+// v1.1j: ORB-based breakout replaces fixed-time 5m BAIL
 // Designed for TSLA on 1-min chart with Extended Hours ON
 //@version=6
-indicator("TSLA Open Scalper v1.1i", overlay=true, max_labels_count=50, max_lines_count=20)
+indicator("TSLA Open Scalper v1.1j", overlay=true, max_labels_count=50, max_lines_count=20)
 
 // ─── Inputs ────────────────────────────────────────────────
 i_vixSymbol = input.string("CBOE:VIX", "VIX Symbol", tooltip="VIX data provider. Try TVC:VIX if CBOE:VIX fails.", group="Data")
@@ -26,7 +26,7 @@ fmtTime(int t) =>
 
 logMsg(string msg) =>
     if i_debugLog and barstate.isconfirmed
-        log.info("[SCALP] " + fmtTime(time) + " " + msg)
+        log.info("[SCALP] " + syminfo.ticker + " " + fmtTime(time) + " " + msg)
 
 // ─── Timezone & Session Detection ──────────────────────────
 TZ = "America/New_York"
@@ -430,7 +430,7 @@ var table infoTable = table.new(position.top_right, 2, 5,
 
 if i_showTable and isRTH
     table.cell(infoTable, 0, 0, "TSLA OPEN SCALP", text_color=color.white, text_size=size.small)
-    table.cell(infoTable, 1, 0, "v1.1i", text_color=color.gray, text_size=size.tiny)
+    table.cell(infoTable, 1, 0, "v1.1j", text_color=color.gray, text_size=size.tiny)
 
     string stateStr = state == 0 ? "SLEEP" : state == 1 ? "PRE-SCAN" :
                       state == 2 ? "OPENING" : state == 3 ? "FAKEOUT" :
