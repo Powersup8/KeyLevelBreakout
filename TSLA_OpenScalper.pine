@@ -1,0 +1,368 @@
+// © TSLA Open Scalper
+// 0DTE/1DTE opening trade decision system (v1.0a)
+// Designed for TSLA on 1-min chart with Extended Hours ON
+//@version=6
+indicator("TSLA Open Scalper v1.0a", overlay=true, max_labels_count=50, max_lines_count=10)
+
+// ─── Inputs ────────────────────────────────────────────────
+i_vixSymbol = input.string("CBOE:VIX", "VIX Symbol", tooltip="VIX data provider. Try TVC:VIX if CBOE:VIX fails.", group="Data")
+i_slDistance = input.float(2.0, "Stop Loss Distance ($)", minval=0.5, step=0.5, tooltip="Distance below entry for SL line. Research: median max dip on HOLD days = $2.08", group="Trade")
+i_showTable = input.bool(true, "Show Info Table", group="Visuals")
+i_showBG    = input.bool(true, "Show Background Colors", group="Visuals")
+
+// ─── External Data ─────────────────────────────────────────
+vix_prev_close = request.security(i_vixSymbol, "D", close[1], lookahead=barmerge.lookahead_on)
+spy_close      = request.security("SPY", "1", close)
+qqq_close      = request.security("QQQ", "1", close)
+
+// ─── Timezone & Session Detection ──────────────────────────
+TZ = "America/New_York"
+
+isPremarket    = not na(time(timeframe.period, "0400-0929:23456", TZ))
+isRTH          = not na(time(timeframe.period, "0930-1600:23456", TZ))
+newSession     = isPremarket and not isPremarket[1]
+
+// Time windows for state machine (use hour/minute — avoids session string wrap-around bug)
+int h = hour(time, TZ)
+int m = minute(time, TZ)
+is0920         = h == 9 and m == 20
+is0925         = h == 9 and m == 25
+is0929         = h == 9 and m == 29
+is0930         = h == 9 and m == 30
+is0935         = h == 9 and m == 35
+is0940         = h == 9 and m == 40
+is0945         = h == 9 and m == 45
+isPreScan      = h == 9 and m >= 20 and m <= 29
+isActiveWindow = h == 9 and m >= 20 and m <= 45
+
+// ─── Extended Hours Guard ──────────────────────────────────
+var bool pmSeen = false
+if isPremarket
+    pmSeen := true
+if newSession
+    pmSeen := false
+
+// ─── State Machine Variables ───────────────────────────────
+var int    state         = 0   // 0=SLEEP,1=PRE_SCAN,2=OPENING,3=FAKEOUT,4=RULE_5M,5=EXIT,6=DONE
+var int    confidence    = 0
+var string tier          = "—"
+var bool   hard_kill     = false
+var bool   fakeout_fired = false
+
+// Premarket tracking
+var float pm_high       = na
+var float pm_low        = na
+var float pm_position   = na
+var float pm_accel      = na
+var float pm_late_trend = na
+var float close_929     = na
+var float open_925      = na
+var float open_920_tsla = na
+
+// Cross-symbol PM
+var float spy_920       = na
+var float qqq_920       = na
+var float spy_929       = na
+var float qqq_929       = na
+
+// Session / entry
+var float prev_day_close = na
+var float gap            = na
+var float open_930       = na
+var float close_935      = na
+
+// Trade result
+var bool  is_hold       = false
+
+// Visual object IDs
+var line  entryLine     = na
+var line  slLine        = na
+var line  exitLine      = na
+
+// ─── Daily Reset (fires on PM start or RTH start if no PM) ─
+bool newRTH = isRTH and not isRTH[1]
+if newSession or (newRTH and not pmSeen)
+    state         := 0
+    confidence    := 0
+    tier          := "—"
+    hard_kill     := false
+    fakeout_fired := false
+    pm_high       := na
+    pm_low        := na
+    pm_position   := na
+    pm_accel      := na
+    pm_late_trend := na
+    close_929     := na
+    open_925      := na
+    open_920_tsla := na
+    spy_920       := na
+    qqq_920       := na
+    spy_929       := na
+    qqq_929       := na
+    gap           := na
+    open_930      := na
+    close_935     := na
+    is_hold       := false
+    entryLine     := na
+    slLine        := na
+    exitLine      := na
+
+// ─── Prev Day Close (track last RTH bar) ──────────────────
+if isRTH
+    prev_day_close := close
+
+// ─── STATE 0→1: Premarket Tracking ────────────────────────
+if isPremarket and state == 0
+    state := 1
+
+if state == 1 and isPremarket
+    // Track PM high/low
+    if na(pm_high) or high > pm_high
+        pm_high := high
+    if na(pm_low) or low < pm_low
+        pm_low := low
+
+    // Store 9:20 open for late trend
+    if is0920
+        open_920_tsla := open
+        spy_920 := spy_close
+        qqq_920 := qqq_close
+
+    // Store 9:25 open for acceleration
+    if is0925
+        open_925 := open
+
+    // At 9:29: freeze PM features + compute confidence
+    if is0929
+        close_929 := close
+        float pm_range = pm_high - pm_low
+        pm_position   := pm_range > 0 ? (close - pm_low) / pm_range : 0.5
+        pm_accel      := not na(open_925) ? close - open_925 : na
+        pm_late_trend := not na(open_920_tsla) ? close - open_920_tsla : na
+
+        // Track SPY/QQQ at 9:29
+        spy_929 := spy_close
+        qqq_929 := qqq_close
+
+        // ── Confidence scoring ──
+        confidence := 0
+        hard_kill  := false
+
+        // Check 1: PM Position > Q1 (0.219)
+        if not na(pm_position) and pm_position > 0.219
+            confidence += 1
+
+        // Check 2: PM Acceleration positive
+        if not na(pm_accel) and pm_accel > 0
+            confidence += 1
+
+        // Check 3: VIX sweet spot 18–25
+        if not na(vix_prev_close) and vix_prev_close >= 18 and vix_prev_close <= 25
+            confidence += 1
+
+        // Check 4: Triple PM alignment (all up)
+        bool tsla_up = not na(pm_late_trend) and pm_late_trend > 0
+        bool spy_up  = not na(spy_929) and not na(spy_920) and spy_929 > spy_920
+        bool qqq_up  = not na(qqq_929) and not na(qqq_920) and qqq_929 > qqq_920
+        if tsla_up and spy_up and qqq_up
+            confidence += 1
+
+        // Check 5: No danger combo (gap down + PM flat)
+        float est_gap = not na(prev_day_close) ? close - prev_day_close : 0
+        bool gapDangerFlat = est_gap < -2 and not na(pm_late_trend) and math.abs(pm_late_trend) < 0.48
+        if not gapDangerFlat
+            confidence += 1
+
+        // ── Hard kills ──
+        if not na(vix_prev_close) and vix_prev_close <= 15
+            hard_kill := true
+        if not na(pm_position) and pm_position < 0.219 and not na(pm_accel) and pm_accel < 0
+            hard_kill := true
+        if gapDangerFlat
+            hard_kill := true
+
+        // ── Tier mapping ──
+        tier := hard_kill ? "NO-GO" : confidence >= 5 ? "HIGH" : confidence >= 3 ? "MED" : confidence >= 2 ? "LOW" : "NO-GO"
+
+        // Debug label (temporary — replaced by corner table in Batch 3)
+        color tierColor = tier == "HIGH" ? color.green : tier == "MED" ? color.lime : tier == "LOW" ? color.gray : color.red
+        label.new(bar_index, low, str.format("{0} ({1}/5)", tier, confidence),
+             style=label.style_label_up, color=tierColor, textcolor=color.white, size=size.normal)
+
+// Warning if no PM data by 9:30
+if is0930 and not pmSeen
+    label.new(bar_index, high, "⚠ Extended Hours OFF",
+         style=label.style_label_down, color=color.orange, textcolor=color.white, size=size.normal)
+
+// ─── STATE 2: OPENING (9:30) ──────────────────────────────
+if is0930 and state == 1
+    open_930 := open
+    gap := not na(prev_day_close) ? open - prev_day_close : na
+    state := 2
+
+    // Draw entry + SL lines (extend 20 bars forward)
+    if tier == "HIGH" or tier == "MED"
+        entryLine := line.new(bar_index, open_930, bar_index + 20, open_930,
+                     color=color.white, width=3, style=line.style_solid)
+        slLine    := line.new(bar_index, open_930 - i_slDistance, bar_index + 20, open_930 - i_slDistance,
+                     color=#FF4444, width=3, style=line.style_solid)
+        // Price labels at line ends
+        label.new(bar_index + 20, open_930, str.format("entry {0,number,#.##}", open_930),
+             style=label.style_label_left, color=color.white, textcolor=color.black, size=size.small)
+        label.new(bar_index + 20, open_930 - i_slDistance, str.format("SL {0,number,#.##}", open_930 - i_slDistance),
+             style=label.style_label_left, color=#FF4444, textcolor=color.white, size=size.small)
+        label.new(bar_index, low, "ENTERED (small)",
+             style=label.style_label_up, color=color.white, textcolor=color.black, size=size.normal)
+    else if tier == "LOW"
+        entryLine := line.new(bar_index, open_930, bar_index + 20, open_930,
+                     color=color.gray, width=2, style=line.style_dashed)
+        label.new(bar_index + 20, open_930, str.format("watch {0,number,#.##}", open_930),
+             style=label.style_label_left, color=color.gray, textcolor=color.white, size=size.small)
+        label.new(bar_index, low, "WATCHING",
+             style=label.style_label_up, color=color.gray, textcolor=color.white, size=size.normal)
+
+// ─── STATE 3: FAKEOUT CHECK (9:30 bar close) ──────────────
+// Uses 1m bar OHLC as fakeout proxy (30s request.security_lower_tf not available).
+// Research R02: red first 1m bar → only 37% chance of 5m HOLD (vs 69% for green).
+if is0930 and state == 2
+    state := 3
+    float bar1_body = close - open
+    float bar1_range = high - low
+    float bar1_upper_wick = high - math.max(open, close)
+    float bar1_body_size = math.abs(bar1_body)
+    bool bar1_red = close < open
+    bool bar1_chaotic = bar1_range > 3.04
+    bool bar1_rejection = bar1_upper_wick > bar1_body_size and bar1_body_size > 0
+
+    // Fakeout proxy: red bar with upper wick rejection (price went up then reversed down)
+    if bar1_red and bar1_rejection
+        fakeout_fired := true
+        label.new(bar_index, high, "EXIT — FAKEOUT",
+             style=label.style_label_down, color=color.red, textcolor=color.white, size=size.large)
+
+    // Chaotic auction: range > $3.04 (research A3: 44% win, -$3.88 avg)
+    if bar1_chaotic and not fakeout_fired
+        label.new(bar_index, high, "⚠ CHAOTIC",
+             style=label.style_label_down, color=color.orange, textcolor=color.white, size=size.small)
+
+    // Shakeout: strong red bar (potential DOWN→DOWN reversal if 5m HOLD fires)
+    if bar1_red and not bar1_rejection and not bar1_chaotic
+        label.new(bar_index, low, "shakeout — watch",
+             style=label.style_label_up, color=color.gray, textcolor=color.white, size=size.tiny)
+
+// ─── STATE 4: 5M RULE (9:35) ──────────────────────────────
+if is0935 and (state == 2 or state == 3)
+    close_935 := close
+    state := 4
+    is_hold := not na(close_935) and not na(open_930) and close_935 > open_930
+
+    if is_hold
+        if fakeout_fired
+            label.new(bar_index, low, "RECOVERY HOLD",
+                 style=label.style_label_up, color=color.teal, textcolor=color.white, size=size.large)
+        else
+            label.new(bar_index, low, "HOLD — ADD SIZE",
+                 style=label.style_label_up, color=color.green, textcolor=color.white, size=size.large)
+    else
+        label.new(bar_index, low, "BAIL — EXIT ALL",
+             style=label.style_label_up, color=color.red, textcolor=color.white, size=size.large)
+
+// ─── STATE 5: EXIT WINDOW (9:40) ──────────────────────────
+if is0940 and state == 4
+    state := 5
+    if is_hold
+        label.new(bar_index, high, "EXIT — TAKE PROFIT",
+             style=label.style_label_down, color=color.green, textcolor=color.white, size=size.large)
+        exitLine := line.new(bar_index, low, bar_index, high,
+                    color=color.green, width=1, style=line.style_solid)
+
+// ─── STATE 6: DONE (after 9:40) ───────────────────────────
+bool isPast0940 = isRTH and not is0940 and not is0930 and not is0935 and state == 5
+if isPast0940
+    state := 6
+
+if is0945 and state == 6 and is_hold
+    label.new(bar_index, high, "OVERHOLD — CLOSE",
+         style=label.style_label_down, color=color.orange, textcolor=color.white, size=size.normal)
+
+// ─── Background Colors ─────────────────────────────────────
+color bgColor = na
+if i_showBG and isActiveWindow
+    if state == 1
+        bgColor := tier == "—" ? color.new(color.gray, 95) :
+                   tier == "NO-GO" ? color.new(color.red, 92) :
+                   color.new(color.green, 92)
+    else if state == 2 or state == 3
+        if fakeout_fired
+            bgColor := color.new(color.red, 85)
+        else
+            bgColor := tier == "NO-GO" ? color.new(color.red, 92) : color.new(color.green, 92)
+    else if state == 4
+        bgColor := is_hold ? color.new(color.green, 90) : color.new(color.red, 88)
+    else if state == 5
+        bgColor := color.new(color.orange, 92)
+    else if state == 6
+        bgColor := color.new(color.orange, 92)
+
+bgcolor(bgColor)
+
+// ─── Corner Table ──────────────────────────────────────────
+var table infoTable = table.new(position.top_right, 2, 5,
+     bgcolor=color.new(color.black, 80), border_width=1, border_color=color.gray)
+
+if i_showTable and isActiveWindow
+    // Row 0: Title
+    table.cell(infoTable, 0, 0, "TSLA OPEN SCALP", text_color=color.white, text_size=size.small)
+    table.cell(infoTable, 1, 0, "v1.0a", text_color=color.gray, text_size=size.tiny)
+
+    // Row 1: State + tier
+    string stateStr = state == 0 ? "SLEEP" : state == 1 ? "PRE-SCAN" : state == 2 ? "OPENING" :
+                      state == 3 ? "FAKEOUT" : state == 4 ? (is_hold ? "HOLD" : "BAIL") :
+                      state == 5 ? "EXIT" : "DONE"
+    color stateColor = tier == "HIGH" ? color.green : tier == "MED" ? color.lime :
+                       tier == "LOW" ? color.gray : tier == "NO-GO" ? color.red : color.white
+    table.cell(infoTable, 0, 1, stateStr, text_color=stateColor, text_size=size.normal)
+    table.cell(infoTable, 1, 1, tier != "—" ? str.format("{0} ({1}/5)", tier, confidence) : "",
+               text_color=stateColor, text_size=size.small)
+
+    // Row 2: VIX
+    string vixStr = not na(vix_prev_close) ? str.format("VIX: {0,number,#.#}", vix_prev_close) : "VIX: N/A"
+    color vixColor = not na(vix_prev_close) ? (vix_prev_close <= 15 ? color.red : vix_prev_close >= 18 and vix_prev_close <= 25 ? color.green : color.gray) : color.gray
+    table.cell(infoTable, 0, 2, vixStr, text_color=vixColor, text_size=size.small)
+
+    // Row 3: PM metrics
+    string pmStr = not na(pm_position) ? str.format("PM: pos={0,number,#.##} acc={1,number,#.#}", pm_position, nz(pm_accel)) : "PM: waiting..."
+    table.cell(infoTable, 0, 3, pmStr, text_color=color.white, text_size=size.small)
+
+    // Row 4: Alignment or action
+    if state <= 1
+        bool tsla_up_t = not na(pm_late_trend) and pm_late_trend > 0
+        bool spy_up_t  = not na(spy_929) and not na(spy_920) and spy_929 > spy_920
+        bool qqq_up_t  = not na(qqq_929) and not na(qqq_920) and qqq_929 > qqq_920
+        table.cell(infoTable, 0, 4, str.format("Align: T{0} S{1} Q{2}",
+             tsla_up_t ? "↑" : "↓", spy_up_t ? "↑" : "↓", qqq_up_t ? "↑" : "↓"),
+             text_color=color.white, text_size=size.small)
+    else if state >= 2 and not na(open_930)
+        table.cell(infoTable, 0, 4, str.format("Entry: {0,number,#.##}  SL: {1,number,#.##}",
+             open_930, open_930 - i_slDistance),
+             text_color=color.white, text_size=size.small)
+
+if not isActiveWindow or not i_showTable
+    table.clear(infoTable, 0, 0, 1, 4)
+
+// ─── Alerts ────────────────────────────────────────────────
+// At 9:29: pre-open assessment
+if is0929 and state == 1
+    if not hard_kill and confidence >= 3
+        alert(str.format("TSLA GO: confidence {0} ({1}/5) — enter small at open", tier, confidence), alert.freq_once_per_bar)
+    if hard_kill or confidence < 2
+        string reason = hard_kill ? (not na(vix_prev_close) and vix_prev_close <= 15 ? "VIX <= 15" :
+                       (not na(pm_position) and pm_position < 0.219 and not na(pm_accel) and pm_accel < 0 ? "P9 bear" : "gap trap")) : "low score"
+        alert(str.format("TSLA NO-GO: {0} — skip today", reason), alert.freq_once_per_bar)
+
+// At 9:35: 5m rule
+if is0935 and state == 4
+    if is_hold
+        alert(str.format("TSLA HOLD — ADD SIZE (confidence: {0})", tier), alert.freq_once_per_bar)
+    else
+        alert("TSLA BAIL — EXIT ALL", alert.freq_once_per_bar)
