@@ -136,6 +136,14 @@ One alert covers all signals (uses `alert()` with dynamic messages):
 - **TSLA-specific thresholds** — dollar values ($2.00 SL, $3.04 chaotic, ORB) are hardcoded for TSLA.
 - **ORB breakout on tight range days** — very narrow ORB may trigger false breakouts on noise. Consider adding minimum ORB width filter in v1.2.
 
+## Next: v1.2 — Smarter SL
+
+Current SL is a fixed $2.00 below entry (or $0.50 below turning point on shakeout). Research ideas for smarter SL:
+- **ORB low as SL**: once ORB freezes at 9:34, use ORB low as dynamic SL (tighter on narrow ORB days, wider on volatile days)
+- **ATR-based SL**: use daily ATR to scale SL distance (e.g., 0.10 × ATR)
+- **15s PM data available** (250 days, Mar 2025–Mar 2026): can research optimal SL distance at higher resolution
+- **Minimum ORB width filter**: skip trade if ORB range < threshold (noise)
+
 ## Research Files
 
 - `debug/tsla-open-scalp-findings-2026-03-17.md` — consolidated findings
