@@ -1,8 +1,8 @@
 // © TSLA Open Scalper
-// 0DTE/1DTE opening trade decision system (v1.0a)
+// 0DTE/1DTE opening trade decision system (v1.0d)
 // Designed for TSLA on 1-min chart with Extended Hours ON
 //@version=6
-indicator("TSLA Open Scalper v1.0a", overlay=true, max_labels_count=50, max_lines_count=10)
+indicator("TSLA Open Scalper v1.0d", overlay=true, max_labels_count=50, max_lines_count=10)
 
 // ─── Inputs ────────────────────────────────────────────────
 i_vixSymbol = input.string("CBOE:VIX", "VIX Symbol", tooltip="VIX data provider. Try TVC:VIX if CBOE:VIX fails.", group="Data")
@@ -18,13 +18,14 @@ qqq_close      = request.security("QQQ", "1", close)
 // ─── Timezone & Session Detection ──────────────────────────
 TZ = "America/New_York"
 
-isPremarket    = not na(time(timeframe.period, "0400-0929:23456", TZ))
-isRTH          = not na(time(timeframe.period, "0930-1600:23456", TZ))
-newSession     = isPremarket and not isPremarket[1]
+// Time (hour/minute in ET — avoids session string boundary bugs)
+int h  = hour(time, TZ)
+int m  = minute(time, TZ)
+int hm = h * 100 + m   // e.g. 930, 1559
 
-// Time windows for state machine (use hour/minute — avoids session string wrap-around bug)
-int h = hour(time, TZ)
-int m = minute(time, TZ)
+isPremarket    = hm >= 400 and hm <= 929
+isRTH          = hm >= 930 and hm <= 1559
+newSession     = isPremarket and not isPremarket[1]
 is0920         = h == 9 and m == 20
 is0925         = h == 9 and m == 25
 is0929         = h == 9 and m == 29
@@ -48,6 +49,7 @@ var int    confidence    = 0
 var string tier          = "—"
 var bool   hard_kill     = false
 var bool   fakeout_fired = false
+var bool   shakeout_detected = false
 
 // Premarket tracking
 var float pm_high       = na
@@ -87,6 +89,7 @@ if newSession or (newRTH and not pmSeen)
     tier          := "—"
     hard_kill     := false
     fakeout_fired := false
+    shakeout_detected := false
     pm_high       := na
     pm_low        := na
     pm_position   := na
@@ -203,16 +206,16 @@ if is0930 and state == 1
     // Draw entry + SL lines (extend 20 bars forward)
     if tier == "HIGH" or tier == "MED"
         entryLine := line.new(bar_index, open_930, bar_index + 20, open_930,
-                     color=color.white, width=3, style=line.style_solid)
+                     color=#00BFFF, width=3, style=line.style_solid)
         slLine    := line.new(bar_index, open_930 - i_slDistance, bar_index + 20, open_930 - i_slDistance,
                      color=#FF4444, width=3, style=line.style_solid)
         // Price labels at line ends
         label.new(bar_index + 20, open_930, str.format("entry {0,number,#.##}", open_930),
-             style=label.style_label_left, color=color.white, textcolor=color.black, size=size.small)
+             style=label.style_label_left, color=#00BFFF, textcolor=color.white, size=size.small)
         label.new(bar_index + 20, open_930 - i_slDistance, str.format("SL {0,number,#.##}", open_930 - i_slDistance),
              style=label.style_label_left, color=#FF4444, textcolor=color.white, size=size.small)
         label.new(bar_index, low, "ENTERED (small)",
-             style=label.style_label_up, color=color.white, textcolor=color.black, size=size.normal)
+             style=label.style_label_up, color=#00BFFF, textcolor=color.white, size=size.normal)
     else if tier == "LOW"
         entryLine := line.new(bar_index, open_930, bar_index + 20, open_930,
                      color=color.gray, width=2, style=line.style_dashed)
@@ -247,6 +250,7 @@ if is0930 and state == 2
 
     // Shakeout: strong red bar (potential DOWN→DOWN reversal if 5m HOLD fires)
     if bar1_red and not bar1_rejection and not bar1_chaotic
+        shakeout_detected := true
         label.new(bar_index, low, "shakeout — watch",
              style=label.style_label_up, color=color.gray, textcolor=color.white, size=size.tiny)
 
@@ -264,8 +268,13 @@ if is0935 and (state == 2 or state == 3)
             label.new(bar_index, low, "HOLD — ADD SIZE",
                  style=label.style_label_up, color=color.green, textcolor=color.white, size=size.large)
     else
-        label.new(bar_index, low, "BAIL — EXIT ALL",
-             style=label.style_label_up, color=color.red, textcolor=color.white, size=size.large)
+        if shakeout_detected
+            // Research: DOWN→DOWN + HOLD = 78.6% win. Shakeout BAIL may recover.
+            label.new(bar_index, low, "BAIL — SHAKEOUT, MAY RECOVER",
+                 style=label.style_label_up, color=color.orange, textcolor=color.white, size=size.large)
+        else
+            label.new(bar_index, low, "BAIL — EXIT ALL",
+                 style=label.style_label_up, color=color.red, textcolor=color.white, size=size.large)
 
 // ─── STATE 5: EXIT WINDOW (9:40) ──────────────────────────
 if is0940 and state == 4
@@ -313,7 +322,7 @@ var table infoTable = table.new(position.top_right, 2, 5,
 if i_showTable and isActiveWindow
     // Row 0: Title
     table.cell(infoTable, 0, 0, "TSLA OPEN SCALP", text_color=color.white, text_size=size.small)
-    table.cell(infoTable, 1, 0, "v1.0a", text_color=color.gray, text_size=size.tiny)
+    table.cell(infoTable, 1, 0, "v1.0d", text_color=color.gray, text_size=size.tiny)
 
     // Row 1: State + tier
     string stateStr = state == 0 ? "SLEEP" : state == 1 ? "PRE-SCAN" : state == 2 ? "OPENING" :
