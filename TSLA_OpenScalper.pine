@@ -1,9 +1,9 @@
 // © TSLA Open Scalper
-// 0DTE/1DTE opening trade decision system (v1.1h)
-// v1.1h: ORB-based breakout replaces fixed-time 5m BAIL
+// 0DTE/1DTE opening trade decision system (v1.1i)
+// v1.1i: ORB-based breakout replaces fixed-time 5m BAIL
 // Designed for TSLA on 1-min chart with Extended Hours ON
 //@version=6
-indicator("TSLA Open Scalper v1.1h", overlay=true, max_labels_count=50, max_lines_count=20)
+indicator("TSLA Open Scalper v1.1i", overlay=true, max_labels_count=50, max_lines_count=20)
 
 // ─── Inputs ────────────────────────────────────────────────
 i_vixSymbol = input.string("CBOE:VIX", "VIX Symbol", tooltip="VIX data provider. Try TVC:VIX if CBOE:VIX fails.", group="Data")
@@ -11,11 +11,22 @@ i_slDistance = input.float(2.0, "Stop Loss Distance ($)", minval=0.5, step=0.5, 
 i_dipRecovery = input.float(15.0, "Dip Entry Recovery (%)", minval=5.0, maxval=50.0, step=5.0, tooltip="On shakeout bars: enter at bar low + X% of bar range (captures turning point)", group="Trade")
 i_showTable = input.bool(true, "Show Info Table", group="Visuals")
 i_showBG    = input.bool(true, "Show Background Colors", group="Visuals")
+i_debugLog  = input.bool(false, "Log Signals (Pine Logs)", group="Debug")
 
 // ─── External Data ─────────────────────────────────────────
 vix_prev_close = request.security(i_vixSymbol, "D", close[1], lookahead=barmerge.lookahead_on)
 spy_close      = request.security("SPY", "1", close)
 qqq_close      = request.security("QQQ", "1", close)
+
+// ─── Debug Helpers ─────────────────────────────────────────
+fmtTime(int t) =>
+    int _h = hour(t, "America/New_York")
+    int _m = minute(t, "America/New_York")
+    str.tostring(_h) + ":" + (_m < 10 ? "0" : "") + str.tostring(_m)
+
+logMsg(string msg) =>
+    if i_debugLog and barstate.isconfirmed
+        log.info("[SCALP] " + fmtTime(time) + " " + msg)
 
 // ─── Timezone & Session Detection ──────────────────────────
 TZ = "America/New_York"
@@ -198,6 +209,13 @@ if state == 1 and isPremarket
         label.new(bar_index, low, str.format("{0} ({1}/5)", tier, confidence),
              style=label.style_label_up, color=tierColor, textcolor=color.white, size=size.normal)
 
+        logMsg(str.format("PRE-SCAN tier={0} conf={1}/5 kill={2} vix={3} pm_pos={4} pm_acc={5} gap={6}",
+             tier, confidence, hard_kill ? "Y" : "N",
+             str.tostring(nz(vix_prev_close), "#.#"),
+             str.tostring(nz(pm_position), "#.##"),
+             str.tostring(nz(pm_accel), "#.##"),
+             str.tostring(nz(est_gap), "#.##")))
+
 // Extended Hours warning
 if is0930 and not pmSeen
     label.new(bar_index, high, "⚠ Extended Hours OFF",
@@ -214,6 +232,9 @@ if is0930 and state == 1
     // Start ORB tracking with this bar
     orb_high := high
     orb_low  := low
+
+    logMsg(str.format("OPENING entry={0} gap={1} tier={2}",
+         str.tostring(open_930, "#.##"), str.tostring(nz(gap), "#.##"), tier))
 
     // Draw entry + SL lines (price labels deferred to State 3 — may adjust on shakeout)
     if tier == "HIGH" or tier == "MED"
@@ -271,6 +292,10 @@ if is0930 and state == 2
         label.new(bar_index, high, "EXIT — FAKEOUT",
              style=label.style_label_down, color=color.red, textcolor=color.white, size=size.large)
 
+    logMsg(str.format("FAKEOUT bar1_red={0} fakeout={1} shakeout={2} chaotic={3} range={4} entry={5}",
+         bar1_red ? "Y" : "N", fakeout_fired ? "Y" : "N", shakeout_detected ? "Y" : "N",
+         bar1_chaotic ? "Y" : "N", str.tostring(bar1_range, "#.##"), str.tostring(open_930, "#.##")))
+
     // Price labels at line ends (after any shakeout adjustment)
     if (tier == "HIGH" or tier == "MED") and not na(entryLine)
         float sl_price = shakeout_detected ? (low - 0.50) : (open_930 - i_slDistance)
@@ -316,6 +341,11 @@ if is0934 and (state == 3 or state == 4)
     label.new(bar_index, high, fiveMinTxt,
          style=label.style_label_down, color=fiveMinCol, textcolor=color.white, size=size.small)
 
+    logMsg(str.format("ORB FROZEN H={0} L={1} 5m={2} close={3} orig_open={4}",
+         str.tostring(orb_high, "#.##"), str.tostring(orb_low, "#.##"),
+         is_hold ? "HOLD" : "BAIL", str.tostring(close_935, "#.##"),
+         str.tostring(orig_open_930, "#.##")))
+
     state := 5
 
 // ─── SL Hit Detection (states 3-5) ─────────────────────────
@@ -338,6 +368,8 @@ if state == 5 and hm >= 935 and hm <= 955
         label.new(bar_index, low, brkLabel,
              style=label.style_label_up, color=brkColor, textcolor=color.white, size=size.large)
         alert(str.format("TSLA ORB BULL BREAK at {0,number,#.##} — ADD SIZE", close), alert.freq_once_per_bar)
+        logMsg(str.format("ORB BULL BREAK close={0} > orbH={1} shakeout={2}",
+             str.tostring(close, "#.##"), str.tostring(orb_high, "#.##"), shakeout_detected ? "Y" : "N"))
 
     // Bear breakout: close below ORB low
     if not orb_bull and not orb_bear and close < orb_low
@@ -347,6 +379,8 @@ if state == 5 and hm >= 935 and hm <= 955
         label.new(bar_index, high, "ORB BEAR — EXIT",
              style=label.style_label_down, color=color.red, textcolor=color.white, size=size.large)
         alert(str.format("TSLA ORB BEAR BREAK at {0,number,#.##} — EXIT", close), alert.freq_once_per_bar)
+        logMsg(str.format("ORB BEAR BREAK close={0} < orbL={1}",
+             str.tostring(close, "#.##"), str.tostring(orb_low, "#.##")))
 
 // ─── STATE 6: BREAKOUT — exit timer ────────────────────────
 // For bull breakout: exit 10 bars later (optimal 10m hold for options)
@@ -396,7 +430,7 @@ var table infoTable = table.new(position.top_right, 2, 5,
 
 if i_showTable and isRTH
     table.cell(infoTable, 0, 0, "TSLA OPEN SCALP", text_color=color.white, text_size=size.small)
-    table.cell(infoTable, 1, 0, "v1.1h", text_color=color.gray, text_size=size.tiny)
+    table.cell(infoTable, 1, 0, "v1.1i", text_color=color.gray, text_size=size.tiny)
 
     string stateStr = state == 0 ? "SLEEP" : state == 1 ? "PRE-SCAN" :
                       state == 2 ? "OPENING" : state == 3 ? "FAKEOUT" :
