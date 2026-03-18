@@ -1,9 +1,9 @@
 // © TSLA Open Scalper
-// 0DTE/1DTE opening trade decision system (v1.1j)
-// v1.1j: ORB-based breakout replaces fixed-time 5m BAIL
+// 0DTE/1DTE opening trade decision system (v1.1k)
+// v1.1k: ORB-based breakout replaces fixed-time 5m BAIL
 // Designed for TSLA on 1-min chart with Extended Hours ON
 //@version=6
-indicator("TSLA Open Scalper v1.1j", overlay=true, max_labels_count=50, max_lines_count=20)
+indicator("TSLA Open Scalper v1.1k", overlay=true, max_labels_count=50, max_lines_count=20)
 
 // ─── Inputs ────────────────────────────────────────────────
 i_vixSymbol = input.string("CBOE:VIX", "VIX Symbol", tooltip="VIX data provider. Try TVC:VIX if CBOE:VIX fails.", group="Data")
@@ -209,12 +209,22 @@ if state == 1 and isPremarket
         label.new(bar_index, low, str.format("{0} ({1}/5)", tier, confidence),
              style=label.style_label_up, color=tierColor, textcolor=color.white, size=size.normal)
 
-        logMsg(str.format("PRE-SCAN tier={0} conf={1}/5 kill={2} vix={3} pm_pos={4} pm_acc={5} gap={6}",
-             tier, confidence, hard_kill ? "Y" : "N",
+        // Log: detailed pre-scan with individual check results
+        string chk1 = not na(pm_position) and pm_position > 0.219 ? "1" : "0"
+        string chk2 = not na(pm_accel) and pm_accel > 0 ? "1" : "0"
+        string chk3 = not na(vix_prev_close) and vix_prev_close >= 18 and vix_prev_close <= 25 ? "1" : "0"
+        string chk4 = tsla_up and spy_up and qqq_up ? "1" : "0"
+        string chk5 = not gapDangerFlat ? "1" : "0"
+        string alignStr = str.format("T{0}S{1}Q{2}", tsla_up?"↑":"↓", spy_up?"↑":"↓", qqq_up?"↑":"↓")
+        logMsg(str.format("PRE-SCAN tier={0} conf={1}/5 checks={2}{3}{4}{5}{6} kill={7} vix={8} pm_pos={9} pm_acc={10} pm_trend={11} gap={12} align={13}",
+             tier, confidence, chk1, chk2, chk3, chk4, chk5,
+             hard_kill ? "Y" : "N",
              str.tostring(nz(vix_prev_close), "#.#"),
-             str.tostring(nz(pm_position), "#.##"),
+             str.tostring(nz(pm_position), "#.###"),
              str.tostring(nz(pm_accel), "#.##"),
-             str.tostring(nz(est_gap), "#.##")))
+             str.tostring(nz(pm_late_trend), "#.##"),
+             str.tostring(nz(est_gap), "#.##"),
+             alignStr))
 
 // Extended Hours warning
 if is0930 and not pmSeen
@@ -341,8 +351,10 @@ if is0934 and (state == 3 or state == 4)
     label.new(bar_index, high, fiveMinTxt,
          style=label.style_label_down, color=fiveMinCol, textcolor=color.white, size=size.small)
 
-    logMsg(str.format("ORB FROZEN H={0} L={1} 5m={2} close={3} orig_open={4}",
+    float orb_width = orb_high - orb_low
+    logMsg(str.format("ORB FROZEN H={0} L={1} width={2} 5m={3} close={4} orig_open={5}",
          str.tostring(orb_high, "#.##"), str.tostring(orb_low, "#.##"),
+         str.tostring(orb_width, "#.##"),
          is_hold ? "HOLD" : "BAIL", str.tostring(close_935, "#.##"),
          str.tostring(orig_open_930, "#.##")))
 
@@ -355,6 +367,9 @@ if (state >= 3 and state <= 5) and not sl_hit and not na(open_930) and low <= (o
     label.new(bar_index, open_930 - i_slDistance, "SL HIT — EXIT",
          style=label.style_label_up, color=#FF4444, textcolor=color.white, size=size.large)
     alert(str.format("TSLA SL HIT at {0,number,#.##} — EXIT NOW", open_930 - i_slDistance), alert.freq_once_per_bar)
+    logMsg(str.format("SL HIT low={0} sl_level={1} entry={2} loss={3}",
+         str.tostring(low, "#.##"), str.tostring(open_930 - i_slDistance, "#.##"),
+         str.tostring(open_930, "#.##"), str.tostring(open_930 - i_slDistance - open_930, "#.##")))
 
 // ─── Breakout detection (state 5, each bar after 9:35) ────
 if state == 5 and hm >= 935 and hm <= 955
@@ -379,8 +394,10 @@ if state == 5 and hm >= 935 and hm <= 955
         label.new(bar_index, high, "ORB BEAR — EXIT",
              style=label.style_label_down, color=color.red, textcolor=color.white, size=size.large)
         alert(str.format("TSLA ORB BEAR BREAK at {0,number,#.##} — EXIT", close), alert.freq_once_per_bar)
-        logMsg(str.format("ORB BEAR BREAK close={0} < orbL={1}",
-             str.tostring(close, "#.##"), str.tostring(orb_low, "#.##")))
+        float bear_pnl = close - open_930
+        logMsg(str.format("ORB BEAR BREAK close={0} < orbL={1} entry={2} pnl={3}",
+             str.tostring(close, "#.##"), str.tostring(orb_low, "#.##"),
+             str.tostring(open_930, "#.##"), str.tostring(bear_pnl, "#.##")))
 
 // ─── STATE 6: BREAKOUT — exit timer ────────────────────────
 // For bull breakout: exit 10 bars later (optimal 10m hold for options)
@@ -388,12 +405,21 @@ if state == 6 and orb_bull and not na(breakout_bar) and bar_index == breakout_ba
     label.new(bar_index, high, "EXIT — TAKE PROFIT",
          style=label.style_label_down, color=color.green, textcolor=color.white, size=size.large)
     alert("TSLA EXIT — 10 bars after bull breakout — TAKE PROFIT", alert.freq_once_per_bar)
+    float pnl = close - open_930
+    logMsg(str.format("EXIT TAKE_PROFIT close={0} entry={1} pnl={2} bars_held={3}",
+         str.tostring(close, "#.##"), str.tostring(open_930, "#.##"),
+         str.tostring(pnl, "#.##"), bar_index - bar_930_idx))
     state := 7
 
 // Timeout: no breakout by 9:55 → done
 if state == 5 and hm >= 955
     label.new(bar_index, high, "ORB — NO BREAK (timeout)",
          style=label.style_label_down, color=color.gray, textcolor=color.white, size=size.small)
+    float pnl_timeout = not na(open_930) ? close - open_930 : na
+    logMsg(str.format("ORB TIMEOUT no_break close={0} entry={1} pnl={2} orbH={3} orbL={4}",
+         str.tostring(close, "#.##"), str.tostring(nz(open_930), "#.##"),
+         str.tostring(nz(pnl_timeout), "#.##"),
+         str.tostring(nz(orb_high), "#.##"), str.tostring(nz(orb_low), "#.##")))
     state := 7
 
 // Bear breakout → immediately done (you exited)
@@ -430,7 +456,7 @@ var table infoTable = table.new(position.top_right, 2, 5,
 
 if i_showTable and isRTH
     table.cell(infoTable, 0, 0, "TSLA OPEN SCALP", text_color=color.white, text_size=size.small)
-    table.cell(infoTable, 1, 0, "v1.1j", text_color=color.gray, text_size=size.tiny)
+    table.cell(infoTable, 1, 0, "v1.1k", text_color=color.gray, text_size=size.tiny)
 
     string stateStr = state == 0 ? "SLEEP" : state == 1 ? "PRE-SCAN" :
                       state == 2 ? "OPENING" : state == 3 ? "FAKEOUT" :
