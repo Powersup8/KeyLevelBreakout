@@ -72,6 +72,7 @@ BRK_BULL_LEVELS = {
     "Month Open",               # loop M1: bull BRK above Month Open
     "ORB High",                 # loop J3: bull BRK above ORB High
     "Yest Low",                  # loop AH3: re-add Yest Low to BRK_BULL (AA3 inverse — prior-day floor reclaim at 2089)
+    "VWAP",                     # loop AY3: re-add VWAP BRK bull reclaim
     # loop AA2: removed VWAP from BRK_BULL (P3: W4 cascade — VWAP bull reclaim noise)
     "PM High",                  # loop K4: bull BRK above PM High
     # loop AC3: removed Week Low from BRK_BULL (U9: AA3/AB3 cascade — weekly floor reclaim)
