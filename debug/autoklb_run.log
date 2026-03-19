@@ -1,27 +1,10 @@
-catalog_moves:    24824
-train_moves:      15623
-val_moves:        7593
-holdout_moves:    1608
-
----
-train_score:      540.8
-train_net_atr:    306.0
-train_win_rate:   88.4
-train_n:          1652
-train_n_dimmed:   207
-val_score:        295.7
-val_net_atr:      168.8
-val_win_rate:     87.6
-val_n:            944
-val_n_dimmed:     96
-total_seconds:    1.0
 ---rd---
-rd_train_score:    761.9
-rd_train_net_atr:  577.8
-rd_train_win_rate: 65.9
-rd_train_n:        6655
-rd_val_score:      456.7
-rd_val_net_atr:    340.3
-rd_val_win_rate:   67.1
-rd_val_n:          3036
-rd_total_seconds:  185.1
+rd_train_score:    1193.3
+rd_train_net_atr:  1028.7
+rd_train_win_rate: 58.0
+rd_train_n:        23276
+rd_val_score:      2104.3
+rd_val_net_atr:    1263.4
+rd_val_win_rate:   83.3
+rd_val_n:          4665
+rd_total_seconds:  245.0
