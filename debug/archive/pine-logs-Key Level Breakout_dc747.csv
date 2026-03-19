@@ -1,0 +1,973 @@
+Date,Message
+2025-09-29T09:40:00.000-04:00,[KLB] 9:40 ▼ ~ ~ VWAP vol=9.4x pos=v93 vwap=below ema=bear rs=+0% adx=22 body=61% O664.28 H664.45 L663.91 C663.95 ATR=5.08 SL=664.46/664.71 rawVol=316722 volSMA=45934 buf=0.254 prices=
+2025-09-29T09:55:00.000-04:00,[KLB] 5m CHECK 9:55 ▲ pnl=0 → BAIL
+2025-09-29T10:05:00.000-04:00,[KLB] 10:05 ▼ ~ ~ ORB H vol=2.6x pos=v86 vwap=below ema=bear rs=+0% adx=30 body=47% O664.54 H664.83 L664.07 C664.18 ATR=5.08 SL=664.69/664.94 rawVol=292968 volSMA=114050 buf=0.254 prices=664.76
+2025-09-29T10:10:00.000-04:00,"[KLB] 10:10 ▲ ~ ~ ORB L
+~ VWAP vol=2.1x pos=^85 vwap=above ema=bear rs=+0% adx=29 body=75% O664.17 H665.28 L664.05 C665.09 ATR=5.08 SL=664.58/664.33 rawVol=272996 volSMA=127395 buf=0.254 prices=664.14"
+2025-09-29T10:20:00.000-04:00,[KLB] 10:20 ▼ ~ ~ ORB H vol=1.5x pos=v97 vwap=below ema=bear rs=+0% adx=29 body=79% O664.68 H664.79 L664.16 C664.18 ATR=5.08 SL=664.69/664.94 rawVol=185943 volSMA=146737 buf=0.254 prices=664.76
+2025-09-29T10:25:00.000-04:00,[KLB] 10:25 ▲ ~ ~ ORB L vol=1x pos=^94 vwap=above ema=bear rs=+0% adx=29 body=73% O664.18 H664.89 L663.99 C664.84 ATR=5.08 SL=664.33/664.08 rawVol=149530 volSMA=154044 buf=0.254 prices=664.14
+2025-09-29T11:00:00.000-04:00,[KLB] 11:00 ▼ ~ ~ ORB H vol=0.8x pos=v60 vwap=below ema=bear rs=+0% adx=30 body=47% O664.65 H664.7 L664.3 C664.46 ATR=5.08 SL=664.97/665.22 rawVol=150290 volSMA=197434 buf=0.254 prices=664.76
+2025-09-30T15:50:00.000-04:00,[KLB] 15:50 ▲ BRK Yest H vol=3.2x pos=^98 vwap=above ema=bull rs=+0% adx=37 body=97% O665.01 H665.97 L665 C665.95 ATR=4.97 SL=665.45/665.21 rawVol=599126 volSMA=188278 buf=0.248 prices=665.28
+2025-10-01T13:20:00.000-04:00,[KLB] 13:20 ▲ BRK Week H vol=1.5x pos=^67 vwap=above ema=bull rs=+0% adx=31 body=65% O667.36 H667.87 L667.35 C667.7 ATR=4.97 SL=667.2/666.95 rawVol=231658 volSMA=154371 buf=0.249 prices=667.34
+2025-10-02T09:40:00.000-04:00,[KLB] 9:40 ▼ ~ ~ ORB H vol=10.1x pos=v89 vwap=below ema=bull rs=+0% adx=30 body=55% O670.22 H670.47 L669.74 C669.82 ATR=5.07 SL=670.33/670.58 rawVol=295397 volSMA=41470 buf=0.253 prices=670.57
+2025-10-02T09:45:00.000-04:00,[KLB] 9:45 ▼ ~ ~ VWAP vol=5.7x pos=v83 vwap=below ema=bull rs=+0% adx=32 body=83% O669.82 H669.82 L668.88 C669.04 ATR=5.07 SL=669.55/669.8 rawVol=328476 volSMA=57730 buf=0.253 prices=
+2025-10-02T09:45:00.000-04:00,[KLB] 5m CHECK 9:45 ▼ pnl=0.15 → HOLD
+2025-10-02T09:55:00.000-04:00,[KLB] 9:55 ▲ BRK Yest H vol=4.1x pos=^85 vwap=below ema=bull rs=+0% adx=36 body=44% O669.11 H669.65 L668.74 C669.51 ATR=5.07 SL=669/668.75 rawVol=289074 volSMA=90381 buf=0.253 prices=669.37
+2025-10-02T09:55:00.000-04:00,[KLB] 9:55 ▲ ◆ ◆¹ Yest H 1.9x ^81 vol= pos= vwap=below ema=bull rs=+0% adx=36 body=44% O669.11 H669.65 L668.74 C669.51 ATR=5.07 SL=669/668.75 rawVol=289074 volSMA=90381 buf=0.253 prices=
+2025-10-02T10:05:00.000-04:00,[KLB] CONF 10:05 ▲ BRK → ✗ (failed)
+2025-10-02T10:35:00.000-04:00,[KLB] 10:35 ▼ ~~ ~~ Yest H vol=1.1x pos=v78 vwap=below ema=bear rs=+0% adx=44 body=39% O668.72 H669.02 L668.25 C668.42 ATR=5.07 SL=668.93/669.18 rawVol=170458 volSMA=160677 buf=0.253 prices=669.37
+2025-10-02T10:45:00.000-04:00,[KLB] 10:45 ▼ ~~ ~~ Yest H vol=0.7x pos=v80 vwap=below ema=bear rs=+0% adx=45 body=80% O668.88 H668.88 L668.19 C668.33 ATR=5.07 SL=668.84/669.09 rawVol=118986 volSMA=171673 buf=0.253 prices=669.37
+2025-10-02T11:05:00.000-04:00,[KLB] 11:05 ▼ ~ ~ Week H vol=1x pos=v96 vwap=below ema=bear rs=+0% adx=50 body=72% O667.55 H667.71 L667.02 C667.05 ATR=5.07 SL=667.56/667.81 rawVol=197558 volSMA=205689 buf=0.253 prices=667.34
+2025-10-02T13:00:00.000-04:00,[KLB] 13:00 ▼ ~~ ~~ Yest H vol=0.6x pos=v43 vwap=below ema=bear rs=+0% adx=20 body=40% O668.54 H668.55 L668.25 C668.42 ATR=5.07 SL=668.93/669.18 rawVol=55982 volSMA=94735 buf=0.253 prices=669.37
+2025-10-03T09:45:00.000-04:00,[KLB] 5m CHECK 9:45 ▲ pnl=-0.07 → BAIL
+2025-10-03T10:05:00.000-04:00,[KLB] 10:05 ▼ ~ ~ Yest H + ~ ORB H vol=3.6x pos=v63 vwap=below ema=bull rs=+0% adx=37 body=62% O670.86 H670.87 L669.97 C670.3 ATR=4.98 SL=670.8/671.05 rawVol=323625 volSMA=89501 buf=0.249 prices=670.57/670.78
+2025-10-03T10:15:00.000-04:00,[KLB] 10:15 ▲ BRK Yest H vol=2x pos=^49 vwap=below ema=bull rs=+0% adx=33 body=34% O670.47 H670.87 L670.4 C670.63 ATR=4.98 SL=670.13/669.88 rawVol=166460 volSMA=108010 buf=0.249 prices=670.57
+2025-10-03T10:15:00.000-04:00,[KLB] 10:15 ▲ ◆ ◆¹ Yest H 1.3x ^60 vol= pos= vwap=below ema=bull rs=+0% adx=33 body=34% O670.47 H670.87 L670.4 C670.63 ATR=4.98 SL=670.13/669.88 rawVol=166460 volSMA=108010 buf=0.249 prices=
+2025-10-03T10:30:00.000-04:00,[KLB] 10:30 ▲ ~ ~ VWAP vol=1.2x pos=^73 vwap=above ema=bull rs=+0% adx=31 body=58% O671.03 H671.55 L670.94 C671.39 ATR=4.98 SL=670.89/670.64 rawVol=156636 volSMA=127322 buf=0.249 prices=
+2025-10-03T13:05:00.000-04:00,"[KLB] 13:05 ▼ ~ ~ PM H
+~ VWAP vol=3.2x pos=v77 vwap=below ema=bull rs=+0% adx=26 body=77% O672.23 H672.23 L670.54 C670.93 ATR=4.98 SL=671.42/671.67 rawVol=357322 volSMA=110368 buf=0.249 prices=671.49"
+2025-10-03T13:20:00.000-04:00,[KLB] 13:20 ▼ ~ ~ PM H vol=1.5x pos=v96 vwap=below ema=bull rs=+0% adx=27 body=94% O671.45 H671.46 L670.76 C670.79 ATR=4.98 SL=671.29/671.54 rawVol=193902 volSMA=131155 buf=0.249 prices=671.49
+2025-10-03T13:25:00.000-04:00,[KLB] 13:25 ▼ ~ ~ ORB H vol=1.5x pos=v80 vwap=below ema=bull rs=+0% adx=27 body=52% O670.79 H670.92 L670.46 C670.55 ATR=4.98 SL=671.05/671.3 rawVol=137257 volSMA=131468 buf=0.249 prices=670.78
+2025-10-03T13:25:00.000-04:00,[KLB] CONF 13:25 ▲ BRK → ✗ (failed)
+2025-10-03T13:30:00.000-04:00,[KLB] 13:30 ▼ ~~ ~~ Yest H + ~~ ORB H vol=1x pos=v94 vwap=below ema=bull rs=+0% adx=28 body=50% O670.56 H670.75 L670.32 C670.35 ATR=4.98 SL=670.84/671.09 rawVol=111854 volSMA=131897 buf=0.249 prices=670.57/670.78
+2025-10-03T13:45:00.000-04:00,[KLB] 13:45 ▼ ~~ ~~ Yest H + ~~ ORB H vol=1.3x pos=v88 vwap=below ema=bear rs=+0% adx=29 body=82% O670.65 H670.69 L669.92 C670.01 ATR=4.98 SL=670.51/670.76 rawVol=176140 volSMA=132502 buf=0.249 prices=670.57/670.78
+2025-10-03T13:55:00.000-04:00,[KLB] 13:55 ▼ BRK PM L vol=2.5x pos=v96 vwap=below ema=bear rs=+0% adx=34 body=94% O669.61 H669.64 L668.17 C668.23 ATR=4.98 SL=668.73/668.98 rawVol=392541 volSMA=154280 buf=0.249 prices=669.49
+2025-10-03T13:55:00.000-04:00,[KLB] 13:55 ▼ ◆ ◆¹ PM L 2.2x v18 vol= pos= vwap=below ema=bear rs=+0% adx=34 body=94% O669.61 H669.64 L668.17 C668.23 ATR=4.98 SL=668.73/668.98 rawVol=392541 volSMA=154280 buf=0.249 prices=
+2025-10-03T14:15:00.000-04:00,[KLB] CONF 14:15 ▼ BRK → ✗ (failed)
+2025-10-03T14:35:00.000-04:00,[KLB] 14:35 ▼ ~~ ~~ Yest H + ~~ ORB H vol=1x pos=v66 vwap=below ema=bear rs=+0% adx=35 body=52% O670.53 H670.68 L669.6 C669.97 ATR=4.98 SL=670.47/670.72 rawVol=213518 volSMA=219223 buf=0.249 prices=670.57/670.78
+2025-10-06T09:45:00.000-04:00,[KLB] 9:45 ▼ ~ ~ VWAP vol=6.1x pos=v70 vwap=below ema=bear rs=+0% adx=20 body=46% O670.75 H670.97 L670.05 C670.33 ATR=4.94 SL=670.82/671.07 rawVol=401707 volSMA=66276 buf=0.247 prices=
+2025-10-06T10:10:00.000-04:00,[KLB] 10:10 ▼ ~ ~ Yest H vol=1.5x pos=v93 vwap=below ema=bear rs=+0% adx=29 body=84% O670.05 H670.1 L669.55 C669.59 ATR=4.94 SL=670.08/670.33 rawVol=203929 volSMA=140358 buf=0.247 prices=672.68
+2025-10-06T11:20:00.000-04:00,[KLB] 11:20 ▲ ~ ~ VWAP vol=0.6x pos=^72 vwap=above ema=bear rs=+0% adx=21 body=69% O670.88 H671.16 L670.87 C671.08 ATR=4.94 SL=670.59/670.34 rawVol=113758 volSMA=195410 buf=0.247 prices=
+2025-10-07T09:35:00.000-04:00,[KLB] 9:35 ▲ BRK Yest H + Week H vol=14x pos=^92 vwap=above ema=bull rs=+0% adx=36 body=51% O672.53 H673 L672.2 C672.94 ATR=4.83 SL=672.45/672.21 rawVol=382867 volSMA=27258 buf=0.241 prices=672.51/672.68
+2025-10-07T09:35:00.000-04:00,"[KLB] 9:35 ▲ ◆ ◆¹ Yest H 7.3x ^30
+◆¹ Week H 7.3x ^30 vol= pos= vwap=above ema=bull rs=+0% adx=36 body=51% O672.53 H673 L672.2 C672.94 ATR=4.83 SL=672.45/672.21 rawVol=382867 volSMA=27258 buf=0.241 prices="
+2025-10-07T09:45:00.000-04:00,[KLB] CONF 9:45 ▲ BRK → ✗ (failed)
+2025-10-07T09:50:00.000-04:00,[KLB] 9:50 ▼ ~~ ~~ Week H vol=3.8x pos=v74 vwap=below ema=bull rs=+0% adx=35 body=65% O672.61 H672.65 L672.22 C672.33 ATR=4.83 SL=672.81/673.05 rawVol=219809 volSMA=57752 buf=0.241 prices=672.68
+2025-10-07T10:00:00.000-04:00,[KLB] 10:00 ▼ ~~ ~~ Week H vol=2.5x pos=v91 vwap=below ema=bull rs=+0% adx=32 body=43% O672.47 H672.75 L672.17 C672.22 ATR=4.83 SL=672.7/672.94 rawVol=197907 volSMA=78496 buf=0.241 prices=672.68
+2025-10-07T10:05:00.000-04:00,[KLB] 10:05 ▼ ~ ~ VWAP vol=2.3x pos=v96 vwap=below ema=bull rs=+0% adx=30 body=82% O672.24 H672.31 L671.8 C671.82 ATR=4.83 SL=672.3/672.54 rawVol=200774 volSMA=88111 buf=0.241 prices=
+2025-10-07T10:30:00.000-04:00,[KLB] 10:30 ▼ ~~ ~~ Yest H vol=1.6x pos=v98 vwap=below ema=bull rs=+0% adx=24 body=94% O671.75 H671.77 L671.26 C671.27 ATR=4.83 SL=671.75/671.99 rawVol=211997 volSMA=131105 buf=0.241 prices=672.51
+2025-10-07T11:10:00.000-04:00,[KLB] 11:10 ▼ BRK PM L + Yest L vol=2.9x pos=v94 vwap=below ema=bear rs=+0% adx=34 body=92% O670.35 H670.38 L668.81 C668.91 ATR=4.83 SL=669.39/669.63 rawVol=661286 volSMA=230220 buf=0.241 prices=670.34/669.46
+2025-10-07T11:10:00.000-04:00,[KLB] 11:10 ▼ ◆ ◆¹ Yest L 2.2x v23 vol= pos= vwap=below ema=bear rs=+0% adx=34 body=92% O670.35 H670.38 L668.81 C668.91 ATR=4.83 SL=669.39/669.63 rawVol=661286 volSMA=230220 buf=0.241 prices=
+2025-10-07T11:20:00.000-04:00,[KLB] CONF 11:20 ▼ BRK → ✗ (failed)
+2025-10-08T11:00:00.000-04:00,[KLB] 11:00 ▲ ~ ~ VWAP vol=0.6x pos=^92 vwap=above ema=bull rs=+0% adx=26 body=39% O671.58 H671.79 L671.34 C671.75 ATR=4.86 SL=671.26/671.02 rawVol=123223 volSMA=196372 buf=0.243 prices=
+2025-10-09T11:25:00.000-04:00,[KLB] 11:25 ▼ ~ ~ VWAP vol=0.7x pos=v83 vwap=below ema=bear rs=+0% adx=38 body=77% O671.61 H671.65 L670.99 C671.1 ATR=4.81 SL=671.58/671.82 rawVol=127912 volSMA=194105 buf=0.24 prices=
+2025-10-10T09:35:00.000-04:00,[KLB] 9:35 ▲ BRK PM H vol=16.1x pos=^66 vwap=below ema=bull rs=+0% adx=20 body=36% O672.15 H672.79 L671.88 C672.48 ATR=4.8 SL=672/671.76 rawVol=378251 volSMA=23498 buf=0.24 prices=672.4
+2025-10-10T09:35:00.000-04:00,[KLB] 9:35 ▲ ◆ ◆¹ PM H 11.4x ^89 vol= pos= vwap=below ema=bull rs=+0% adx=20 body=36% O672.15 H672.79 L671.88 C672.48 ATR=4.8 SL=672/671.76 rawVol=378251 volSMA=23498 buf=0.24 prices=
+2025-10-10T09:40:00.000-04:00,[KLB] 9:40 ▲ BRK Week H + ORB H vol=10.3x pos=^89 vwap=above ema=bull rs=+0% adx=23 body=83% O672.51 H673.58 L672.44 C673.46 ATR=4.8 SL=672.98/672.74 rawVol=268609 volSMA=36847 buf=0.24 prices=672.68/672.79
+2025-10-10T09:40:00.000-04:00,[KLB] 9:40 ▲ ~ ~ VWAP vol=10.3x pos=^89 vwap=above ema=bull rs=+0% adx=23 body=83% O672.51 H673.58 L672.44 C673.46 ATR=4.8 SL=672.98/672.74 rawVol=268609 volSMA=36847 buf=0.24 prices=
+2025-10-10T09:40:00.000-04:00,[KLB] CONF 9:40 ▲ BRK → ✓ (auto-promote)
+2025-10-10T09:45:00.000-04:00,[KLB] 5m CHECK 9:45 ▲ pnl=0.02 → BAIL
+2025-10-10T09:50:00.000-04:00,[KLB] CONF 9:50 ▲ BRK → ✗ (failed)
+2025-10-10T09:55:00.000-04:00,[KLB] 9:55 ▼ ~~ ~~ ORB H vol=3.9x pos=v86 vwap=below ema=bull rs=+0% adx=29 body=86% O673.09 H673.09 L672.52 C672.6 ATR=4.8 SL=673.08/673.32 rawVol=298177 volSMA=77296 buf=0.24 prices=672.79
+2025-10-10T10:00:00.000-04:00,[KLB] 10:00 ▲ BRK ORB H vol=2.3x pos=^76 vwap=above ema=bull rs=+0% adx=30 body=62% O672.59 H673.27 L672.48 C673.08 ATR=4.8 SL=672.6/672.36 rawVol=200761 volSMA=87226 buf=0.24 prices=672.79
+2025-10-10T10:05:00.000-04:00,[KLB] 10:05 ▼ ~ ~ ORB H vol=2.6x pos=v68 vwap=below ema=bull rs=+0% adx=30 body=46% O673.09 H673.34 L672.19 C672.56 ATR=4.8 SL=673.04/673.28 rawVol=263003 volSMA=100266 buf=0.24 prices=672.79
+2025-10-10T10:05:00.000-04:00,[KLB] 10:05 ▲ ◆ ◆² ORB H 1.8x ^80 vol= pos= vwap=below ema=bull rs=+0% adx=30 body=46% O673.09 H673.34 L672.19 C672.56 ATR=4.8 SL=672.08/671.84 rawVol=263003 volSMA=100266 buf=0.24 prices=
+2025-10-10T10:10:00.000-04:00,[KLB] 10:10 ▲ BRK ORB H vol=1.6x pos=^80 vwap=above ema=bull rs=+0% adx=30 body=52% O672.55 H673.19 L672.31 C673.01 ATR=4.8 SL=672.53/672.29 rawVol=177874 volSMA=108921 buf=0.24 prices=672.79
+2025-10-10T10:10:00.000-04:00,[KLB] CONF 10:10 ▲ BRK → ✓ (auto-promote)
+2025-10-10T10:15:00.000-04:00,[KLB] 10:15 ▼ ~ ~ Week H + ~ ORB H vol=1.1x pos=v86 vwap=below ema=bull rs=+0% adx=30 body=72% O673.02 H673.11 L672.42 C672.52 ATR=4.8 SL=673/673.24 rawVol=126597 volSMA=115055 buf=0.24 prices=672.68/672.79
+2025-10-10T10:15:00.000-04:00,[KLB] 5m CHECK 10:15 ▲ pnl=-0.1 → BAIL
+2025-10-10T10:15:00.000-04:00,[KLB] CONF 10:15 ▲ BRK → ✗ (failed)
+2025-10-10T10:20:00.000-04:00,[KLB] 10:20 ▼ ~~ ~~ Week H vol=2.1x pos=v38 vwap=below ema=bull rs=+0% adx=28 body=30% O672.5 H672.56 L671.8 C672.27 ATR=4.8 SL=672.75/672.99 rawVol=266066 volSMA=128091 buf=0.24 prices=672.68
+2025-10-10T11:00:00.000-04:00,"[KLB] 11:00 ▼ ~~ ~~ PM H + ~~ Week H + ~~ ORB H
+~ VWAP vol=3.5x pos=v72 vwap=below ema=bull rs=+0% adx=25 body=69% O672.86 H673.01 L667.68 C669.16 ATR=4.8 SL=669.64/669.88 rawVol=723565 volSMA=208666 buf=0.24 prices=672.4/672.68/672.79"
+2025-10-10T11:15:00.000-04:00,[KLB] 5m CHECK 11:15 ▼ pnl=-0.42 → BAIL
+2025-10-10T11:35:00.000-04:00,[KLB] 11:35 ▼ BRK Week L vol=1.6x pos=v66 vwap=below ema=bear rs=+0% adx=43 body=63% O662.42 H662.49 L659.61 C660.6 ATR=4.8 SL=661.08/661.32 rawVol=515848 volSMA=326485 buf=0.24 prices=661.61
+2025-10-10T11:35:00.000-04:00,[KLB] 11:35 ▼ ◆ ◆¹ Week L 1x v97 vol= pos= vwap=below ema=bear rs=+0% adx=43 body=63% O662.42 H662.49 L659.61 C660.6 ATR=4.8 SL=661.08/661.32 rawVol=515848 volSMA=326485 buf=0.24 prices=
+2025-10-10T11:40:00.000-04:00,[KLB] CONF 11:40 ▼ BRK → ✗ (failed)
+2025-10-13T13:55:00.000-04:00,[KLB] 13:55 ▲ ~ ~ VWAP vol=0.7x pos=^98 vwap=above ema=bull rs=+0% adx=21 body=30% O662.73 H662.9 L662.37 C662.89 ATR=5.96 SL=662.29/662 rawVol=105218 volSMA=143942 buf=0.298 prices=
+2025-10-14T09:40:00.000-04:00,[KLB] 9:40 ▼ BRK ORB L vol=9.6x pos=v45 vwap=below ema=bear rs=+0% adx=23 body=43% O655.92 H655.95 L654.38 C655.25 ATR=6.4 SL=655.89/656.21 rawVol=434814 volSMA=67576 buf=0.32 prices=655.89
+2025-10-14T09:45:00.000-04:00,[KLB] 9:45 ▼ BRK PM L vol=5.2x pos=v79 vwap=below ema=bear rs=+0% adx=26 body=69% O655.25 H655.46 L653.3 C653.76 ATR=6.4 SL=654.4/654.72 rawVol=468654 volSMA=90495 buf=0.32 prices=654.5
+2025-10-14T09:45:00.000-04:00,[KLB] 9:45 ▼ ~ ~ VWAP vol=5.2x pos=v79 vwap=below ema=bear rs=+0% adx=26 body=69% O655.25 H655.46 L653.3 C653.76 ATR=6.4 SL=654.4/654.72 rawVol=468654 volSMA=90495 buf=0.32 prices=
+2025-10-14T09:45:00.000-04:00,[KLB] CONF 9:45 ▼ BRK → ✓ (auto-promote)
+2025-10-14T09:45:00.000-04:00,[KLB] 9:45 ▼ ◆ ◆¹ PM L 5.4x v33 vol= pos= vwap=below ema=bear rs=+0% adx=26 body=69% O655.25 H655.46 L653.3 C653.76 ATR=6.4 SL=654.4/654.72 rawVol=468654 volSMA=90495 buf=0.32 prices=
+2025-10-14T09:50:00.000-04:00,[KLB] 5m CHECK 9:50 ▼ pnl=-0.12 → BAIL
+2025-10-14T09:50:00.000-04:00,[KLB] CONF 9:50 ▼ BRK → ✗ (failed)
+2025-10-14T09:55:00.000-04:00,[KLB] 9:55 ▲ ~~ ~~ PM L vol=3.7x pos=^94 vwap=above ema=bear rs=+0% adx=29 body=75% O654.51 H656.11 L654.11 C656 ATR=6.4 SL=655.36/655.04 rawVol=384725 volSMA=133653 buf=0.32 prices=654.5
+2025-10-14T10:00:00.000-04:00,"[KLB] 10:00 ▲ ~~ ~~ ORB L
+~ VWAP vol=2.6x pos=^87 vwap=above ema=bear rs=+0% adx=29 body=86% O656 H656.96 L655.99 C656.83 ATR=6.4 SL=656.19/655.87 rawVol=344647 volSMA=150727 buf=0.32 prices=655.89"
+2025-10-14T11:05:00.000-04:00,[KLB] 11:05 ▲ ~ ~ Yest L vol=0.6x pos=^99 vwap=above ema=bull rs=+0% adx=21 body=99% O659.75 H660.68 L659.75 C660.67 ATR=6.4 SL=660.03/659.71 rawVol=189489 volSMA=313657 buf=0.32 prices=659.77
+2025-10-14T11:45:00.000-04:00,[KLB] 11:45 ▲ ~ ~ Yest L vol=1.1x pos=^85 vwap=above ema=bull rs=+0% adx=22 body=68% O660.15 H661.53 L659.86 C661.28 ATR=6.4 SL=660.64/660.32 rawVol=258707 volSMA=235271 buf=0.32 prices=659.77
+2025-10-14T15:50:00.000-04:00,[KLB] 15:50 ▲ ~ ~ Yest L vol=2.7x pos=^79 vwap=above ema=bull rs=+0% adx=27 body=40% O660.87 H661.79 L660.28 C661.48 ATR=6.4 SL=660.84/660.52 rawVol=492663 volSMA=180753 buf=0.32 prices=659.77
+2025-10-15T11:00:00.000-04:00,[KLB] 11:00 ▲ ~ ~ VWAP vol=0.5x pos=^60 vwap=above ema=bull rs=+0% adx=21 body=38% O668.77 H669.28 L668.63 C669.02 ATR=6.85 SL=668.33/667.99 rawVol=117088 volSMA=220751 buf=0.343 prices=
+2025-10-15T13:05:00.000-04:00,[KLB] 13:05 ▼ BRK PM L vol=1.9x pos=v72 vwap=below ema=bear rs=+0% adx=34 body=71% O664.09 H664.11 L662.55 C662.98 ATR=6.85 SL=663.67/664.01 rawVol=345687 volSMA=179218 buf=0.343 prices=664.17
+2025-10-15T13:10:00.000-04:00,[KLB] 13:10 ▼ ~ ~ Yest H vol=1.9x pos=v80 vwap=below ema=bear rs=+0% adx=36 body=74% O662.99 H663.09 L661.45 C661.78 ATR=6.85 SL=662.47/662.81 rawVol=287278 volSMA=185918 buf=0.343 prices=665.83
+2025-10-15T13:50:00.000-04:00,[KLB] 13:50 ▼ ◆ ◆¹⁰ PM L 0.8x v11 vol= pos= vwap=below ema=bear rs=+0% adx=42 body=97% O662.93 H663.7 L662.93 C663.68 ATR=6.85 SL=664.37/664.71 rawVol=159972 volSMA=209976 buf=0.343 prices=
+2025-10-15T14:20:00.000-04:00,[KLB] CONF 14:20 ▼ BRK → ✗ (failed)
+2025-10-16T09:40:00.000-04:00,[KLB] 9:40 ▼ ~ ~ Yest H vol=7.2x pos=v68 vwap=below ema=bull rs=+0% adx=21 body=41% O666.99 H667.15 L666.56 C666.75 ATR=7.17 SL=667.47/667.83 rawVol=269988 volSMA=37720 buf=0.358 prices=670.23
+2025-10-16T09:45:00.000-04:00,[KLB] 9:45 ▲ ~ ~ ORB L vol=6.4x pos=^98 vwap=above ema=bull rs=+0% adx=22 body=47% O666.76 H667.31 L666.19 C667.29 ATR=7.17 SL=666.57/666.21 rawVol=349995 volSMA=54793 buf=0.358 prices=666.54
+2025-10-16T09:50:00.000-04:00,[KLB] 9:50 ▼ ~ ~ Yest H + ~ ORB H vol=5.3x pos=v96 vwap=below ema=bull rs=+0% adx=22 body=46% O667.3 H668.07 L666.5 C666.57 ATR=7.17 SL=667.29/667.65 rawVol=395919 volSMA=74380 buf=0.358 prices=670.23/667.52
+2025-10-16T11:50:00.000-04:00,[KLB] 11:50 ▼ BRK PM L vol=1.5x pos=v72 vwap=below ema=bear rs=+0% adx=21 body=66% O665.13 H665.18 L664.33 C664.57 ATR=7.17 SL=665.29/665.65 rawVol=337890 volSMA=225081 buf=0.358 prices=664.7
+2025-10-16T11:50:00.000-04:00,[KLB] 11:50 ▼ ◆ ◆¹ PM L 1.3x v77 vol= pos= vwap=below ema=bear rs=+0% adx=21 body=66% O665.13 H665.18 L664.33 C664.57 ATR=7.17 SL=665.29/665.65 rawVol=337890 volSMA=225081 buf=0.358 prices=
+2025-10-17T09:35:00.000-04:00,[KLB] 9:35 ▲ ~ ~ VWAP vol=12.2x pos=^95 vwap=above ema=bull rs=+0% adx=35 body=53% O659.51 H660.58 L658.72 C660.49 ATR=7.48 SL=659.74/659.37 rawVol=612534 volSMA=50232 buf=0.374 prices=
+2025-10-17T09:50:00.000-04:00,[KLB] 9:50 ▲ ~ ~ ORB L vol=3.6x pos=^77 vwap=above ema=bull rs=+0% adx=30 body=64% O658.65 H660.65 L658.35 C660.12 ATR=7.48 SL=659.37/659 rawVol=346453 volSMA=96569 buf=0.374 prices=658.72
+2025-10-17T09:50:00.000-04:00,[KLB] 5m CHECK 9:50 ▼ pnl=-0.2 → BAIL
+2025-10-17T09:55:00.000-04:00,[KLB] 9:55 ▲ BRK PM H + ORB H vol=3.3x pos=^83 vwap=above ema=bull rs=+0% adx=29 body=79% O660.12 H662.02 L660.04 C661.69 ATR=7.48 SL=660.94/660.57 rawVol=371928 volSMA=113782 buf=0.374 prices=661.26/660.58
+2025-10-17T09:55:00.000-04:00,[KLB] 9:55 ▲ ~ ~ Yest L vol=3.3x pos=^83 vwap=above ema=bull rs=+0% adx=29 body=79% O660.12 H662.02 L660.04 C661.69 ATR=7.48 SL=660.94/660.57 rawVol=371928 volSMA=113782 buf=0.374 prices=657.11
+2025-10-17T09:55:00.000-04:00,[KLB] 9:55 ▲ ◆ ◆¹ ORB H 3.6x ^8 vol= pos= vwap=above ema=bull rs=+0% adx=29 body=79% O660.12 H662.02 L660.04 C661.69 ATR=7.48 SL=660.94/660.57 rawVol=371928 volSMA=113782 buf=0.374 prices=
+2025-10-17T10:00:00.000-04:00,[KLB] CONF 10:00 ▲ BRK → ✗ (failed)
+2025-10-17T10:15:00.000-04:00,[KLB] 10:15 ▲ BRK PM H vol=2.2x pos=^92 vwap=above ema=bull rs=+0% adx=26 body=86% O660.83 H663.31 L660.66 C663.1 ATR=7.48 SL=662.35/661.98 rawVol=408602 volSMA=188708 buf=0.374 prices=661.26
+2025-10-17T10:30:00.000-04:00,[KLB] 10:30 ▲ ◆ ◆⁴ PM H 1.2x ^3 vol= pos= vwap=above ema=bull rs=+0% adx=26 body=17% O662.48 H662.96 L661.97 C662.31 ATR=7.48 SL=661.56/661.19 rawVol=315398 volSMA=236891 buf=0.374 prices=
+2025-10-17T10:35:00.000-04:00,[KLB] CONF 10:35 ▲ BRK → ✗ (failed)
+2025-10-17T10:40:00.000-04:00,[KLB] 10:40 ▼ ~~ ~~ PM H + ~~ ORB H vol=1x pos=v94 vwap=below ema=bull rs=+0% adx=23 body=85% O661.16 H661.24 L660.29 C660.35 ATR=7.48 SL=661.1/661.47 rawVol=271510 volSMA=262601 buf=0.374 prices=661.26/660.58
+2025-10-17T10:50:00.000-04:00,[KLB] 10:50 ▲ ~ ~ Yest L vol=1.1x pos=^62 vwap=above ema=bull rs=+0% adx=21 body=49% O660.36 H661.75 L660.15 C661.14 ATR=7.48 SL=660.39/660.02 rawVol=260414 volSMA=290182 buf=0.374 prices=657.11
+2025-10-20T09:35:00.000-04:00,[KLB] 9:35 ▲ BRK PM H vol=10.8x pos=^83 vwap=above ema=bull rs=+0% adx=29 body=81% O667.3 H668.81 L667.27 C668.55 ATR=7.49 SL=667.8/667.43 rawVol=304085 volSMA=28142 buf=0.375 prices=667.78
+2025-10-20T09:45:00.000-04:00,[KLB] 5m CHECK 9:45 ▲ pnl=0.01 → BAIL
+2025-10-20T09:50:00.000-04:00,[KLB] 9:50 ▲ BRK ORB H vol=2.8x pos=^76 vwap=above ema=bull rs=+0% adx=36 body=67% O668.68 H669.45 L668.6 C669.25 ATR=7.49 SL=668.5/668.13 rawVol=136639 volSMA=54494 buf=0.375 prices=668.81
+2025-10-20T09:50:00.000-04:00,[KLB] 9:50 ▲ ~ ~ VWAP vol=2.8x pos=^76 vwap=above ema=bull rs=+0% adx=36 body=67% O668.68 H669.45 L668.6 C669.25 ATR=7.49 SL=668.5/668.13 rawVol=136639 volSMA=54494 buf=0.375 prices=
+2025-10-20T09:50:00.000-04:00,[KLB] CONF 9:50 ▲ BRK → ✓★ (auto-promote)
+2025-10-20T09:50:00.000-04:00,[KLB] 9:50 ▲ ◆ ◆¹ ORB H 1.9x ^41 vol= pos= vwap=above ema=bull rs=+0% adx=36 body=67% O668.68 H669.45 L668.6 C669.25 ATR=7.49 SL=668.5/668.13 rawVol=136639 volSMA=54494 buf=0.375 prices=
+2025-10-20T09:55:00.000-04:00,[KLB] 5m CHECK 9:55 ▲ pnl=-0.02 → BAIL
+2025-10-21T10:05:00.000-04:00,[KLB] 10:05 ▼ BRK PM L vol=2.4x pos=v60 vwap=below ema=bear rs=+0% adx=23 body=41% O670.58 H670.72 L669.99 C670.28 ATR=7.52 SL=671.03/671.41 rawVol=140327 volSMA=59777 buf=0.376 prices=670.4
+2025-10-21T10:05:00.000-04:00,[KLB] 10:05 ▼ ◆ ◆¹ PM L 1.9x v51 vol= pos= vwap=below ema=bear rs=+0% adx=23 body=41% O670.58 H670.72 L669.99 C670.28 ATR=7.52 SL=671.03/671.41 rawVol=140327 volSMA=59777 buf=0.376 prices=
+2025-10-21T10:10:00.000-04:00,[KLB] CONF 10:10 ▼ BRK → ✗ (failed)
+2025-10-21T10:20:00.000-04:00,[KLB] 10:20 ▲ ~~ ~~ ORB L vol=2.6x pos=^91 vwap=above ema=bear rs=+0% adx=24 body=69% O670.95 H671.57 L670.77 C671.5 ATR=7.52 SL=670.75/670.37 rawVol=214421 volSMA=83170 buf=0.376 prices=671.03
+2025-10-21T10:30:00.000-04:00,[KLB] 10:30 ▼ BRK ORB L vol=1.8x pos=v83 vwap=below ema=bear rs=+0% adx=22 body=81% O671.56 H671.58 L670.41 C670.61 ATR=7.52 SL=671.36/671.74 rawVol=174796 volSMA=99780 buf=0.376 prices=671.03
+2025-10-21T10:30:00.000-04:00,[KLB] 10:30 ▼ ~ ~ Yest H + ~ ORB H vol=1.8x pos=v83 vwap=below ema=bear rs=+0% adx=22 body=81% O671.56 H671.58 L670.41 C670.61 ATR=7.52 SL=671.36/671.74 rawVol=174796 volSMA=99780 buf=0.376 prices=672.21/671.69
+2025-10-21T10:30:00.000-04:00,[KLB] 10:30 ▼ ◆ ◆¹ ORB L 1.5x v0 vol= pos= vwap=below ema=bear rs=+0% adx=22 body=81% O671.56 H671.58 L670.41 C670.61 ATR=7.52 SL=671.36/671.74 rawVol=174796 volSMA=99780 buf=0.376 prices=
+2025-10-21T10:35:00.000-04:00,[KLB] CONF 10:35 ▼ BRK → ✗ (failed)
+2025-10-21T10:40:00.000-04:00,[KLB] 10:40 ▲ ~~ ~~ ORB L vol=1.3x pos=^81 vwap=above ema=bear rs=+0% adx=22 body=73% O670.91 H671.5 L670.86 C671.38 ATR=7.52 SL=670.63/670.25 rawVol=107851 volSMA=112294 buf=0.376 prices=671.03
+2025-10-22T09:35:00.000-04:00,[KLB] 9:35 ▼ ~ ~ Yest H vol=14.7x pos=v92 vwap=below ema=bull rs=+0% adx=21 body=91% O671.99 H672 L670.58 C670.7 ATR=7.2 SL=671.42/671.78 rawVol=237592 volSMA=16161 buf=0.36 prices=672.99
+2025-10-22T09:40:00.000-04:00,[KLB] 9:40 ▲ ~ ~ PM L + ~ Yest L + ~ ORB L vol=4.8x pos=^98 vwap=above ema=bull rs=+0% adx=23 body=71% O670.71 H671.42 L670.45 C671.4 ATR=7.2 SL=670.68/670.32 rawVol=102434 volSMA=21201 buf=0.36 prices=670.69/669.98/670.58
+2025-10-22T09:45:00.000-04:00,[KLB] 9:45 ▲ ~ ~ Yest L vol=4.4x pos=^92 vwap=above ema=bull rs=+0% adx=23 body=43% O671.46 H671.85 L671.08 C671.79 ATR=7.2 SL=671.07/670.71 rawVol=115822 volSMA=26428 buf=0.36 prices=669.98
+2025-10-22T09:50:00.000-04:00,[KLB] 9:50 ▼ ~ ~ Yest H + ~ ORB H vol=3.6x pos=v63 vwap=below ema=bull rs=+0% adx=23 body=57% O671.77 H671.82 L670.99 C671.3 ATR=7.2 SL=672.01/672.37 rawVol=114037 volSMA=32058 buf=0.36 prices=672.99/672
+2025-10-22T09:50:00.000-04:00,[KLB] 5m CHECK 9:50 ▲ pnl=-0.07 → BAIL
+2025-10-22T09:55:00.000-04:00,[KLB] 9:55 ▲ ~ ~ Yest L vol=2.2x pos=^85 vwap=above ema=bull rs=+0% adx=23 body=54% O671.29 H671.75 L671.08 C671.65 ATR=7.2 SL=670.93/670.57 rawVol=77450 volSMA=35805 buf=0.36 prices=669.98
+2025-10-22T10:00:00.000-04:00,[KLB] 10:00 ▼ ~ ~ Yest H vol=1.9x pos=v66 vwap=below ema=bear rs=+0% adx=23 body=66% O671.65 H671.65 L671.07 C671.27 ATR=7.2 SL=671.99/672.35 rawVol=74299 volSMA=38776 buf=0.36 prices=672.99
+2025-10-22T10:30:00.000-04:00,[KLB] 10:30 ▼ BRK PM L + Yest L + ORB L vol=3.1x pos=v92 vwap=below ema=bear rs=+0% adx=31 body=71% O670.44 H670.74 L669.33 C669.44 ATR=7.2 SL=670.16/670.52 rawVol=216308 volSMA=69797 buf=0.36 prices=670.69/669.98/670.58
+2025-10-22T10:30:00.000-04:00,"[KLB] 10:30 ▼ ~ ~ Week H
+~ VWAP vol=3.1x pos=v92 vwap=below ema=bear rs=+0% adx=31 body=71% O670.44 H670.74 L669.33 C669.44 ATR=7.2 SL=670.16/670.52 rawVol=216308 volSMA=69797 buf=0.36 prices=670.23"
+2025-10-22T10:30:00.000-04:00,[KLB] 10:30 ▼ ◆ ◆¹ Yest L 3.6x v43 vol= pos= vwap=below ema=bear rs=+0% adx=31 body=71% O670.44 H670.74 L669.33 C669.44 ATR=7.2 SL=670.16/670.52 rawVol=216308 volSMA=69797 buf=0.36 prices=
+2025-10-22T11:00:00.000-04:00,[KLB] CONF 11:00 ▼ BRK → ✗ (failed)
+2025-10-22T11:10:00.000-04:00,[KLB] 11:10 ▼ ~ ~ Week H vol=0.6x pos=v68 vwap=below ema=bear rs=+0% adx=39 body=52% O670.27 H670.37 L669.74 C669.94 ATR=7.2 SL=670.66/671.02 rawVol=77410 volSMA=129483 buf=0.36 prices=670.23
+2025-10-23T09:30:00.000-04:00,[KLB] 9:30 ▲ ~ ~ Yest L vol=2.3x pos=^98 vwap=above ema=bear rs=+0% adx=31 body=98% O667.68 H668.1 L667.68 C668.09 ATR=7.3 SL=667.36/666.99 rawVol=14262 volSMA=6184 buf=0.365 prices=663.3
+2025-10-23T09:35:00.000-04:00,[KLB] 9:35 ▲ ~ ~ Yest L vol=11.2x pos=^69 vwap=above ema=bear rs=+0% adx=30 body=32% O668.12 H668.67 L667.8 C668.4 ATR=7.3 SL=667.67/667.3 rawVol=152878 volSMA=13661 buf=0.365 prices=663.3
+2025-10-23T09:45:00.000-04:00,[KLB] 9:45 ▲ BRK PM H vol=5.2x pos=^100 vwap=above ema=bull rs=+0% adx=32 body=72% O668.99 H669.54 L668.78 C669.54 ATR=7.3 SL=668.81/668.44 rawVol=136774 volSMA=26256 buf=0.365 prices=669.15
+2025-10-23T09:45:00.000-04:00,[KLB] 9:45 ▲ ~ ~ VWAP vol=5.2x pos=^100 vwap=above ema=bull rs=+0% adx=32 body=72% O668.99 H669.54 L668.78 C669.54 ATR=7.3 SL=668.81/668.44 rawVol=136774 volSMA=26256 buf=0.365 prices=
+2025-10-23T09:45:00.000-04:00,[KLB] 5m CHECK 9:45 ▲ pnl=0.08 → HOLD
+2025-10-23T10:05:00.000-04:00,[KLB] 10:05 ▲ ◆ ◆⁵ PM H 1.8x ^2 vol= pos= vwap=above ema=bull rs=+0% adx=36 body=10% O670 H670.37 L669.66 C669.93 ATR=7.3 SL=669.2/668.83 rawVol=104141 volSMA=57903 buf=0.365 prices=
+2025-10-23T10:15:00.000-04:00,[KLB] CONF 10:15 ▲ BRK → ✗ (failed)
+2025-10-23T10:20:00.000-04:00,"[KLB] 10:20 ▼ ~~ ~~ PM H + ~~ ORB H
+~ VWAP vol=2x pos=v84 vwap=below ema=bull rs=+0% adx=32 body=69% O669.12 H669.29 L668.12 C668.31 ATR=7.3 SL=669.04/669.41 rawVol=153505 volSMA=75278 buf=0.365 prices=669.15/668.67"
+2025-10-23T10:25:00.000-04:00,[KLB] 10:25 ▲ BRK ORB H vol=1.9x pos=^100 vwap=above ema=bull rs=+0% adx=30 body=89% O668.31 H669.47 L668.17 C669.47 ATR=7.3 SL=668.74/668.37 rawVol=159978 volSMA=83183 buf=0.365 prices=668.67
+2025-10-23T11:40:00.000-04:00,[KLB] 11:40 ▲ ◆ ◆¹⁶ ORB H 0.5x ^17 vol= pos= vwap=above ema=bull rs=+0% adx=15 body=49% O670.11 H670.18 L669.39 C669.72 ATR=7.3 SL=668.99/668.62 rawVol=47821 volSMA=84203 buf=0.365 prices=
+2025-10-24T09:40:00.000-04:00,[KLB] 9:40 ▲ BRK ORB H vol=6.9x pos=^38 vwap=above ema=bull rs=+0% adx=49 body=36% O676.81 H677.74 L676.79 C677.15 ATR=7.13 SL=676.44/676.08 rawVol=317629 volSMA=48279 buf=0.357 prices=676.83
+2025-10-24T09:40:00.000-04:00,[KLB] 9:40 ▲ ~ ~ VWAP vol=6.9x pos=^38 vwap=above ema=bull rs=+0% adx=49 body=36% O676.81 H677.74 L676.79 C677.15 ATR=7.13 SL=676.44/676.08 rawVol=317629 volSMA=48279 buf=0.357 prices=
+2025-10-24T09:40:00.000-04:00,[KLB] 9:40 ▲ ◆ ◆¹ ORB H 3.9x ^83 vol= pos= vwap=above ema=bull rs=+0% adx=49 body=36% O676.81 H677.74 L676.79 C677.15 ATR=7.13 SL=676.44/676.08 rawVol=317629 volSMA=48279 buf=0.357 prices=
+2025-10-24T09:50:00.000-04:00,[KLB] 5m CHECK 9:50 ▲ pnl=-0.05 → BAIL
+2025-10-27T15:25:00.000-04:00,[KLB] 15:25 ▲ ~ ~ VWAP vol=1x pos=^100 vwap=above ema=bull rs=+0% adx=21 body=87% O684.02 H684.15 L684 C684.15 ATR=7.1 SL=683.44/683.08 rawVol=78581 volSMA=77312 buf=0.355 prices=
+2025-10-28T09:45:00.000-04:00,[KLB] 5m CHECK 9:45 ▼ pnl=0.03 → BAIL
+2025-10-28T09:55:00.000-04:00,[KLB] 9:55 ▼ ~ ~ VWAP vol=3.1x pos=v63 vwap=below ema=bull rs=+0% adx=32 body=60% O685.67 H685.69 L685.12 C685.33 ATR=7.19 SL=686.05/686.41 rawVol=173549 volSMA=55594 buf=0.359 prices=
+2025-10-28T12:50:00.000-04:00,"[KLB] 12:50 ▲ ~ ~ ORB L
+~ VWAP vol=1x pos=^44 vwap=above ema=bull rs=+0% adx=27 body=35% O686.72 H687.11 L686.68 C686.87 ATR=7.19 SL=686.15/685.79 rawVol=80512 volSMA=80621 buf=0.359 prices=686.65"
+2025-10-28T13:05:00.000-04:00,[KLB] 13:05 ▲ ~ ~ ORB L vol=0.6x pos=^69 vwap=above ema=bull rs=+0% adx=35 body=64% O686.89 H687.37 L686.86 C687.22 ATR=7.19 SL=686.5/686.14 rawVol=51672 volSMA=83955 buf=0.359 prices=686.65
+2025-10-29T11:05:00.000-04:00,[KLB] 11:05 ▼ ~ ~ VWAP vol=0.8x pos=v98 vwap=below ema=bear rs=+0% adx=20 body=68% O688.36 H688.49 L688.05 C688.06 ATR=6.96 SL=688.76/689.1 rawVol=165466 volSMA=203678 buf=0.348 prices=
+2025-10-29T11:30:00.000-04:00,[KLB] 11:30 ▼ ~ ~ ORB H vol=0.8x pos=v98 vwap=below ema=bear rs=+0% adx=23 body=77% O688.71 H688.82 L688.3 C688.31 ATR=6.96 SL=689.01/689.35 rawVol=150309 volSMA=190748 buf=0.348 prices=688.94
+2025-10-29T12:55:00.000-04:00,[KLB] 12:55 ▲ ~ ~ ORB L vol=0.4x pos=^88 vwap=above ema=bear rs=+0% adx=24 body=59% O688.44 H688.73 L688.32 C688.68 ATR=6.96 SL=687.98/687.64 rawVol=36778 volSMA=102696 buf=0.348 prices=688.15
+2025-10-29T13:00:00.000-04:00,[KLB] 13:00 ▼ ~ ~ ORB H vol=0.5x pos=v81 vwap=below ema=bear rs=+0% adx=22 body=52% O688.69 H688.77 L688.5 C688.55 ATR=6.96 SL=689.25/689.59 rawVol=51272 volSMA=94882 buf=0.348 prices=688.94
+2025-10-29T13:15:00.000-04:00,[KLB] 13:15 ▲ ~ ~ ORB L vol=0.5x pos=^97 vwap=above ema=bear rs=+0% adx=20 body=59% O688.42 H688.65 L688.28 C688.64 ATR=6.96 SL=687.94/687.6 rawVol=37128 volSMA=78718 buf=0.348 prices=688.15
+2025-10-29T13:30:00.000-04:00,[KLB] 13:30 ▼ BRK ORB L vol=1.8x pos=v62 vwap=below ema=bear rs=+0% adx=21 body=62% O688.21 H688.21 L687.74 C687.92 ATR=6.96 SL=688.62/688.96 rawVol=112314 volSMA=63236 buf=0.348 prices=688.15
+2025-10-29T13:35:00.000-04:00,[KLB] 13:35 ▼ ◆ ◆² ORB L 1.5x v40 vol= pos= vwap=below ema=bear rs=+0% adx=22 body=30% O687.92 H687.92 L687.62 C687.83 ATR=6.96 SL=688.53/688.87 rawVol=78530 volSMA=61314 buf=0.348 prices=
+2025-10-29T14:30:00.000-04:00,[KLB] CONF 14:30 ▼ BRK → ✗ (failed)
+2025-10-30T09:40:00.000-04:00,[KLB] 9:40 ▼ BRK PM L + Yest L + ORB L vol=7.4x pos=v73 vwap=below ema=bear rs=+0% adx=43 body=73% O683.19 H683.19 L681.39 C681.88 ATR=6.95 SL=682.58/682.92 rawVol=320050 volSMA=48276 buf=0.348 prices=683.36/682.87/683.08
+2025-10-30T09:40:00.000-04:00,[KLB] 9:40 ▼ ~ ~ VWAP vol=7.4x pos=v73 vwap=below ema=bear rs=+0% adx=43 body=73% O683.19 H683.19 L681.39 C681.88 ATR=6.95 SL=682.58/682.92 rawVol=320050 volSMA=48276 buf=0.348 prices=
+2025-10-30T09:40:00.000-04:00,[KLB] 9:40 ▼ ◆ ◆¹ Yest L 5.3x v27 vol= pos= vwap=below ema=bear rs=+0% adx=43 body=73% O683.19 H683.19 L681.39 C681.88 ATR=6.95 SL=682.58/682.92 rawVol=320050 volSMA=48276 buf=0.348 prices=
+2025-10-30T09:45:00.000-04:00,[KLB] CONF 9:45 ▼ BRK → ✗ (failed)
+2025-10-30T09:50:00.000-04:00,[KLB] 9:50 ▲ ~~ ~~ PM L + ~~ ORB L vol=3.6x pos=^82 vwap=above ema=bear rs=+0% adx=43 body=75% O682.38 H684.36 L682.23 C683.98 ATR=6.95 SL=683.28/682.94 rawVol=206732 volSMA=71039 buf=0.348 prices=683.36/683.08
+2025-10-30T09:55:00.000-04:00,[KLB] 9:55 ▲ ~ ~ VWAP vol=2.9x pos=^82 vwap=above ema=bear rs=+0% adx=40 body=80% O683.97 H685.64 L683.93 C685.33 ATR=6.95 SL=684.63/684.29 rawVol=231742 volSMA=81039 buf=0.348 prices=
+2025-10-30T09:55:00.000-04:00,[KLB] 5m CHECK 9:55 ▲ pnl=0.19 → HOLD
+2025-10-30T10:35:00.000-04:00,[KLB] 10:35 ▲ ~~ ~~ PM L vol=0.9x pos=^90 vwap=above ema=bear rs=+0% adx=25 body=85% O683.46 H684.56 L683.41 C684.44 ATR=6.95 SL=683.74/683.4 rawVol=110136 volSMA=126984 buf=0.348 prices=683.36
+2025-10-31T09:45:00.000-04:00,[KLB] 9:45 ▼ BRK PM L + ORB L vol=4.8x pos=v78 vwap=below ema=bear rs=+0% adx=26 body=78% O684.26 H684.26 L683 C683.28 ATR=7 SL=683.98/684.33 rawVol=212292 volSMA=44180 buf=0.35 prices=684.2/683.99
+2025-10-31T09:45:00.000-04:00,"[KLB] 9:45 ▼ ~ ~ Yest H
+~ VWAP vol=4.8x pos=v78 vwap=below ema=bear rs=+0% adx=26 body=78% O684.26 H684.26 L683 C683.28 ATR=7 SL=683.98/684.33 rawVol=212292 volSMA=44180 buf=0.35 prices=685.94"
+2025-10-31T09:50:00.000-04:00,"[KLB] 9:50 ▼ ◆ ◆² PM L 2.5x v65
+◆² ORB L 2.5x v65 vol= pos= vwap=below ema=bear rs=+0% adx=28 body=20% O683.27 H683.66 L682.87 C683.43 ATR=7 SL=684.13/684.48 rawVol=149459 volSMA=51491 buf=0.35 prices="
+2025-10-31T10:40:00.000-04:00,[KLB] CONF 10:40 ▼ BRK → ✗ (failed)
+2025-10-31T10:45:00.000-04:00,[KLB] 10:45 ▲ ~~ ~~ ORB L vol=1.3x pos=^84 vwap=above ema=bear rs=+0% adx=34 body=60% O683.92 H684.48 L683.74 C684.36 ATR=7 SL=683.66/683.31 rawVol=136930 volSMA=103434 buf=0.35 prices=683.99
+2025-10-31T11:20:00.000-04:00,"[KLB] 11:20 ▲ ~~ ~~ PM L
+~ VWAP vol=1x pos=^92 vwap=above ema=bear rs=+0% adx=23 body=89% O684.24 H684.75 L684.22 C684.71 ATR=7 SL=684.01/683.66 rawVol=88430 volSMA=107131 buf=0.35 prices=684.2"
+2025-10-31T11:30:00.000-04:00,[KLB] 11:30 ▼ ~ ~ Yest H vol=1.4x pos=v84 vwap=below ema=bear rs=+0% adx=21 body=84% O684.29 H684.29 L683.62 C683.73 ATR=7 SL=684.43/684.78 rawVol=140309 volSMA=101921 buf=0.35 prices=685.94
+2025-10-31T11:40:00.000-04:00,[KLB] 11:40 ▼ BRK PM L + ORB L vol=1.5x pos=v87 vwap=below ema=bear rs=+0% adx=21 body=86% O683.89 H683.89 L682.91 C683.04 ATR=7 SL=683.74/684.09 rawVol=158530 volSMA=103898 buf=0.35 prices=684.2/683.99
+2025-10-31T11:45:00.000-04:00,"[KLB] 11:45 ▼ ◆ ◆² PM L 2.2x v91
+◆² ORB L 2.2x v91 vol= pos= vwap=below ema=bear rs=+0% adx=23 body=38% O683.01 H683.42 L682.37 C683.41 ATR=7 SL=684.11/684.46 rawVol=241963 volSMA=109119 buf=0.35 prices="
+2025-10-31T11:50:00.000-04:00,[KLB] 11:50 ▼ ~ ~ Yest H vol=2.1x pos=v91 vwap=below ema=bear rs=+0% adx=23 body=51% O683.42 H684.14 L682.35 C682.51 ATR=7 SL=683.21/683.56 rawVol=245266 volSMA=116010 buf=0.35 prices=685.94
+2025-10-31T15:30:00.000-04:00,[KLB] CONF 15:30 ▼ BRK → ✗ (failed)
+2025-10-31T15:35:00.000-04:00,[KLB] 15:35 ▲ ~~ ~~ PM L + ~~ ORB L vol=2x pos=^98 vwap=above ema=bull rs=+0% adx=26 body=78% O684.09 H684.77 L683.92 C684.75 ATR=7 SL=684.05/683.7 rawVol=206847 volSMA=104122 buf=0.35 prices=684.2/683.99
+2025-10-31T15:45:00.000-04:00,[KLB] 15:45 ▲ ~~ ~~ PM L + ~~ ORB L vol=1.3x pos=^86 vwap=above ema=bull rs=+0% adx=30 body=77% O684.1 H684.49 L684.06 C684.43 ATR=7 SL=683.73/683.38 rawVol=143640 volSMA=112914 buf=0.35 prices=684.2/683.99
+2025-11-03T09:40:00.000-05:00,[KLB] 9:40 ▼ ~ ~ VWAP vol=9.5x pos=v97 vwap=below ema=bull rs=+0% adx=25 body=97% O684.69 H684.69 L683.66 C683.69 ATR=6.92 SL=684.38/684.73 rawVol=191151 volSMA=36296 buf=0.346 prices=
+2025-11-03T09:45:00.000-05:00,[KLB] 5m CHECK 9:45 ▼ pnl=0.08 → HOLD
+2025-11-03T11:35:00.000-05:00,[KLB] 11:35 ▲ ~ ~ Yest L vol=0.8x pos=^79 vwap=above ema=bear rs=+0% adx=21 body=68% O682.07 H683.03 L681.95 C682.8 ATR=6.92 SL=682.11/681.76 rawVol=83880 volSMA=100926 buf=0.346 prices=679.24
+2025-11-04T10:40:00.000-05:00,[KLB] 10:40 ▲ ~ ~ Week L vol=0.5x pos=^89 vwap=above ema=bull rs=+0% adx=26 body=48% O679.44 H679.8 L679.19 C679.73 ATR=6.84 SL=679.05/678.7 rawVol=66791 volSMA=121979 buf=0.342 prices=679.24
+2025-11-04T12:55:00.000-05:00,[KLB] 12:55 ▼ ~ ~ VWAP vol=1.1x pos=v95 vwap=below ema=bear rs=+0% adx=21 body=40% O676.68 H677.25 L676.21 C676.26 ATR=6.84 SL=676.94/677.29 rawVol=81363 volSMA=76606 buf=0.342 prices=
+2025-11-04T14:00:00.000-05:00,[KLB] 14:00 ▼ ~ ~ ORB H vol=0.9x pos=v35 vwap=below ema=bear rs=+0% adx=23 body=33% O676.32 H676.33 L675.81 C676.15 ATR=6.84 SL=676.83/677.18 rawVol=73768 volSMA=86458 buf=0.342 prices=676.46
+2025-11-04T14:10:00.000-05:00,[KLB] 14:10 ▼ ~ ~ ORB H vol=1.3x pos=v92 vwap=below ema=bear rs=+0% adx=20 body=91% O676.6 H676.61 L675.69 C675.76 ATR=6.84 SL=676.44/676.79 rawVol=115770 volSMA=86999 buf=0.342 prices=676.46
+2025-11-05T09:40:00.000-05:00,[KLB] 9:40 ▲ ~ ~ ORB L vol=6.3x pos=^70 vwap=above ema=bull rs=+0% adx=21 body=42% O674.49 H675.32 L674.17 C674.97 ATR=6.98 SL=674.27/673.92 rawVol=207572 volSMA=33032 buf=0.349 prices=674.47
+2025-11-05T09:50:00.000-05:00,[KLB] 9:50 ▲ BRK PM H + ORB H vol=3.8x pos=^89 vwap=above ema=bull rs=+0% adx=21 body=87% O674.44 H676.27 L674.4 C676.07 ATR=6.98 SL=675.37/675.02 rawVol=179840 volSMA=47957 buf=0.349 prices=675.92/675.33
+2025-11-05T09:50:00.000-05:00,"[KLB] 9:50 ▲ ~ ~ Yest L + ~ ORB L
+~ VWAP vol=3.8x pos=^89 vwap=above ema=bull rs=+0% adx=21 body=87% O674.44 H676.27 L674.4 C676.07 ATR=6.98 SL=675.37/675.02 rawVol=179840 volSMA=47957 buf=0.349 prices=674.58/674.47"
+2025-11-05T09:50:00.000-05:00,[KLB] 9:50 ▲ ◆ ◆¹ PM H 3.2x ^95 vol= pos= vwap=above ema=bull rs=+0% adx=21 body=87% O674.44 H676.27 L674.4 C676.07 ATR=6.98 SL=675.37/675.02 rawVol=179840 volSMA=47957 buf=0.349 prices=
+2025-11-05T10:20:00.000-05:00,"[KLB] 10:20 ▲ ◆ ◆¹ PM H 3.2x ^95
+◆⁷ ORB H 2.3x ^98 vol= pos= vwap=above ema=bull rs=+0% adx=26 body=13% O676.86 H677.39 L676.68 C676.95 ATR=6.98 SL=676.25/675.9 rawVol=170713 volSMA=89800 buf=0.349 prices="
+2025-11-05T12:20:00.000-05:00,[KLB] 12:20 ▲ ~ ~ Week L vol=0.7x pos=^86 vwap=above ema=bull rs=+0% adx=23 body=37% O679.43 H679.61 L679.26 C679.56 ATR=6.98 SL=678.86/678.51 rawVol=39476 volSMA=83847 buf=0.349 prices=679.24
+2025-11-05T12:35:00.000-05:00,[KLB] 12:35 ▲ BRK Yest H vol=2x pos=^87 vwap=above ema=bull rs=+0% adx=26 body=63% O680.05 H680.4 L679.94 C680.34 ATR=6.98 SL=679.64/679.29 rawVol=176862 volSMA=89732 buf=0.349 prices=679.96
+2025-11-05T12:35:00.000-05:00,[KLB] CONF 12:35 ▲ BRK → ✓ (auto-promote)
+2025-11-05T12:40:00.000-05:00,[KLB] 5m CHECK 12:40 ▲ pnl=0.05 → HOLD
+2025-11-05T12:55:00.000-05:00,[KLB] 12:55 ▲ ◆ ◆⁵ Yest H 0.8x ^61 vol= pos= vwap=above ema=bull rs=+0% adx=32 body=4% O680.31 H680.45 L680.2 C680.32 ATR=6.98 SL=679.62/679.27 rawVol=50206 volSMA=86909 buf=0.349 prices=
+2025-11-05T15:30:00.000-05:00,[KLB] CONF 15:30 ▲ BRK → ✗ (failed)
+2025-11-06T09:45:00.000-05:00,[KLB] 9:45 ▼ BRK PM L + ORB L vol=4.9x pos=v75 vwap=below ema=bear rs=+0% adx=41 body=75% O676.84 H676.84 L675.7 C675.99 ATR=6.96 SL=676.69/677.03 rawVol=140801 volSMA=33922 buf=0.348 prices=676.29/676.34
+2025-11-06T09:45:00.000-05:00,[KLB] 9:45 ▼ ~ ~ VWAP vol=4.9x pos=v75 vwap=below ema=bear rs=+0% adx=41 body=75% O676.84 H676.84 L675.7 C675.99 ATR=6.96 SL=676.69/677.03 rawVol=140801 volSMA=33922 buf=0.348 prices=
+2025-11-06T09:45:00.000-05:00,"[KLB] 9:45 ▼ ◆ ◆¹ PM L 4.5x v80
+◆¹ ORB L 4.5x v80 vol= pos= vwap=below ema=bear rs=+0% adx=41 body=75% O676.84 H676.84 L675.7 C675.99 ATR=6.96 SL=676.69/677.03 rawVol=140801 volSMA=33922 buf=0.348 prices="
+2025-11-06T10:05:00.000-05:00,[KLB] 10:05 ▼ BRK Yest L vol=3.9x pos=v95 vwap=below ema=bear rs=+0% adx=47 body=94% O674.12 H674.15 L672.52 C672.6 ATR=6.96 SL=673.29/673.64 rawVol=287370 volSMA=73685 buf=0.348 prices=674.17
+2025-11-06T10:05:00.000-05:00,[KLB] CONF 10:05 ▼ BRK → ✓ (auto-promote)
+2025-11-06T10:10:00.000-05:00,[KLB] 5m CHECK 10:10 ▼ pnl=-0.11 → BAIL
+2025-11-06T10:10:00.000-05:00,[KLB] 10:10 ▼ ◆ ◆² Yest L 2.9x v93 vol= pos= vwap=below ema=bear rs=+0% adx=49 body=69% O672.59 H673.63 L672.55 C673.34 ATR=6.96 SL=674.04/674.38 rawVol=218820 volSMA=84302 buf=0.348 prices=
+2025-11-06T10:20:00.000-05:00,[KLB] CONF 10:20 ▼ BRK → ✗ (failed)
+2025-11-07T10:05:00.000-05:00,[KLB] 10:05 ▼ ~ ~ VWAP vol=1.7x pos=v92 vwap=below ema=bear rs=+0% adx=21 body=77% O666.25 H666.49 L664.87 C665 ATR=7.09 SL=665.71/666.06 rawVol=189984 volSMA=110572 buf=0.355 prices=
+2025-11-07T10:15:00.000-05:00,[KLB] 10:15 ▲ ~ ~ ORB L vol=1.9x pos=^91 vwap=above ema=bear rs=+0% adx=22 body=78% O665.77 H666.62 L665.64 C666.53 ATR=7.09 SL=665.82/665.47 rawVol=160901 volSMA=129727 buf=0.355 prices=666.19
+2025-11-07T14:40:00.000-05:00,[KLB] 14:40 ▲ BRK ORB H vol=1.9x pos=^88 vwap=above ema=bull rs=+0% adx=22 body=71% O667.56 H668.51 L667.37 C668.37 ATR=7.09 SL=667.66/667.31 rawVol=191105 volSMA=101088 buf=0.355 prices=667.93
+2025-11-07T14:45:00.000-05:00,[KLB] 14:45 ▲ ◆ ◆² ORB H 3.4x ^92 vol= pos= vwap=above ema=bull rs=+0% adx=24 body=83% O668.39 H669.58 L668.39 C669.38 ATR=7.09 SL=668.67/668.32 rawVol=266953 volSMA=110751 buf=0.355 prices=
+2025-11-10T09:40:00.000-05:00,[KLB] 9:40 ▲ BRK PM H + ORB H vol=11x pos=^95 vwap=above ema=bull rs=+0% adx=21 body=95% O677.85 H678.85 L677.85 C678.8 ATR=7.29 SL=678.07/677.71 rawVol=238380 volSMA=42235 buf=0.365 prices=677.94/678.13
+2025-11-10T09:40:00.000-05:00,[KLB] 9:40 ▲ ~ ~ VWAP vol=11x pos=^95 vwap=above ema=bull rs=+0% adx=21 body=95% O677.85 H678.85 L677.85 C678.8 ATR=7.29 SL=678.07/677.71 rawVol=238380 volSMA=42235 buf=0.365 prices=
+2025-11-10T09:50:00.000-05:00,"[KLB] 9:50 ▲ ◆ ◆³ PM H 5x ^70
+◆³ ORB H 5x ^70 vol= pos= vwap=above ema=bull rs=+0% adx=26 body=31% O678.8 H679.2 L678.5 C678.58 ATR=7.29 SL=677.85/677.49 rawVol=235541 volSMA=63674 buf=0.365 prices="
+2025-11-10T10:40:00.000-05:00,[KLB] CONF 10:40 ▲ BRK → ✗ (failed)
+2025-11-10T10:45:00.000-05:00,[KLB] 10:45 ▼ ~~ ~~ ORB H vol=0.9x pos=v95 vwap=below ema=bull rs=+0% adx=29 body=86% O678.14 H678.18 L677.74 C677.76 ATR=7.29 SL=678.49/678.85 rawVol=120865 volSMA=134368 buf=0.365 prices=678.13
+2025-11-10T10:55:00.000-05:00,[KLB] 10:55 ▼ ~ ~ VWAP vol=1.4x pos=v62 vwap=below ema=bull rs=+0% adx=28 body=61% O677.69 H677.7 L676.39 C676.89 ATR=7.29 SL=677.62/677.98 rawVol=211764 volSMA=151384 buf=0.365 prices=
+2025-11-10T12:45:00.000-05:00,[KLB] 12:45 ▲ BRK PM H + ORB H vol=1.5x pos=^41 vwap=above ema=bull rs=+0% adx=23 body=31% O678.26 H678.84 L678.2 C678.46 ATR=7.29 SL=677.73/677.37 rawVol=130036 volSMA=85719 buf=0.365 prices=677.94/678.13
+2025-11-11T13:05:00.000-05:00,[KLB] 13:05 ▲ BRK Yest H vol=1.7x pos=^60 vwap=above ema=bull rs=+0% adx=20 body=53% O682.08 H682.59 L682.04 C682.37 ATR=7.57 SL=681.61/681.23 rawVol=140631 volSMA=82878 buf=0.379 prices=682.18
+2025-11-11T13:05:00.000-05:00,[KLB] 13:05 ▲ ◆ ◆¹ Yest H 1.4x ^7 vol= pos= vwap=above ema=bull rs=+0% adx=20 body=53% O682.08 H682.59 L682.04 C682.37 ATR=7.57 SL=681.61/681.23 rawVol=140631 volSMA=82878 buf=0.379 prices=
+2025-11-12T10:15:00.000-05:00,[KLB] 10:15 ▼ ~ ~ VWAP vol=1.4x pos=v92 vwap=below ema=bear rs=+0% adx=29 body=82% O684.04 H684.15 L683.05 C683.14 ATR=7.38 SL=683.88/684.25 rawVol=88963 volSMA=64028 buf=0.369 prices=
+2025-11-12T10:35:00.000-05:00,[KLB] 10:35 ▼ ~ ~ Yest H vol=1.7x pos=v95 vwap=below ema=bear rs=+0% adx=35 body=91% O683.22 H683.25 L682.51 C682.55 ATR=7.38 SL=683.29/683.66 rawVol=137583 volSMA=81940 buf=0.369 prices=683.57
+2025-11-12T10:50:00.000-05:00,[KLB] 10:50 ▼ ~ ~ Yest H vol=0.5x pos=v80 vwap=below ema=bear rs=+0% adx=39 body=38% O682.85 H683.12 L682.47 C682.6 ATR=7.38 SL=683.34/683.71 rawVol=46674 volSMA=94092 buf=0.369 prices=683.57
+2025-11-12T13:20:00.000-05:00,[KLB] 13:20 ▲ ~ ~ VWAP vol=0.8x pos=^63 vwap=above ema=bear rs=+0% adx=21 body=37% O683.67 H683.93 L683.58 C683.8 ATR=7.38 SL=683.06/682.69 rawVol=56911 volSMA=73671 buf=0.369 prices=
+2025-11-13T09:40:00.000-05:00,[KLB] 9:40 ▼ BRK PM L + ORB L vol=7.5x pos=v94 vwap=below ema=bear rs=+0% adx=36 body=83% O680.06 H680.21 L678.77 C678.86 ATR=7.14 SL=679.57/679.93 rawVol=226465 volSMA=30200 buf=0.357 prices=679.96/679.78
+2025-11-13T09:40:00.000-05:00,[KLB] 9:40 ▼ ~ ~ VWAP vol=7.5x pos=v94 vwap=below ema=bear rs=+0% adx=36 body=83% O680.06 H680.21 L678.77 C678.86 ATR=7.14 SL=679.57/679.93 rawVol=226465 volSMA=30200 buf=0.357 prices=
+2025-11-13T09:45:00.000-05:00,[KLB] 5m CHECK 9:45 ▼ pnl=0.15 → HOLD
+2025-11-13T10:05:00.000-05:00,"[KLB] 10:05 ▼ ◆ ◆⁶ PM L 2.2x v2
+◆⁶ ORB L 2.2x v2 vol= pos= vwap=below ema=bear rs=+0% adx=41 body=41% O678.78 H679.45 L677.97 C678.17 ATR=7.14 SL=678.88/679.24 rawVol=120185 volSMA=66495 buf=0.357 prices="
+2025-11-13T10:10:00.000-05:00,[KLB] CONF 10:10 ▼ BRK → ✗ (failed)
+2025-11-13T10:15:00.000-05:00,"[KLB] 10:15 ▲ ~~ ~~ PM L + ~~ ORB L
+~ VWAP vol=1.9x pos=^84 vwap=above ema=bear rs=+0% adx=39 body=53% O679.92 H680.59 L679.62 C680.43 ATR=7.14 SL=679.72/679.36 rawVol=150456 volSMA=80381 buf=0.357 prices=679.96/679.78"
+2025-11-13T10:25:00.000-05:00,[KLB] 10:25 ▼ BRK PM L + ORB L vol=1.6x pos=v59 vwap=above ema=bear rs=+0% adx=36 body=30% O680.05 H680.35 L679.3 C679.73 ATR=7.14 SL=680.44/680.8 rawVol=99234 volSMA=91705 buf=0.357 prices=679.96/679.78
+2025-11-13T10:25:00.000-05:00,[KLB] 10:25 ▼ ◆ ◆¹ ORB L 1.1x v81 vol= pos= vwap=above ema=bear rs=+0% adx=36 body=30% O680.05 H680.35 L679.3 C679.73 ATR=7.14 SL=680.44/680.8 rawVol=99234 volSMA=91705 buf=0.357 prices=
+2025-11-14T09:35:00.000-05:00,[KLB] 9:35 ▼ BRK PM L vol=12.6x pos=v86 vwap=below ema=bear rs=+0% adx=34 body=67% O665.38 H665.88 L663.27 C663.63 ATR=7.54 SL=664.38/664.76 rawVol=556976 volSMA=44322 buf=0.377 prices=663.97
+2025-11-14T09:35:00.000-05:00,[KLB] 9:35 ▼ ~ ~ VWAP vol=12.6x pos=v86 vwap=below ema=bear rs=+0% adx=34 body=67% O665.38 H665.88 L663.27 C663.63 ATR=7.54 SL=664.38/664.76 rawVol=556976 volSMA=44322 buf=0.377 prices=
+2025-11-14T09:40:00.000-05:00,[KLB] 9:40 ▲ ~ ~ PM L vol=6x pos=^84 vwap=above ema=bear rs=+0% adx=34 body=82% O663.6 H666.46 L663.55 C665.99 ATR=7.54 SL=665.24/664.86 rawVol=375919 volSMA=62621 buf=0.377 prices=663.97
+2025-11-14T09:40:00.000-05:00,[KLB] CONF 9:40 ▼ BRK → ✗ (failed)
+2025-11-14T09:45:00.000-05:00,[KLB] 9:45 ▲ ~ ~ VWAP vol=5.2x pos=^90 vwap=above ema=bear rs=+0% adx=34 body=55% O665.95 H666.86 L665.46 C666.72 ATR=7.54 SL=665.97/665.59 rawVol=217954 volSMA=72956 buf=0.377 prices=
+2025-11-14T09:50:00.000-05:00,[KLB] 5m CHECK 9:50 ▲ pnl=0.15 → HOLD
+2025-11-14T10:50:00.000-05:00,[KLB] 10:50 ▲ BRK PM H vol=1.6x pos=^73 vwap=above ema=bull rs=+0% adx=23 body=63% O671.05 H672.81 L670.87 C672.28 ATR=7.54 SL=671.53/671.15 rawVol=290362 volSMA=187066 buf=0.377 prices=671.51
+2025-11-14T10:50:00.000-05:00,[KLB] 10:50 ▲ ~ ~ Yest L vol=1.6x pos=^73 vwap=above ema=bull rs=+0% adx=23 body=63% O671.05 H672.81 L670.87 C672.28 ATR=7.54 SL=671.53/671.15 rawVol=290362 volSMA=187066 buf=0.377 prices=670.52
+2025-11-14T10:55:00.000-05:00,[KLB] 10:55 ▲ ◆ ◆² PM H 0.7x ^86 vol= pos= vwap=above ema=bull rs=+0% adx=25 body=3% O672.29 H672.77 L672.04 C672.31 ATR=7.54 SL=671.56/671.18 rawVol=129135 volSMA=193022 buf=0.377 prices=
+2025-11-14T11:15:00.000-05:00,[KLB] 11:15 ▲ ~ ~ Yest L vol=0.6x pos=^58 vwap=above ema=bull rs=+0% adx=26 body=38% O671.73 H672.56 L671.52 C672.12 ATR=7.54 SL=671.37/670.99 rawVol=110713 volSMA=187492 buf=0.377 prices=670.52
+2025-11-14T13:55:00.000-05:00,[KLB] 13:55 ▲ ~ ~ Yest L vol=1x pos=^96 vwap=above ema=bull rs=+0% adx=20 body=96% O671.89 H673.6 L671.89 C673.54 ATR=7.54 SL=672.79/672.41 rawVol=153642 volSMA=152736 buf=0.377 prices=670.52
+2025-11-14T15:45:00.000-05:00,[KLB] CONF 15:45 ▲ BRK → ✗ (failed)
+2025-11-17T09:40:00.000-05:00,[KLB] 9:40 ▲ ~ ~ VWAP vol=7.5x pos=^99 vwap=above ema=bear rs=+0% adx=38 body=93% O671.18 H672.64 L671.08 C672.63 ATR=7.89 SL=671.84/671.45 rawVol=171616 volSMA=31715 buf=0.395 prices=
+2025-11-17T09:45:00.000-05:00,[KLB] 5m CHECK 9:45 ▲ pnl=-0.08 → BAIL
+2025-11-17T10:05:00.000-05:00,[KLB] 10:05 ▼ ~ ~ Yest H vol=1.9x pos=v90 vwap=below ema=bear rs=+0% adx=33 body=66% O672.72 H673.14 L671.39 C671.56 ATR=7.89 SL=672.35/672.74 rawVol=120970 volSMA=62804 buf=0.395 prices=675.66
+2025-11-17T10:10:00.000-05:00,"[KLB] 10:10 ▼ ~ ~ Yest H + ~ ORB H
+~ VWAP vol=2.2x pos=v78 vwap=below ema=bear rs=+0% adx=31 body=38% O671.54 H672.25 L670.47 C670.86 ATR=7.89 SL=671.65/672.04 rawVol=157999 volSMA=70501 buf=0.395 prices=675.66/671.11"
+2025-11-17T10:20:00.000-05:00,[KLB] 10:20 ▼ ~ ~ Yest H + ~ ORB H vol=1.2x pos=v92 vwap=below ema=bear rs=+0% adx=29 body=67% O671.74 H672.12 L670.61 C670.73 ATR=7.89 SL=671.52/671.91 rawVol=92852 volSMA=79762 buf=0.395 prices=675.66/671.11
+2025-11-17T10:35:00.000-05:00,[KLB] 10:35 ▼ ~ ~ Yest H vol=0.9x pos=v72 vwap=below ema=bear rs=+0% adx=26 body=55% O672.04 H672.36 L670.44 C670.98 ATR=7.89 SL=671.77/672.16 rawVol=79376 volSMA=92179 buf=0.395 prices=675.66
+2025-11-17T10:40:00.000-05:00,[KLB] 10:40 ▼ ~ ~ ORB H vol=1x pos=v90 vwap=below ema=bear rs=+0% adx=25 body=37% O670.96 H671.47 L670.5 C670.6 ATR=7.89 SL=671.39/671.78 rawVol=95798 volSMA=96189 buf=0.395 prices=671.11
+2025-11-17T10:50:00.000-05:00,[KLB] 10:50 ▼ ~ ~ Yest H vol=0.8x pos=v78 vwap=below ema=bear rs=+0% adx=24 body=44% O671.68 H672.09 L670.87 C671.14 ATR=7.89 SL=671.93/672.32 rawVol=83660 volSMA=105059 buf=0.395 prices=675.66
+2025-11-17T11:00:00.000-05:00,[KLB] 11:00 ▼ ~ ~ ORB H vol=0.6x pos=v67 vwap=below ema=bear rs=+0% adx=23 body=40% O671.17 H671.48 L670.33 C670.72 ATR=7.89 SL=671.5/671.9 rawVol=65633 volSMA=111289 buf=0.395 prices=671.11
+2025-11-17T11:05:00.000-05:00,[KLB] 11:05 ▼ ~ ~ ORB H vol=0.9x pos=v59 vwap=below ema=bear rs=+0% adx=23 body=38% O670.71 H670.97 L669.77 C670.26 ATR=7.89 SL=671.05/671.44 rawVol=99199 volSMA=115679 buf=0.395 prices=671.11
+2025-11-17T15:00:00.000-05:00,[KLB] 15:00 ▼ BRK Yest L + Week L vol=1.6x pos=v97 vwap=below ema=bear rs=+0% adx=44 body=92% O663.87 H663.92 L662.74 C662.78 ATR=7.89 SL=663.57/663.96 rawVol=210733 volSMA=134893 buf=0.395 prices=663.27/663.27
+2025-11-17T15:05:00.000-05:00,"[KLB] 15:05 ▼ ◆ ◆² Yest L 1.3x v58
+◆² Week L 1.3x v58 vol= pos= vwap=below ema=bear rs=+0% adx=46 body=5% O662.73 H662.92 L662.18 C662.69 ATR=7.89 SL=663.48/663.87 rawVol=251392 volSMA=144653 buf=0.395 prices="
+2025-11-17T15:20:00.000-05:00,[KLB] CONF 15:20 ▼ BRK → ✗ (failed)
+2025-11-18T11:30:00.000-05:00,"[KLB] 11:30 ▲ ~ ~ PM L + ~ ORB L
+~ VWAP vol=1.2x pos=^82 vwap=above ema=bear rs=+0% adx=24 body=78% O660.26 H661.87 L660.2 C661.57 ATR=8.15 SL=660.75/660.35 rawVol=298107 volSMA=256279 buf=0.408 prices=660.5/660.96"
+2025-11-18T11:45:00.000-05:00,[KLB] 11:45 ▲ ~ ~ ORB L vol=0.6x pos=^88 vwap=above ema=bear rs=+0% adx=22 body=63% O661.22 H662.04 L660.95 C661.91 ATR=8.15 SL=661.09/660.69 rawVol=140501 volSMA=244141 buf=0.408 prices=660.96
+2025-11-18T13:35:00.000-05:00,[KLB] 13:35 ▲ ~ ~ Week L vol=0.7x pos=^80 vwap=above ema=bull rs=+0% adx=24 body=80% O663.37 H664.62 L663.37 C664.37 ATR=8.15 SL=663.55/663.15 rawVol=98875 volSMA=143315 buf=0.408 prices=663.27
+2025-11-18T14:10:00.000-05:00,[KLB] 14:10 ▲ ~ ~ Week L vol=1.1x pos=^84 vwap=above ema=bull rs=+0% adx=22 body=76% O663.04 H663.85 L662.97 C663.71 ATR=8.15 SL=662.89/662.49 rawVol=96050 volSMA=159734 buf=0.408 prices=663.27
+2025-11-19T09:45:00.000-05:00,[KLB] 9:45 ▲ ~ ~ VWAP vol=6.4x pos=^81 vwap=above ema=bear rs=+0% adx=22 body=51% O662.19 H663.32 L661.72 C663.01 ATR=8.27 SL=662.18/661.77 rawVol=253994 volSMA=50838 buf=0.414 prices=
+2025-11-19T09:45:00.000-05:00,[KLB] 5m CHECK 9:45 ▲ pnl=0.1 → HOLD
+2025-11-19T09:50:00.000-05:00,[KLB] 9:50 ▲ ~ ~ Week L vol=4.1x pos=^77 vwap=above ema=bear rs=+0% adx=22 body=49% O663 H663.78 L662.69 C663.53 ATR=8.27 SL=662.7/662.29 rawVol=259395 volSMA=63439 buf=0.414 prices=663.27
+2025-11-19T09:55:00.000-05:00,[KLB] 9:55 ▲ BRK PM H vol=3.5x pos=^95 vwap=above ema=bull rs=+0% adx=23 body=61% O663.54 H664.59 L662.99 C664.51 ATR=8.27 SL=663.68/663.27 rawVol=216586 volSMA=73909 buf=0.414 prices=663.38
+2025-11-19T09:55:00.000-05:00,[KLB] 9:55 ▲ ~ ~ Week L vol=3.5x pos=^95 vwap=above ema=bull rs=+0% adx=23 body=61% O663.54 H664.59 L662.99 C664.51 ATR=8.27 SL=663.68/663.27 rawVol=216586 volSMA=73909 buf=0.414 prices=663.27
+2025-11-19T10:00:00.000-05:00,[KLB] 10:00 ▲ BRK Yest H vol=3.1x pos=^89 vwap=above ema=bull rs=+0% adx=24 body=74% O664.5 H665.84 L664.26 C665.67 ATR=8.27 SL=664.84/664.43 rawVol=267071 volSMA=86950 buf=0.414 prices=665.12
+2025-11-19T10:00:00.000-05:00,[KLB] CONF 10:00 ▲ BRK → ✓ (auto-promote)
+2025-11-19T10:05:00.000-05:00,[KLB] 5m CHECK 10:05 ▲ pnl=0.06 → HOLD
+2025-11-19T10:40:00.000-05:00,[KLB] 10:40 ▲ ◆ ◆⁹ Yest H 0.8x ^60 vol= pos= vwap=above ema=bull rs=+0% adx=33 body=75% O666.18 H666.31 L665.52 C665.59 ATR=8.27 SL=664.76/664.35 rawVol=128275 volSMA=168990 buf=0.414 prices=
+2025-11-19T10:45:00.000-05:00,[KLB] CONF 10:45 ▲ BRK → ✗ (failed)
+2025-11-19T11:00:00.000-05:00,"[KLB] 11:00 ▼ ~~ ~~ PM H
+~ VWAP vol=1.3x pos=v75 vwap=below ema=bull rs=+0% adx=29 body=72% O663.99 H664.03 L662.6 C662.96 ATR=8.27 SL=663.79/664.2 rawVol=257859 volSMA=200708 buf=0.414 prices=663.38"
+2025-11-19T11:10:00.000-05:00,[KLB] 11:10 ▼ ~~ ~~ PM H vol=0.9x pos=v69 vwap=below ema=bull rs=+0% adx=29 body=48% O663.01 H663.27 L662.05 C662.43 ATR=8.27 SL=663.26/663.67 rawVol=208431 volSMA=223891 buf=0.414 prices=663.38
+2025-11-19T11:25:00.000-05:00,[KLB] 11:25 ▼ ~~ ~~ Yest H vol=0.9x pos=v97 vwap=below ema=bull rs=+0% adx=30 body=50% O662.4 H663.13 L661.58 C661.63 ATR=8.27 SL=662.46/662.87 rawVol=172736 volSMA=202759 buf=0.414 prices=665.12
+2025-11-19T11:40:00.000-05:00,[KLB] 11:40 ▼ ~~ ~~ ORB H vol=0.5x pos=v75 vwap=below ema=bull rs=+0% adx=32 body=75% O662.04 H662.04 L660.99 C661.25 ATR=8.27 SL=662.08/662.49 rawVol=100118 volSMA=183682 buf=0.414 prices=661.61
+2025-11-19T12:05:00.000-05:00,[KLB] 12:05 ▼ ~~ ~~ Yest H + ~~ ORB H vol=1.1x pos=v98 vwap=below ema=bear rs=+0% adx=33 body=74% O662.5 H662.97 L661.06 C661.09 ATR=8.27 SL=661.92/662.33 rawVol=166197 volSMA=155013 buf=0.414 prices=665.12/661.61
+2025-11-19T12:40:00.000-05:00,[KLB] 12:40 ▼ BRK PM L + ORB L vol=1.9x pos=v75 vwap=below ema=bear rs=+0% adx=32 body=75% O660.17 H660.17 L658.75 C659.1 ATR=8.27 SL=659.93/660.34 rawVol=280360 volSMA=143868 buf=0.414 prices=659.98/660.11
+2025-11-19T12:45:00.000-05:00,[KLB] CONF 12:45 ▼ BRK → ✗ (failed)
+2025-11-19T13:20:00.000-05:00,[KLB] 13:20 ▼ ~~ ~~ Yest H vol=1.1x pos=v67 vwap=below ema=bear rs=+0% adx=21 body=53% O662.28 H662.45 L661.16 C661.59 ATR=8.27 SL=662.42/662.83 rawVol=156893 volSMA=146793 buf=0.414 prices=665.12
+2025-11-19T15:40:00.000-05:00,[KLB] 15:40 ▲ ~ ~ Week L vol=1.4x pos=^41 vwap=above ema=bull rs=+0% adx=26 body=35% O663.49 H664.75 L663.4 C663.96 ATR=8.27 SL=663.13/662.72 rawVol=236511 volSMA=166530 buf=0.414 prices=663.27
+2025-11-19T15:50:00.000-05:00,[KLB] 15:50 ▼ ~~ ~~ PM H vol=2x pos=v97 vwap=below ema=bull rs=+0% adx=27 body=94% O663.6 H663.65 L662.06 C662.1 ATR=8.27 SL=662.93/663.34 rawVol=343688 volSMA=172470 buf=0.414 prices=663.38
+2025-11-20T10:00:00.000-05:00,[KLB] 10:00 ▲ ~ ~ VWAP vol=1.9x pos=^89 vwap=above ema=bull rs=+0% adx=42 body=74% O674.23 H675.02 L674.09 C674.92 ATR=8.29 SL=674.09/673.68 rawVol=205674 volSMA=106650 buf=0.415 prices=
+2025-11-20T10:10:00.000-05:00,[KLB] 10:10 ▼ ~ ~ PM H + ~ ORB H vol=1.9x pos=v90 vwap=below ema=bull rs=+0% adx=40 body=90% O674.97 H674.97 L673.11 C673.29 ATR=8.29 SL=674.12/674.53 rawVol=243080 volSMA=127523 buf=0.415 prices=673.68/673.86
+2025-11-20T10:20:00.000-05:00,[KLB] 10:20 ▲ BRK PM H vol=1.7x pos=^85 vwap=above ema=bull rs=+0% adx=36 body=59% O673.18 H674.22 L672.82 C674.01 ATR=8.29 SL=673.18/672.77 rawVol=259485 volSMA=148907 buf=0.415 prices=673.68
+2025-11-20T10:20:00.000-05:00,[KLB] 10:20 ▲ ◆ ◆¹ PM H 1.3x ^87 vol= pos= vwap=above ema=bull rs=+0% adx=36 body=59% O673.18 H674.22 L672.82 C674.01 ATR=8.29 SL=673.18/672.77 rawVol=259485 volSMA=148907 buf=0.415 prices=
+2025-11-20T10:25:00.000-05:00,[KLB] 10:25 ▲ BRK ORB H vol=1.6x pos=^87 vwap=above ema=bull rs=+0% adx=35 body=55% O674.02 H674.92 L673.6 C674.75 ATR=8.29 SL=673.92/673.51 rawVol=194090 volSMA=158143 buf=0.415 prices=673.86
+2025-11-20T10:25:00.000-05:00,[KLB] CONF 10:25 ▲ BRK → ✓ (auto-promote)
+2025-11-20T10:30:00.000-05:00,[KLB] 5m CHECK 10:30 ▲ pnl=0.01 → BAIL
+2025-11-20T10:45:00.000-05:00,[KLB] 10:45 ▲ ◆ ◆⁵ ORB H 0.7x ^8 vol= pos= vwap=above ema=bull rs=+0% adx=33 body=14% O675.31 H675.43 L674.84 C675.23 ATR=8.29 SL=674.4/673.99 rawVol=91139 volSMA=183471 buf=0.415 prices=
+2025-11-20T10:50:00.000-05:00,[KLB] CONF 10:50 ▲ BRK → ✗ (failed)
+2025-11-20T10:55:00.000-05:00,[KLB] 10:55 ▼ ~~ ~~ PM H + ~~ ORB H vol=0.6x pos=v100 vwap=below ema=bull rs=+0% adx=30 body=77% O674.1 H674.31 L673.38 C673.38 ATR=8.29 SL=674.21/674.62 rawVol=115316 volSMA=194387 buf=0.415 prices=673.68/673.86
+2025-11-20T11:00:00.000-05:00,"[KLB] 11:00 ▼ ~~ ~~ PM H + ~~ ORB H
+~ VWAP vol=0.9x pos=v98 vwap=below ema=bull rs=+0% adx=28 body=69% O673.38 H673.64 L672.75 C672.77 ATR=8.29 SL=673.6/674.01 rawVol=172312 volSMA=202691 buf=0.415 prices=673.68/673.86"
+2025-11-20T11:55:00.000-05:00,[KLB] 11:55 ▼ BRK Week L vol=1.9x pos=v89 vwap=below ema=bear rs=+0% adx=45 body=50% O664.55 H665.79 L662.56 C662.93 ATR=8.29 SL=663.76/664.17 rawVol=511261 volSMA=264498 buf=0.415 prices=663.27
+2025-11-20T12:00:00.000-05:00,[KLB] 12:00 ▼ ~ ~ Yest H vol=2.3x pos=v78 vwap=below ema=bear rs=+0% adx=48 body=77% O662.93 H662.97 L659.39 C660.18 ATR=8.29 SL=661.01/661.42 rawVol=656804 volSMA=284364 buf=0.415 prices=667.34
+2025-11-20T12:20:00.000-05:00,[KLB] 12:20 ▼ BRK Yest L vol=1.6x pos=v67 vwap=below ema=bear rs=+0% adx=57 body=67% O659.48 H659.48 L657.19 C657.95 ATR=8.29 SL=658.78/659.19 rawVol=591682 volSMA=364170 buf=0.415 prices=658.75
+2025-11-20T12:20:00.000-05:00,[KLB] CONF 12:20 ▼ BRK → ✓ (auto-promote)
+2025-11-20T12:20:00.000-05:00,[KLB] 12:20 ▼ ◆ ◆¹ Yest L 1.6x v39 vol= pos= vwap=below ema=bear rs=+0% adx=57 body=67% O659.48 H659.48 L657.19 C657.95 ATR=8.29 SL=658.78/659.19 rawVol=591682 volSMA=364170 buf=0.415 prices=
+2025-11-20T12:25:00.000-05:00,[KLB] 5m CHECK 12:25 ▼ pnl=-0.03 → BAIL
+2025-11-20T13:05:00.000-05:00,[KLB] CONF 13:05 ▼ BRK → ✗ (failed)
+2025-11-21T09:50:00.000-05:00,[KLB] 5m CHECK 9:50 ▼ pnl=-0.04 → BAIL
+2025-11-21T09:55:00.000-05:00,"[KLB] 9:55 ▲ ~ ~ ORB L
+~ VWAP vol=3.6x pos=^84 vwap=above ema=bull rs=+0% adx=21 body=66% O654.64 H656.47 L654.24 C656.12 ATR=9.39 SL=655.18/654.71 rawVol=170856 volSMA=72814 buf=0.47 prices=654.33"
+2025-11-21T10:00:00.000-05:00,[KLB] 10:00 ▼ ~ ~ ORB H vol=1.5x pos=v87 vwap=below ema=bull rs=+0% adx=20 body=85% O656.13 H656.17 L654.32 C654.56 ATR=9.39 SL=655.5/655.97 rawVol=117682 volSMA=75948 buf=0.47 prices=656.43
+2025-11-21T14:10:00.000-05:00,[KLB] 14:10 ▲ ~ ~ Week L vol=1.6x pos=^74 vwap=above ema=bull rs=+0% adx=29 body=50% O663.12 H663.96 L662.85 C663.67 ATR=9.39 SL=662.73/662.26 rawVol=167137 volSMA=103076 buf=0.47 prices=663.27
+2025-11-21T14:20:00.000-05:00,[KLB] 14:20 ▲ ~ ~ Week L vol=0.9x pos=^73 vwap=above ema=bull rs=+0% adx=31 body=33% O663.32 H663.88 L662.95 C663.63 ATR=9.39 SL=662.69/662.22 rawVol=95659 volSMA=105020 buf=0.47 prices=663.27
+2025-11-21T14:25:00.000-05:00,[KLB] 14:25 ▲ ~ ~ Week L vol=1x pos=^67 vwap=above ema=bull rs=+0% adx=32 body=52% O663.62 H664.52 L663.46 C664.17 ATR=9.39 SL=663.23/662.76 rawVol=103979 volSMA=106123 buf=0.47 prices=663.27
+2025-11-21T14:40:00.000-05:00,[KLB] 14:40 ▲ ~ ~ Week L vol=0.7x pos=^82 vwap=above ema=bull rs=+0% adx=33 body=79% O663.03 H664.2 L663 C663.98 ATR=9.39 SL=663.04/662.57 rawVol=78604 volSMA=109681 buf=0.47 prices=663.27
+2025-11-24T09:35:00.000-05:00,[KLB] 9:35 ▲ BRK PM H + Yest H vol=11.8x pos=^99 vwap=above ema=bull rs=+0% adx=24 body=89% O662.66 H665.07 L662.4 C665.04 ATR=9.7 SL=664.07/663.59 rawVol=301812 volSMA=25603 buf=0.485 prices=663.88/664.55
+2025-11-24T09:35:00.000-05:00,[KLB] 9:35 ▲ ~ ~ VWAP vol=11.8x pos=^99 vwap=above ema=bull rs=+0% adx=24 body=89% O662.66 H665.07 L662.4 C665.04 ATR=9.7 SL=664.07/663.59 rawVol=301812 volSMA=25603 buf=0.485 prices=
+2025-11-24T09:35:00.000-05:00,[KLB] 9:35 ▲ ◆ ◆¹ PM H 7.7x ^1 vol= pos= vwap=above ema=bull rs=+0% adx=24 body=89% O662.66 H665.07 L662.4 C665.04 ATR=9.7 SL=664.07/663.59 rawVol=301812 volSMA=25603 buf=0.485 prices=
+2025-11-24T09:40:00.000-05:00,[KLB] CONF 9:40 ▲ BRK → ✗ (failed)
+2025-11-24T09:45:00.000-05:00,[KLB] 9:45 ▼ ~~ ~~ PM H vol=4.7x pos=v85 vwap=below ema=bull rs=+0% adx=25 body=58% O663.92 H664.38 L662.69 C662.94 ATR=9.7 SL=663.91/664.39 rawVol=136607 volSMA=41681 buf=0.485 prices=663.88
+2025-11-24T09:50:00.000-05:00,"[KLB] 9:50 ▼ ~~ ~~ PM H
+~ VWAP vol=2.9x pos=v98 vwap=below ema=bull rs=+0% adx=24 body=35% O662.87 H663.96 L662.24 C662.27 ATR=9.7 SL=663.24/663.72 rawVol=125323 volSMA=47671 buf=0.485 prices=663.88"
+2025-11-24T09:50:00.000-05:00,[KLB] 5m CHECK 9:50 ▼ pnl=0.07 → HOLD
+2025-11-24T10:00:00.000-05:00,[KLB] 10:00 ▲ ~ ~ ORB L vol=2.8x pos=^98 vwap=above ema=bull rs=+0% adx=21 body=81% O662.76 H664.06 L662.5 C664.03 ATR=9.7 SL=663.06/662.58 rawVol=166581 volSMA=60213 buf=0.485 prices=662.4
+2025-11-24T10:05:00.000-05:00,[KLB] 10:05 ▲ BRK PM H + Yest H vol=2.5x pos=^89 vwap=above ema=bull rs=+0% adx=21 body=81% O664.05 H665.35 L663.93 C665.19 ATR=9.7 SL=664.22/663.74 rawVol=168648 volSMA=67827 buf=0.485 prices=663.88/664.55
+2025-11-24T10:05:00.000-05:00,[KLB] 10:05 ▲ ◆ ◆¹ Yest H 1.9x ^13 vol= pos= vwap=above ema=bull rs=+0% adx=21 body=81% O664.05 H665.35 L663.93 C665.19 ATR=9.7 SL=664.22/663.74 rawVol=168648 volSMA=67827 buf=0.485 prices=
+2025-11-24T10:10:00.000-05:00,"[KLB] 10:10 ▲ ◆ ◆² PM H 1.9x ^90
+◆¹ Yest H 1.9x ^13 vol= pos= vwap=above ema=bull rs=+0% adx=22 body=36% O665.22 H665.75 L664.72 C664.85 ATR=9.7 SL=663.88/663.4 rawVol=128977 volSMA=73819 buf=0.485 prices="
+2025-11-25T09:45:00.000-05:00,[KLB] 9:45 ▼ ~ ~ Yest H + ~ ORB H vol=5.6x pos=v92 vwap=below ema=bull rs=+0% adx=32 body=91% O669.41 H669.45 L667.21 C667.38 ATR=9.79 SL=668.36/668.85 rawVol=178570 volSMA=32362 buf=0.49 prices=670.06/669.73
+2025-11-25T09:50:00.000-05:00,[KLB] 9:50 ▼ BRK PM L vol=6.3x pos=v96 vwap=below ema=bear rs=+0% adx=33 body=96% O667.36 H667.36 L664.86 C664.96 ATR=9.79 SL=665.94/666.43 rawVol=297547 volSMA=46967 buf=0.49 prices=667.15
+2025-11-25T09:50:00.000-05:00,[KLB] 9:50 ▼ ~ ~ VWAP vol=6.3x pos=v96 vwap=below ema=bear rs=+0% adx=33 body=96% O667.36 H667.36 L664.86 C664.96 ATR=9.79 SL=665.94/666.43 rawVol=297547 volSMA=46967 buf=0.49 prices=
+2025-11-25T09:50:00.000-05:00,[KLB] 9:50 ▼ ◆ ◆¹ PM L 5.4x v5 vol= pos= vwap=below ema=bear rs=+0% adx=33 body=96% O667.36 H667.36 L664.86 C664.96 ATR=9.79 SL=665.94/666.43 rawVol=297547 volSMA=46967 buf=0.49 prices=
+2025-11-25T09:55:00.000-05:00,[KLB] 5m CHECK 9:55 ▼ pnl=-0.25 → BAIL
+2025-11-25T09:55:00.000-05:00,[KLB] CONF 9:55 ▼ BRK → ✗ (failed)
+2025-11-25T10:00:00.000-05:00,"[KLB] 10:00 ▲ ~~ ~~ PM L + ~~ ORB L
+~ VWAP vol=3.8x pos=^92 vwap=above ema=bear rs=+0% adx=32 body=78% O667.48 H669 L667.24 C668.86 ATR=9.79 SL=667.88/667.39 rawVol=152339 volSMA=66489 buf=0.49 prices=667.15/668.19"
+2025-11-25T10:05:00.000-05:00,[KLB] 10:05 ▼ BRK PM L + ORB L vol=2.5x pos=v99 vwap=below ema=bear rs=+0% adx=32 body=98% O668.9 H668.94 L665.93 C665.96 ATR=9.79 SL=666.94/667.43 rawVol=189426 volSMA=75667 buf=0.49 prices=667.15/668.19
+2025-11-25T10:05:00.000-05:00,[KLB] 10:05 ▼ ~ ~ Yest H vol=2.5x pos=v99 vwap=below ema=bear rs=+0% adx=32 body=98% O668.9 H668.94 L665.93 C665.96 ATR=9.79 SL=666.94/667.43 rawVol=189426 volSMA=75667 buf=0.49 prices=670.06
+2025-11-25T10:05:00.000-05:00,[KLB] 10:05 ▼ ◆ ◆¹ ORB L 2x v12 vol= pos= vwap=below ema=bear rs=+0% adx=32 body=98% O668.9 H668.94 L665.93 C665.96 ATR=9.79 SL=666.94/667.43 rawVol=189426 volSMA=75667 buf=0.49 prices=
+2025-11-25T10:10:00.000-05:00,[KLB] 10:10 ▲ ~ ~ PM L vol=1.8x pos=^88 vwap=above ema=bear rs=+0% adx=32 body=88% O665.93 H668.75 L665.92 C668.41 ATR=9.79 SL=667.43/666.94 rawVol=152211 volSMA=82982 buf=0.49 prices=667.15
+2025-11-25T10:10:00.000-05:00,[KLB] CONF 10:10 ▼ BRK → ✗ (failed)
+2025-11-25T10:15:00.000-05:00,[KLB] 10:15 ▼ ~ ~ Yest H vol=2.3x pos=v81 vwap=below ema=bear rs=+0% adx=32 body=55% O668.5 H668.88 L667.4 C667.69 ATR=9.79 SL=668.66/669.15 rawVol=213346 volSMA=92942 buf=0.49 prices=670.06
+2025-11-25T10:20:00.000-05:00,[KLB] 10:20 ▲ ~~ ~~ PM L vol=1.2x pos=^77 vwap=above ema=bear rs=+0% adx=31 body=38% O667.73 H668.43 L667.28 C668.17 ATR=9.79 SL=667.19/666.7 rawVol=115466 volSMA=98399 buf=0.49 prices=667.15
+2025-11-25T10:30:00.000-05:00,[KLB] 10:30 ▲ ~~ ~~ PM L + ~~ ORB L vol=1x pos=^99 vwap=above ema=bear rs=+0% adx=32 body=96% O667.25 H668.62 L667.2 C668.61 ATR=9.79 SL=667.63/667.14 rawVol=106935 volSMA=109770 buf=0.49 prices=667.15/668.19
+2025-11-25T10:35:00.000-05:00,[KLB] 10:35 ▲ ~~ ~~ ORB L vol=1.3x pos=^87 vwap=above ema=bear rs=+0% adx=30 body=82% O668.51 H669.72 L668.44 C669.56 ATR=9.79 SL=668.58/668.09 rawVol=158043 volSMA=117210 buf=0.49 prices=668.19
+2025-11-25T15:55:00.000-05:00,[KLB] 15:55 ▲ BRK Week H vol=2.7x pos=^40 vwap=above ema=bull rs=+0% adx=26 body=40% O675.44 H676.21 L675.44 C675.75 ATR=9.79 SL=674.77/674.28 rawVol=406636 volSMA=150917 buf=0.49 prices=675.56
+2025-11-26T09:50:00.000-05:00,[KLB] 9:50 ▲ BRK ORB H vol=4.5x pos=^98 vwap=above ema=bull rs=+0% adx=22 body=87% O678.8 H679.34 L678.73 C679.33 ATR=9.93 SL=678.34/677.84 rawVol=179017 volSMA=39835 buf=0.497 prices=678.57
+2025-11-26T09:50:00.000-05:00,[KLB] 9:50 ▲ ~ ~ VWAP vol=4.5x pos=^98 vwap=above ema=bull rs=+0% adx=22 body=87% O678.8 H679.34 L678.73 C679.33 ATR=9.93 SL=678.34/677.84 rawVol=179017 volSMA=39835 buf=0.497 prices=
+2025-11-26T09:50:00.000-05:00,[KLB] 9:50 ▲ ◆ ◆¹ ORB H 3.1x ^12 vol= pos= vwap=above ema=bull rs=+0% adx=22 body=87% O678.8 H679.34 L678.73 C679.33 ATR=9.93 SL=678.34/677.84 rawVol=179017 volSMA=39835 buf=0.497 prices=
+2025-11-26T09:55:00.000-05:00,[KLB] CONF 9:55 ▲ BRK → ✗ (failed)
+2025-11-26T10:00:00.000-05:00,[KLB] 10:00 ▼ ~~ ~~ PM H + ~~ ORB H vol=2.9x pos=v85 vwap=below ema=bull rs=+0% adx=21 body=79% O678.37 H678.45 L677.12 C677.31 ATR=9.93 SL=678.3/678.8 rawVol=154082 volSMA=53197 buf=0.497 prices=677.78/678.57
+2025-11-28T09:35:00.000-05:00,[KLB] 9:35 ▲ ~ ~ PM L vol=12.7x pos=^90 vwap=above ema=bear rs=+0% adx=31 body=82% O680.86 H681.57 L680.8 C681.49 ATR=9.7 SL=680.52/680.03 rawVol=93661 volSMA=7359 buf=0.485 prices=680.73
+2025-11-28T09:40:00.000-05:00,[KLB] 9:40 ▼ ~ ~ ORB H vol=7.6x pos=v99 vwap=below ema=bear rs=+0% adx=29 body=53% O681.49 H681.85 L681.06 C681.07 ATR=9.7 SL=682.04/682.53 rawVol=88812 volSMA=11763 buf=0.485 prices=681.57
+2025-11-28T09:50:00.000-05:00,[KLB] 9:50 ▲ ~ ~ PM L + ~ ORB L vol=5.2x pos=^100 vwap=above ema=bear rs=+0% adx=29 body=41% O681.26 H681.52 L680.89 C681.52 ATR=9.7 SL=680.55/680.06 rawVol=55417 volSMA=19409 buf=0.485 prices=680.73/680.8
+2025-11-28T10:10:00.000-05:00,[KLB] 10:10 ▲ ~ ~ ORB L vol=1.5x pos=^96 vwap=above ema=bear rs=+0% adx=25 body=55% O681.23 H681.52 L681.03 C681.5 ATR=9.7 SL=680.53/680.04 rawVol=51268 volSMA=33088 buf=0.485 prices=680.8
+2025-11-28T11:10:00.000-05:00,[KLB] 11:10 ▲ ~ ~ VWAP vol=0.9x pos=^82 vwap=above ema=bull rs=+0% adx=23 body=67% O682.61 H682.89 L682.56 C682.83 ATR=9.7 SL=681.86/681.37 rawVol=78580 volSMA=87505 buf=0.485 prices=
+2025-12-01T09:55:00.000-05:00,"[KLB] 9:55 ▲ ~ ~ Yest L
+~ VWAP vol=3x pos=^99 vwap=above ema=bear rs=+0% adx=22 body=95% O680.14 H681.21 L680.09 C681.2 ATR=9.29 SL=680.27/679.81 rawVol=121317 volSMA=42422 buf=0.465 prices=680.5"
+2025-12-01T10:25:00.000-05:00,[KLB] 10:25 ▼ ~ ~ PM H vol=1.4x pos=v89 vwap=below ema=bull rs=+0% adx=25 body=77% O680.79 H680.89 L680.02 C680.12 ATR=9.29 SL=681.05/681.51 rawVol=105489 volSMA=75228 buf=0.465 prices=680.55
+2025-12-01T10:35:00.000-05:00,"[KLB] 10:35 ▼ ~ ~ ORB H
+~ VWAP vol=1.4x pos=v87 vwap=below ema=bull rs=+0% adx=22 body=76% O679.84 H679.95 L679 C679.12 ATR=9.29 SL=680.05/680.51 rawVol=121192 volSMA=85994 buf=0.465 prices=679.67"
+2025-12-01T10:40:00.000-05:00,[KLB] 10:40 ▲ ~ ~ ORB L vol=0.9x pos=^95 vwap=above ema=bull rs=+0% adx=21 body=77% O679.09 H680.17 L678.85 C680.11 ATR=9.29 SL=679.18/678.72 rawVol=81680 volSMA=89780 buf=0.465 prices=678.76
+2025-12-01T14:45:00.000-05:00,[KLB] 14:45 ▼ ~ ~ PM H vol=1x pos=v95 vwap=below ema=bull rs=+0% adx=27 body=93% O681 H681.02 L680.22 C680.26 ATR=9.29 SL=681.19/681.65 rawVol=61408 volSMA=63218 buf=0.465 prices=680.55
+2025-12-01T15:00:00.000-05:00,[KLB] 15:00 ▼ ~ ~ PM H vol=1.1x pos=v71 vwap=below ema=bear rs=+0% adx=30 body=51% O680.43 H680.51 L680.1 C680.22 ATR=9.29 SL=681.15/681.61 rawVol=70073 volSMA=66000 buf=0.465 prices=680.55
+2025-12-01T15:40:00.000-05:00,[KLB] 15:40 ▲ ~ ~ Yest L vol=1.2x pos=^98 vwap=above ema=bear rs=+0% adx=27 body=98% O680.52 H680.99 L680.52 C680.98 ATR=9.29 SL=680.05/679.59 rawVol=89498 volSMA=73697 buf=0.465 prices=680.5
+2025-12-01T15:55:00.000-05:00,[KLB] 15:55 ▼ BRK Yest L vol=2.6x pos=v92 vwap=below ema=bear rs=+0% adx=25 body=65% O680.57 H680.82 L679.9 C679.98 ATR=9.29 SL=680.9/681.37 rawVol=227315 volSMA=86116 buf=0.465 prices=680.5
+2025-12-01T15:55:00.000-05:00,[KLB] 15:55 ▼ ~ ~ PM H vol=2.6x pos=v92 vwap=below ema=bear rs=+0% adx=25 body=65% O680.57 H680.82 L679.9 C679.98 ATR=9.29 SL=680.9/681.37 rawVol=227315 volSMA=86116 buf=0.465 prices=680.55
+2025-12-01T15:55:00.000-05:00,[KLB] 15:55 ▼ ◆ ◆¹ Yest L 17.9x v14 vol= pos= vwap=below ema=bear rs=+0% adx=25 body=65% O680.57 H680.82 L679.9 C679.98 ATR=9.29 SL=680.9/681.37 rawVol=227315 volSMA=86116 buf=0.465 prices=
+2025-12-02T11:45:00.000-05:00,[KLB] 11:45 ▼ ~ ~ VWAP vol=0.9x pos=v100 vwap=below ema=bear rs=+0% adx=23 body=56% O680.91 H681.24 L680.49 C680.49 ATR=8.96 SL=681.39/681.83 rawVol=94360 volSMA=110940 buf=0.448 prices=
+2025-12-02T12:20:00.000-05:00,[KLB] 12:20 ▲ ~ ~ ORB L vol=1.2x pos=^93 vwap=above ema=bear rs=+0% adx=22 body=89% O681.25 H682.25 L681.21 C682.18 ATR=8.96 SL=681.28/680.84 rawVol=117962 volSMA=100499 buf=0.448 prices=681.63
+2025-12-03T10:05:00.000-05:00,"[KLB] 10:05 ▲ ~ ~ Yest L
+~ VWAP vol=2.4x pos=^91 vwap=above ema=bear rs=+0% adx=32 body=78% O680.96 H682.34 L680.76 C682.2 ATR=8.64 SL=681.34/680.9 rawVol=158406 volSMA=64953 buf=0.432 prices=679.33"
+2025-12-03T10:20:00.000-05:00,[KLB] 10:20 ▲ ~ ~ Yest L vol=1.3x pos=^65 vwap=above ema=bear rs=+0% adx=27 body=49% O681.25 H681.97 L681.11 C681.67 ATR=8.64 SL=680.81/680.37 rawVol=100300 volSMA=79381 buf=0.432 prices=679.33
+2025-12-03T10:35:00.000-05:00,[KLB] 10:35 ▲ ~ ~ Yest L vol=2x pos=^99 vwap=above ema=bear rs=+0% adx=23 body=74% O681.66 H682.61 L681.34 C682.6 ATR=8.64 SL=681.74/681.3 rawVol=180701 volSMA=92194 buf=0.432 prices=679.33
+2025-12-04T09:40:00.000-05:00,[KLB] 9:40 ▲ BRK Week H vol=6x pos=^73 vwap=above ema=bull rs=+0% adx=26 body=56% O683.82 H684.74 L683.64 C684.44 ATR=8.4 SL=683.6/683.18 rawVol=148860 volSMA=24728 buf=0.42 prices=683.67
+2025-12-04T09:40:00.000-05:00,[KLB] 9:40 ▲ ~ ~ ORB L vol=6x pos=^73 vwap=above ema=bull rs=+0% adx=26 body=56% O683.82 H684.74 L683.64 C684.44 ATR=8.4 SL=683.6/683.18 rawVol=148860 volSMA=24728 buf=0.42 prices=683.81
+2025-12-04T09:40:00.000-05:00,[KLB] 9:40 ▲ ◆ ◆¹ Week H 7.8x ^15 vol= pos= vwap=above ema=bull rs=+0% adx=26 body=56% O683.82 H684.74 L683.64 C684.44 ATR=8.4 SL=683.6/683.18 rawVol=148860 volSMA=24728 buf=0.42 prices=
+2025-12-04T09:50:00.000-05:00,[KLB] 9:50 ▼ ~ ~ Yest H vol=4.6x pos=v81 vwap=below ema=bull rs=+0% adx=26 body=44% O683.84 H684.13 L683.35 C683.5 ATR=8.4 SL=684.34/684.76 rawVol=148858 volSMA=41447 buf=0.42 prices=684.91
+2025-12-04T09:55:00.000-05:00,[KLB] 5m CHECK 9:55 ▼ pnl=0.01 → BAIL
+2025-12-04T09:55:00.000-05:00,[KLB] CONF 9:55 ▲ BRK → ✗ (failed)
+2025-12-04T10:25:00.000-05:00,[KLB] 10:25 ▼ ~~ ~~ Week H vol=1.3x pos=v96 vwap=below ema=bear rs=+0% adx=27 body=42% O683.36 H683.82 L682.97 C683 ATR=8.4 SL=683.84/684.26 rawVol=88590 volSMA=70054 buf=0.42 prices=683.67
+2025-12-04T10:40:00.000-05:00,[KLB] 10:40 ▲ ~ ~ ORB L vol=1.8x pos=^89 vwap=above ema=bear rs=+0% adx=26 body=86% O683.83 H684.53 L683.81 C684.45 ATR=8.4 SL=683.61/683.19 rawVol=150362 volSMA=85688 buf=0.42 prices=683.81
+2025-12-04T10:50:00.000-05:00,[KLB] 10:50 ▼ BRK ORB L vol=1.6x pos=v60 vwap=below ema=bear rs=+0% adx=25 body=55% O684.28 H684.32 L683.38 C683.76 ATR=8.4 SL=684.6/685.02 rawVol=75013 volSMA=94056 buf=0.42 prices=683.81
+2025-12-04T10:50:00.000-05:00,[KLB] 10:50 ▼ ~ ~ Yest H vol=1.6x pos=v60 vwap=below ema=bear rs=+0% adx=25 body=55% O684.28 H684.32 L683.38 C683.76 ATR=8.4 SL=684.6/685.02 rawVol=75013 volSMA=94056 buf=0.42 prices=684.91
+2025-12-04T10:50:00.000-05:00,[KLB] 10:50 ▼ ◆ ◆¹ ORB L 1.2x v54 vol= pos= vwap=below ema=bear rs=+0% adx=25 body=55% O684.28 H684.32 L683.38 C683.76 ATR=8.4 SL=684.6/685.02 rawVol=75013 volSMA=94056 buf=0.42 prices=
+2025-12-04T11:00:00.000-05:00,[KLB] 11:00 ▼ ~~ ~~ Week H vol=1.1x pos=v89 vwap=below ema=bear rs=+0% adx=25 body=64% O683.46 H683.53 L683.25 C683.28 ATR=8.4 SL=684.12/684.54 rawVol=45345 volSMA=100934 buf=0.42 prices=683.67
+2025-12-04T11:05:00.000-05:00,"[KLB] 11:05 ▼ ~~ ~~ Week H
+~ VWAP vol=0.8x pos=v89 vwap=below ema=bear rs=+0% adx=26 body=58% O683.28 H683.6 L682.57 C682.68 ATR=8.4 SL=683.52/683.94 rawVol=85970 volSMA=104634 buf=0.42 prices=683.67"
+2025-12-04T11:30:00.000-05:00,[KLB] 11:30 ▼ ~~ ~~ Week H vol=0.5x pos=v55 vwap=below ema=bear rs=+0% adx=28 body=49% O683.7 H683.75 L683.01 C683.34 ATR=8.4 SL=684.18/684.6 rawVol=42816 volSMA=86071 buf=0.42 prices=683.67
+2025-12-04T11:50:00.000-05:00,[KLB] 11:50 ▲ ~ ~ PM L vol=1.8x pos=^94 vwap=above ema=bear rs=+0% adx=27 body=85% O683.1 H684.03 L683.01 C683.97 ATR=8.4 SL=683.13/682.71 rawVol=154522 volSMA=84095 buf=0.42 prices=683.29
+2025-12-04T11:50:00.000-05:00,[KLB] CONF 11:50 ▼ BRK → ✗ (failed)
+2025-12-04T11:55:00.000-05:00,[KLB] 11:55 ▲ ~~ ~~ ORB L vol=1.8x pos=^70 vwap=above ema=bear rs=+0% adx=25 body=56% O683.97 H684.39 L683.9 C684.24 ATR=8.4 SL=683.4/682.98 rawVol=74571 volSMA=85196 buf=0.42 prices=683.81
+2025-12-04T12:10:00.000-05:00,[KLB] 12:10 ▼ ~ ~ Yest H vol=0.9x pos=v75 vwap=below ema=bear rs=+0% adx=22 body=72% O684.17 H684.19 L683.51 C683.68 ATR=8.4 SL=684.52/684.94 rawVol=52673 volSMA=81497 buf=0.42 prices=684.91
+2025-12-04T12:15:00.000-05:00,[KLB] 12:15 ▲ ~~ ~~ PM L + ~~ ORB L vol=0.9x pos=^97 vwap=above ema=bear rs=+0% adx=21 body=57% O683.69 H684.14 L683.39 C684.12 ATR=8.4 SL=683.28/682.86 rawVol=75810 volSMA=82129 buf=0.42 prices=683.29/683.81
+2025-12-04T15:00:00.000-05:00,[KLB] 15:00 ▼ ~~ ~~ Week H vol=0.9x pos=v70 vwap=below ema=bear rs=+0% adx=23 body=38% O683.47 H683.68 L683.04 C683.23 ATR=8.4 SL=684.07/684.49 rawVol=77331 volSMA=89031 buf=0.42 prices=683.67
+2025-12-04T15:55:00.000-05:00,[KLB] 15:55 ▲ ~~ ~~ PM L vol=2.5x pos=^69 vwap=above ema=bear rs=+0% adx=21 body=64% O683.16 H683.98 L683.12 C683.71 ATR=8.4 SL=682.87/682.45 rawVol=319617 volSMA=129039 buf=0.42 prices=683.29
+2025-12-05T09:55:00.000-05:00,[KLB] 9:55 ▲ BRK ORB H vol=2.7x pos=^88 vwap=above ema=bull rs=+0% adx=31 body=44% O686.57 H687.03 L686.21 C686.93 ATR=8.09 SL=686.12/685.72 rawVol=133952 volSMA=50335 buf=0.404 prices=686.56
+2025-12-05T09:55:00.000-05:00,[KLB] 9:55 ▲ ~ ~ VWAP vol=2.7x pos=^88 vwap=above ema=bull rs=+0% adx=31 body=44% O686.57 H687.03 L686.21 C686.93 ATR=8.09 SL=686.12/685.72 rawVol=133952 volSMA=50335 buf=0.404 prices=
+2025-12-05T09:55:00.000-05:00,[KLB] 9:55 ▲ ◆ ◆¹ ORB H 2.1x ^77 vol= pos= vwap=above ema=bull rs=+0% adx=31 body=44% O686.57 H687.03 L686.21 C686.93 ATR=8.09 SL=686.12/685.72 rawVol=133952 volSMA=50335 buf=0.404 prices=
+2025-12-05T11:10:00.000-05:00,[KLB] CONF 11:10 ▲ BRK → ✗ (failed)
+2025-12-05T11:15:00.000-05:00,[KLB] 11:15 ▼ ~~ ~~ ORB H vol=0.6x pos=v89 vwap=below ema=bull rs=+0% adx=29 body=56% O686.43 H686.61 L686.07 C686.13 ATR=8.09 SL=686.94/687.34 rawVol=65979 volSMA=128596 buf=0.404 prices=686.56
+2025-12-05T11:30:00.000-05:00,"[KLB] 11:30 ▼ ~~ ~~ ORB H
+~ VWAP vol=0.5x pos=v91 vwap=below ema=bull rs=+0% adx=27 body=34% O686.26 H686.77 L685.88 C685.96 ATR=8.09 SL=686.77/687.17 rawVol=68377 volSMA=124706 buf=0.404 prices=686.56"
+2025-12-05T11:35:00.000-05:00,[KLB] 11:35 ▼ ~ ~ PM H vol=1.7x pos=v50 vwap=below ema=bull rs=+0% adx=28 body=48% O685.9 H685.92 L685.1 C685.51 ATR=8.09 SL=686.32/686.72 rawVol=223279 volSMA=129172 buf=0.404 prices=686.16
+2025-12-05T12:00:00.000-05:00,[KLB] 12:00 ▼ ~~ ~~ ORB H vol=0.7x pos=v98 vwap=below ema=bull rs=+0% adx=25 body=35% O686.24 H686.64 L686.01 C686.02 ATR=8.09 SL=686.83/687.23 rawVol=79894 volSMA=107070 buf=0.404 prices=686.56
+2025-12-05T12:10:00.000-05:00,[KLB] 12:10 ▼ ~ ~ PM H vol=0.7x pos=v55 vwap=below ema=bull rs=+0% adx=23 body=36% O685.91 H686.01 L685.48 C685.72 ATR=8.09 SL=686.53/686.93 rawVol=42192 volSMA=103391 buf=0.404 prices=686.16
+2025-12-05T12:35:00.000-05:00,[KLB] 12:35 ▼ ~~ ~~ Yest H vol=0.7x pos=v91 vwap=below ema=bear rs=+0% adx=22 body=69% O685.4 H685.52 L684.98 C685.03 ATR=8.09 SL=685.84/686.24 rawVol=65112 volSMA=89434 buf=0.404 prices=685.37
+2025-12-05T13:00:00.000-05:00,[KLB] 13:00 ▼ ~~ ~~ ORB H vol=1.5x pos=v43 vwap=below ema=bear rs=+0% adx=21 body=31% O686.38 H686.43 L686.01 C686.25 ATR=8.09 SL=687.06/687.46 rawVol=118386 volSMA=80122 buf=0.404 prices=686.56
+2025-12-08T09:45:00.000-05:00,[KLB] 5m CHECK 9:45 ▼ pnl=-0.02 → BAIL
+2025-12-08T09:50:00.000-05:00,[KLB] 9:50 ▼ BRK PM L + ORB L vol=2.5x pos=v53 vwap=below ema=bear rs=+0% adx=33 body=35% O685.9 H686.1 L684.98 C685.51 ATR=7.79 SL=686.29/686.68 rawVol=89293 volSMA=35598 buf=0.39 prices=686.09/685.92
+2025-12-08T09:50:00.000-05:00,[KLB] 9:50 ▼ ~ ~ Yest H vol=2.5x pos=v53 vwap=below ema=bear rs=+0% adx=33 body=35% O685.9 H686.1 L684.98 C685.51 ATR=7.79 SL=686.29/686.68 rawVol=89293 volSMA=35598 buf=0.39 prices=688.39
+2025-12-08T09:50:00.000-05:00,"[KLB] 9:50 ▼ ◆ ◆¹ PM L 2.3x v10
+◆¹ ORB L 2.3x v10 vol= pos= vwap=below ema=bear rs=+0% adx=33 body=35% O685.9 H686.1 L684.98 C685.51 ATR=7.79 SL=686.29/686.68 rawVol=89293 volSMA=35598 buf=0.39 prices="
+2025-12-08T10:00:00.000-05:00,[KLB] 10:00 ▼ ~ ~ Yest H vol=2.1x pos=v85 vwap=below ema=bear rs=+0% adx=37 body=68% O685.85 H685.95 L685.35 C685.44 ATR=7.79 SL=686.22/686.61 rawVol=92249 volSMA=43800 buf=0.39 prices=688.39
+2025-12-08T10:15:00.000-05:00,[KLB] 10:15 ▼ ~ ~ VWAP vol=1.2x pos=v78 vwap=below ema=bear rs=+0% adx=43 body=78% O685.23 H685.23 L684.83 C684.92 ATR=7.79 SL=685.7/686.09 rawVol=65790 volSMA=52855 buf=0.39 prices=
+2025-12-09T09:40:00.000-05:00,[KLB] 9:40 ▲ ~ ~ Yest L vol=7.5x pos=^79 vwap=above ema=bear rs=+0% adx=43 body=67% O683.42 H684.04 L683.34 C683.89 ATR=7.6 SL=683.13/682.75 rawVol=128130 volSMA=21123 buf=0.38 prices=681.57
+2025-12-09T09:50:00.000-05:00,[KLB] 9:50 ▲ ~ ~ Yest L vol=4.3x pos=^90 vwap=above ema=bear rs=+0% adx=39 body=56% O683.7 H684.11 L683.48 C684.05 ATR=7.6 SL=683.29/682.91 rawVol=152154 volSMA=35252 buf=0.38 prices=681.57
+2025-12-09T14:45:00.000-05:00,"[KLB] 14:45 ▼ ~ ~ ORB H
+~ VWAP vol=1.2x pos=v62 vwap=below ema=bear rs=+0% adx=27 body=58% O683.66 H683.68 L683.2 C683.38 ATR=7.6 SL=684.14/684.52 rawVol=73192 volSMA=62629 buf=0.38 prices=683.67"
+2025-12-09T15:25:00.000-05:00,[KLB] 15:25 ▼ ~ ~ ORB H vol=1.4x pos=v100 vwap=below ema=bear rs=+0% adx=26 body=42% O683.52 H683.67 L683.41 C683.41 ATR=7.6 SL=684.17/684.55 rawVol=103784 volSMA=74351 buf=0.38 prices=683.67
+2025-12-09T15:30:00.000-05:00,[KLB] 15:30 ▼ ~ ~ ORB H vol=1.4x pos=v84 vwap=below ema=bear rs=+0% adx=26 body=42% O683.41 H683.49 L683.3 C683.33 ATR=7.6 SL=684.09/684.47 rawVol=97191 volSMA=74061 buf=0.38 prices=683.67
+2025-12-09T15:55:00.000-05:00,[KLB] 15:55 ▼ ~ ~ ORB H vol=3.3x pos=v94 vwap=below ema=bear rs=+0% adx=29 body=70% O683.43 H683.61 L682.84 C682.89 ATR=7.6 SL=683.65/684.03 rawVol=322054 volSMA=98001 buf=0.38 prices=683.67
+2025-12-10T09:45:00.000-05:00,[KLB] 9:45 ▲ ~ ~ ORB L vol=7.6x pos=^60 vwap=above ema=bear rs=+0% adx=22 body=33% O682.32 H683.07 L682.05 C682.66 ATR=7.26 SL=681.93/681.57 rawVol=175797 volSMA=32471 buf=0.363 prices=682.06
+2025-12-10T09:55:00.000-05:00,[KLB] 5m CHECK 9:55 ▲ pnl=0 → BAIL
+2025-12-10T10:10:00.000-05:00,[KLB] 10:10 ▲ ~ ~ Yest L vol=1.4x pos=^48 vwap=above ema=bull rs=+0% adx=22 body=33% O682.91 H683.37 L682.83 C683.09 ATR=7.26 SL=682.36/682 rawVol=84637 volSMA=62425 buf=0.363 prices=682.59
+2025-12-10T10:20:00.000-05:00,[KLB] 10:20 ▲ ~ ~ Yest L vol=1.4x pos=^74 vwap=above ema=bull rs=+0% adx=21 body=47% O683.03 H683.45 L682.87 C683.3 ATR=7.26 SL=682.57/682.21 rawVol=98543 volSMA=72069 buf=0.363 prices=682.59
+2025-12-10T10:35:00.000-05:00,[KLB] 10:35 ▼ ~ ~ ORB H vol=1.3x pos=v80 vwap=below ema=bull rs=+0% adx=22 body=69% O682.98 H683.06 L682.35 C682.49 ATR=7.26 SL=683.22/683.58 rawVol=110607 volSMA=85828 buf=0.363 prices=682.76
+2025-12-10T10:50:00.000-05:00,[KLB] 10:50 ▲ ~ ~ Yest L + ~ ORB L vol=1.2x pos=^100 vwap=above ema=bull rs=+0% adx=25 body=91% O682.31 H683.16 L682.23 C683.16 ATR=7.26 SL=682.43/682.07 rawVol=91916 volSMA=105874 buf=0.363 prices=682.59/682.06
+2025-12-10T10:55:00.000-05:00,[KLB] 10:55 ▼ ~ ~ Yest H + ~ ORB H vol=1x pos=v97 vwap=below ema=bear rs=+0% adx=24 body=89% O683.16 H683.23 L682.29 C682.32 ATR=7.26 SL=683.05/683.41 rawVol=113466 volSMA=111374 buf=0.363 prices=685.39/682.76
+2025-12-10T11:15:00.000-05:00,[KLB] 11:15 ▲ ~ ~ Yest L vol=0.9x pos=^100 vwap=above ema=bear rs=+0% adx=24 body=80% O682.48 H683.12 L682.32 C683.12 ATR=7.26 SL=682.39/682.03 rawVol=115706 volSMA=123524 buf=0.363 prices=682.59
+2025-12-10T11:20:00.000-05:00,"[KLB] 11:20 ▲ ~ ~ Yest L
+~ VWAP vol=1.4x pos=^97 vwap=above ema=bull rs=+0% adx=22 body=79% O683.13 H683.64 L683.02 C683.62 ATR=7.26 SL=682.89/682.53 rawVol=173874 volSMA=119921 buf=0.363 prices=682.59"
+2025-12-11T09:40:00.000-05:00,[KLB] 9:40 ▲ ~ ~ ORB L vol=8.3x pos=^60 vwap=above ema=bull rs=+0% adx=21 body=49% O684.7 H685.81 L684.57 C685.31 ATR=7.28 SL=684.58/684.22 rawVol=205855 volSMA=24774 buf=0.364 prices=684.48
+2025-12-11T09:50:00.000-05:00,"[KLB] 9:50 ▼ ~ ~ ORB H
+~ VWAP vol=4.7x pos=v99 vwap=below ema=bull rs=+0% adx=21 body=92% O685.57 H685.7 L683.64 C683.67 ATR=7.28 SL=684.4/684.76 rawVol=191934 volSMA=40970 buf=0.364 prices=685.36"
+2025-12-11T09:50:00.000-05:00,[KLB] 5m CHECK 9:50 ▲ pnl=-0.26 → BAIL
+2025-12-11T10:15:00.000-05:00,"[KLB] 10:15 ▲ ~ ~ ORB L
+~ VWAP vol=2.1x pos=^74 vwap=above ema=bear rs=+0% adx=23 body=30% O684.69 H685.38 L684.15 C685.06 ATR=7.28 SL=684.33/683.97 rawVol=152419 volSMA=88651 buf=0.364 prices=684.48"
+2025-12-11T10:20:00.000-05:00,[KLB] 10:20 ▲ ~ ~ ORB L vol=1.6x pos=^100 vwap=above ema=bear rs=+0% adx=22 body=50% O685 H685.42 L684.58 C685.42 ATR=7.28 SL=684.69/684.33 rawVol=102533 volSMA=93341 buf=0.364 prices=684.48
+2025-12-11T14:20:00.000-05:00,[KLB] 14:20 ▲ BRK Week H vol=1.6x pos=^83 vwap=above ema=bull rs=+0% adx=26 body=81% O688.25 H688.76 L688.24 C688.67 ATR=7.28 SL=687.94/687.58 rawVol=155836 volSMA=95102 buf=0.364 prices=688.39
+2025-12-11T14:20:00.000-05:00,[KLB] 14:20 ▲ ◆ ◆¹ Week H 1.1x ^72 vol= pos= vwap=above ema=bull rs=+0% adx=26 body=81% O688.25 H688.76 L688.24 C688.67 ATR=7.28 SL=687.94/687.58 rawVol=155836 volSMA=95102 buf=0.364 prices=
+2025-12-12T09:40:00.000-05:00,[KLB] 9:40 ▲ BRK Week H vol=10.4x pos=^86 vwap=above ema=bull rs=+0% adx=24 body=58% O688.4 H688.87 L688.21 C688.78 ATR=7.27 SL=688.05/687.69 rawVol=98207 volSMA=23376 buf=0.364 prices=688.39
+2025-12-12T09:45:00.000-05:00,[KLB] 9:45 ▼ ~ ~ Week H + ~ ORB H vol=5.5x pos=v85 vwap=below ema=bull rs=+0% adx=25 body=77% O688.79 H688.88 L687.79 C687.95 ATR=7.27 SL=688.68/689.04 rawVol=172377 volSMA=31614 buf=0.364 prices=688.39/688.68
+2025-12-12T09:45:00.000-05:00,[KLB] CONF 9:45 ▲ BRK → ✗ (failed)
+2025-12-12T09:50:00.000-05:00,[KLB] 9:50 ▼ ~ ~ VWAP vol=4.5x pos=v99 vwap=below ema=bear rs=+0% adx=26 body=73% O687.95 H688.15 L687.37 C687.38 ATR=7.27 SL=688.11/688.47 rawVol=136688 volSMA=38299 buf=0.364 prices=
+2025-12-12T09:55:00.000-05:00,[KLB] 5m CHECK 9:55 ▼ pnl=-0.07 → BAIL
+2025-12-12T10:05:00.000-05:00,[KLB] 10:05 ▼ BRK ORB L vol=2.4x pos=v89 vwap=below ema=bear rs=+0% adx=31 body=84% O687.46 H687.51 L686.59 C686.69 ATR=7.27 SL=687.42/687.78 rawVol=130226 volSMA=54083 buf=0.364 prices=687.7
+2025-12-12T10:10:00.000-05:00,[KLB] 10:10 ▼ BRK PM L vol=2.6x pos=v75 vwap=below ema=bear rs=+0% adx=33 body=61% O686.71 H686.89 L685.58 C685.91 ATR=7.27 SL=686.64/687 rawVol=157926 volSMA=61628 buf=0.364 prices=686.55
+2025-12-12T10:10:00.000-05:00,[KLB] CONF 10:10 ▼ BRK → ✓ (auto-promote)
+2025-12-12T10:10:00.000-05:00,[KLB] 10:10 ▼ ◆ ◆¹ PM L 2.3x v87 vol= pos= vwap=below ema=bear rs=+0% adx=33 body=61% O686.71 H686.89 L685.58 C685.91 ATR=7.27 SL=686.64/687 rawVol=157926 volSMA=61628 buf=0.364 prices=
+2025-12-12T10:15:00.000-05:00,[KLB] 5m CHECK 10:15 ▼ pnl=0 → BAIL
+2025-12-12T11:00:00.000-05:00,[KLB] 11:00 ▼ BRK Yest L vol=2.5x pos=v83 vwap=below ema=bear rs=+0% adx=52 body=83% O683.87 H683.87 L681.31 C681.74 ATR=7.27 SL=682.47/682.83 rawVol=392781 volSMA=156644 buf=0.364 prices=682.17
+2025-12-12T11:00:00.000-05:00,[KLB] CONF 11:00 ▼ BRK → ✓ (auto-promote)
+2025-12-12T11:00:00.000-05:00,[KLB] 11:00 ▼ ◆ ◆¹ Yest L 2.4x v100 vol= pos= vwap=below ema=bear rs=+0% adx=52 body=83% O683.87 H683.87 L681.31 C681.74 ATR=7.27 SL=682.47/682.83 rawVol=392781 volSMA=156644 buf=0.364 prices=
+2025-12-12T11:05:00.000-05:00,[KLB] 5m CHECK 11:05 ▼ pnl=0.15 → HOLD
+2025-12-12T12:15:00.000-05:00,[KLB] CONF 12:15 ▼ BRK → ✗ (failed)
+2025-12-15T09:30:00.000-05:00,[KLB] 9:30 ▲ ~ ~ VWAP vol=1.7x pos=^63 vwap=above ema=bull rs=+0.6% adx=21 body=38% O685.38 H685.87 L685.22 C685.63 ATR=7.47 SL=684.88/684.51 rawVol=13095 volSMA=7632 buf=0.373 prices=
+2025-12-15T09:35:00.000-05:00,[KLB] 9:35 ▼ ~ ~ PM H vol=13.8x pos=v99 vwap=below ema=bull rs=+0% adx=22 body=97% O685.72 H685.76 L683.94 C683.96 ATR=7.47 SL=684.71/685.08 rawVol=330759 volSMA=24042 buf=0.373 prices=685.87
+2025-12-15T09:40:00.000-05:00,[KLB] 9:40 ▼ ~ ~ VWAP vol=10.5x pos=v98 vwap=below ema=bull rs=+0% adx=23 body=32% O683.97 H684.79 L683.56 C683.58 ATR=7.47 SL=684.33/684.7 rawVol=154504 volSMA=31389 buf=0.373 prices=
+2025-12-15T09:45:00.000-05:00,[KLB] 5m CHECK 9:45 ▼ pnl=-0.01 → BAIL
+2025-12-15T11:20:00.000-05:00,[KLB] 11:20 ▲ ~ ~ Yest L vol=1x pos=^99 vwap=above ema=bear rs=+0% adx=35 body=97% O681.02 H682.65 L680.99 C682.63 ATR=7.47 SL=681.88/681.51 rawVol=145246 volSMA=141994 buf=0.373 prices=679.17
+2025-12-16T09:30:00.000-05:00,[KLB] 9:30 ▼ ~ ~ VWAP vol=1.6x pos=v90 vwap=below ema=bull rs=-0.2% adx=22 body=76% O679.78 H679.9 L679.07 C679.15 ATR=7.4 SL=679.89/680.26 rawVol=24335 volSMA=15561 buf=0.37 prices=
+2025-12-16T09:45:00.000-05:00,[KLB] 9:45 ▼ BRK Yest L + Week L + ORB L vol=3.9x pos=v62 vwap=below ema=bear rs=+0% adx=20 body=55% O679.47 H679.57 L678.17 C678.7 ATR=7.4 SL=679.44/679.81 rawVol=168728 volSMA=43365 buf=0.37 prices=679.25/679.17/678.83
+2025-12-16T09:50:00.000-05:00,[KLB] CONF 9:50 ▼ BRK → ✗ (failed)
+2025-12-16T14:45:00.000-05:00,[KLB] 14:45 ▲ ~ ~ PM L vol=0.8x pos=^78 vwap=above ema=bear rs=+0% adx=21 body=44% O677.53 H678.13 L677.23 C677.93 ATR=7.4 SL=677.19/676.82 rawVol=78686 volSMA=100064 buf=0.37 prices=677.48
+2025-12-16T15:05:00.000-05:00,"[KLB] 15:05 ▲ ~ ~ PM L
+~ VWAP vol=1.4x pos=^95 vwap=above ema=bear rs=+0% adx=22 body=67% O677.94 H678.75 L677.63 C678.69 ATR=7.4 SL=677.95/677.58 rawVol=143397 volSMA=102598 buf=0.37 prices=677.48"
+2025-12-16T15:25:00.000-05:00,[KLB] 15:25 ▲ ~~ ~~ ORB L vol=1.1x pos=^97 vwap=above ema=bull rs=+0% adx=26 body=82% O678.68 H679.25 L678.58 C679.23 ATR=7.4 SL=678.49/678.12 rawVol=116207 volSMA=106697 buf=0.37 prices=678.83
+2025-12-16T15:35:00.000-05:00,[KLB] 15:35 ▲ ~~ ~~ Week L vol=2.2x pos=^77 vwap=above ema=bull rs=+0% adx=29 body=75% O679.19 H680 L679.17 C679.81 ATR=7.4 SL=679.07/678.7 rawVol=251051 volSMA=115474 buf=0.37 prices=679.17
+2025-12-17T09:40:00.000-05:00,[KLB] 9:40 ▼ BRK Week L + ORB L vol=9.1x pos=v98 vwap=below ema=bear rs=+0% adx=36 body=79% O679.78 H680.02 L678.79 C678.81 ATR=7.3 SL=679.54/679.91 rawVol=357458 volSMA=39454 buf=0.365 prices=679.17/679.2
+2025-12-17T09:40:00.000-05:00,"[KLB] 9:40 ▼ ~ ~ Yest H
+~ VWAP vol=9.1x pos=v98 vwap=below ema=bear rs=+0% adx=36 body=79% O679.78 H680.02 L678.79 C678.81 ATR=7.3 SL=679.54/679.91 rawVol=357458 volSMA=39454 buf=0.365 prices=681.08"
+2025-12-17T09:40:00.000-05:00,"[KLB] 9:40 ▼ ◆ ◆¹ Week L 5.6x v62
+◆¹ ORB L 5.6x v62 vol= pos= vwap=below ema=bear rs=+0% adx=36 body=79% O679.78 H680.02 L678.79 C678.81 ATR=7.3 SL=679.54/679.91 rawVol=357458 volSMA=39454 buf=0.365 prices="
+2025-12-17T09:50:00.000-05:00,[KLB] 5m CHECK 9:50 ▼ pnl=-0.01 → BAIL
+2025-12-17T10:00:00.000-05:00,[KLB] 10:00 ▲ ~ ~ PM L + ~ Yest L vol=1.6x pos=^85 vwap=above ema=bear rs=+0% adx=42 body=61% O678.29 H679.52 L677.89 C679.28 ATR=7.3 SL=678.55/678.18 rawVol=122131 volSMA=75261 buf=0.365 prices=679/674.98
+2025-12-17T10:10:00.000-05:00,[KLB] 10:10 ▼ BRK PM L vol=1.8x pos=v97 vwap=below ema=bear rs=+0% adx=42 body=38% O678.93 H679.67 L678.42 C678.46 ATR=7.3 SL=679.19/679.56 rawVol=102426 volSMA=87194 buf=0.365 prices=679
+2025-12-17T10:10:00.000-05:00,[KLB] 10:10 ▼ ~ ~ Yest H vol=1.8x pos=v97 vwap=below ema=bear rs=+0% adx=42 body=38% O678.93 H679.67 L678.42 C678.46 ATR=7.3 SL=679.19/679.56 rawVol=102426 volSMA=87194 buf=0.365 prices=681.08
+2025-12-17T10:10:00.000-05:00,[KLB] CONF 10:10 ▼ BRK → ✓★ (auto-promote)
+2025-12-17T10:10:00.000-05:00,[KLB] 10:10 ▼ ◆ ◆¹ PM L 0.8x v20 vol= pos= vwap=below ema=bear rs=+0% adx=42 body=38% O678.93 H679.67 L678.42 C678.46 ATR=7.3 SL=679.19/679.56 rawVol=102426 volSMA=87194 buf=0.365 prices=
+2025-12-17T10:15:00.000-05:00,[KLB] 5m CHECK 10:15 ▼ pnl=-0.06 → BAIL
+2025-12-17T10:55:00.000-05:00,[KLB] 10:55 ▼ BRK Yest L vol=2.5x pos=v81 vwap=below ema=bear rs=+0% adx=46 body=68% O675.91 H676.12 L674.51 C674.82 ATR=7.3 SL=675.55/675.92 rawVol=224674 volSMA=159242 buf=0.365 prices=674.98
+2025-12-17T10:55:00.000-05:00,[KLB] CONF 10:55 ▼ BRK → ✓ (auto-promote)
+2025-12-17T10:55:00.000-05:00,[KLB] 10:55 ▼ ◆ ◆¹ Yest L 1.3x v36 vol= pos= vwap=below ema=bear rs=+0% adx=46 body=68% O675.91 H676.12 L674.51 C674.82 ATR=7.3 SL=675.55/675.92 rawVol=224674 volSMA=159242 buf=0.365 prices=
+2025-12-17T11:00:00.000-05:00,[KLB] 5m CHECK 11:00 ▼ pnl=0.03 → BAIL
+2025-12-17T11:05:00.000-05:00,[KLB] CONF 11:05 ▼ BRK → ✗ (failed)
+2025-12-18T09:30:00.000-05:00,[KLB] 9:30 ▲ ~ ~ VWAP vol=1x pos=^88 vwap=above ema=bull rs=+0.9% adx=43 body=80% O677.15 H677.67 L677.11 C677.6 ATR=7.44 SL=676.86/676.48 rawVol=18940 volSMA=19820 buf=0.372 prices=
+2025-12-18T09:50:00.000-05:00,[KLB] 5m CHECK 9:50 ▼ pnl=0.01 → BAIL
+2025-12-18T10:00:00.000-05:00,[KLB] 10:00 ▲ BRK PM H vol=2x pos=^77 vwap=above ema=bull rs=+0% adx=41 body=45% O677.57 H678.31 L677.22 C678.06 ATR=7.44 SL=677.32/676.94 rawVol=148767 volSMA=86120 buf=0.372 prices=677.67
+2025-12-18T10:00:00.000-05:00,[KLB] 10:00 ▲ ~ ~ ORB L vol=2x pos=^77 vwap=above ema=bull rs=+0% adx=41 body=45% O677.57 H678.31 L677.22 C678.06 ATR=7.44 SL=677.32/676.94 rawVol=148767 volSMA=86120 buf=0.372 prices=677.33
+2025-12-18T10:00:00.000-05:00,[KLB] 10:00 ▲ ◆ ◆¹ PM H 2.2x ^45 vol= pos= vwap=above ema=bull rs=+0% adx=41 body=45% O677.57 H678.31 L677.22 C678.06 ATR=7.44 SL=677.32/676.94 rawVol=148767 volSMA=86120 buf=0.372 prices=
+2025-12-18T10:10:00.000-05:00,[KLB] CONF 10:10 ▲ BRK → ✗ (failed)
+2025-12-18T10:15:00.000-05:00,[KLB] 10:15 ▼ ~~ ~~ PM H vol=1.9x pos=v64 vwap=below ema=bull rs=+0% adx=36 body=57% O677.48 H677.57 L676.28 C676.75 ATR=7.44 SL=677.49/677.87 rawVol=200597 volSMA=103237 buf=0.372 prices=677.67
+2025-12-18T10:25:00.000-05:00,[KLB] 10:25 ▲ ~ ~ ORB L vol=1.1x pos=^97 vwap=above ema=bull rs=+0% adx=33 body=81% O676.54 H678.39 L676.17 C678.33 ATR=7.44 SL=677.59/677.21 rawVol=121403 volSMA=110978 buf=0.372 prices=677.33
+2025-12-18T10:30:00.000-05:00,[KLB] 10:30 ▲ BRK ORB H vol=1.6x pos=^89 vwap=above ema=bull rs=+0% adx=32 body=75% O678.31 H679.12 L678.18 C679.01 ATR=7.44 SL=678.27/677.89 rawVol=190029 volSMA=117813 buf=0.372 prices=678.59
+2025-12-18T10:30:00.000-05:00,[KLB] 10:30 ▲ ◆ ◆¹ ORB H 1.5x ^99 vol= pos= vwap=above ema=bull rs=+0% adx=32 body=75% O678.31 H679.12 L678.18 C679.01 ATR=7.44 SL=678.27/677.89 rawVol=190029 volSMA=117813 buf=0.372 prices=
+2025-12-18T10:35:00.000-05:00,[KLB] 10:35 ▲ ~ ~ Week L vol=1.5x pos=^99 vwap=above ema=bull rs=+0% adx=33 body=61% O679.01 H679.57 L678.67 C679.56 ATR=7.44 SL=678.82/678.44 rawVol=172299 volSMA=125726 buf=0.372 prices=679.17
+2025-12-18T10:40:00.000-05:00,[KLB] 10:40 ▲ ~ ~ Week L vol=1.7x pos=^76 vwap=above ema=bull rs=+0% adx=33 body=47% O679.56 H680.56 L679.16 C680.22 ATR=7.44 SL=679.48/679.1 rawVol=227063 volSMA=136710 buf=0.372 prices=679.17
+2025-12-18T12:05:00.000-05:00,[KLB] CONF 12:05 ▲ BRK → ✗ (failed)
+2025-12-18T12:10:00.000-05:00,"[KLB] 12:10 ▼ ~~ ~~ PM H + ~~ ORB H
+~ VWAP vol=2.2x pos=v98 vwap=below ema=bull rs=+0% adx=28 body=95% O678.83 H678.89 L676.83 C676.87 ATR=7.44 SL=677.61/677.99 rawVol=294412 volSMA=133877 buf=0.372 prices=677.67/678.59"
+2025-12-18T12:45:00.000-05:00,[KLB] 12:45 ▲ ~ ~ ORB L vol=1.3x pos=^100 vwap=above ema=bull rs=+0% adx=31 body=100% O677.24 H678.26 L677.24 C678.26 ATR=7.44 SL=677.52/677.14 rawVol=226861 volSMA=170698 buf=0.372 prices=677.33
+2025-12-18T12:50:00.000-05:00,[KLB] 12:50 ▼ ~~ ~~ ORB H vol=1.3x pos=v79 vwap=below ema=bull rs=+0% adx=29 body=40% O678.28 H678.7 L677.63 C677.85 ATR=7.44 SL=678.59/678.97 rawVol=234459 volSMA=177655 buf=0.372 prices=678.59
+2025-12-18T13:00:00.000-05:00,[KLB] 13:00 ▲ ~ ~ ORB L vol=1x pos=^97 vwap=above ema=bull rs=+0% adx=25 body=54% O677.85 H678.39 L677.45 C678.36 ATR=7.44 SL=677.62/677.24 rawVol=156077 volSMA=182368 buf=0.372 prices=677.33
+2025-12-18T13:05:00.000-05:00,[KLB] 13:05 ▼ ~~ ~~ ORB H vol=0.9x pos=v91 vwap=below ema=bull rs=+0% adx=23 body=88% O678.36 H678.39 L677.58 C677.65 ATR=7.44 SL=678.39/678.77 rawVol=173171 volSMA=187777 buf=0.372 prices=678.59
+2025-12-18T13:40:00.000-05:00,[KLB] 13:40 ▲ ~ ~ Week L vol=0.6x pos=^41 vwap=above ema=bull rs=+0% adx=20 body=41% O679.25 H679.69 L679.25 C679.43 ATR=7.44 SL=678.69/678.31 rawVol=105845 volSMA=183854 buf=0.372 prices=679.17
+2025-12-19T09:45:00.000-05:00,[KLB] 9:45 ▲ BRK ORB H vol=5x pos=^100 vwap=above ema=bull rs=+0% adx=21 body=81% O678.07 H679.41 L677.76 C679.41 ATR=7.58 SL=678.65/678.27 rawVol=254176 volSMA=50409 buf=0.379 prices=678.22
+2025-12-19T09:45:00.000-05:00,"[KLB] 9:45 ▲ ~ ~ Week L
+~ VWAP vol=5x pos=^100 vwap=above ema=bull rs=+0% adx=21 body=81% O678.07 H679.41 L677.76 C679.41 ATR=7.58 SL=678.65/678.27 rawVol=254176 volSMA=50409 buf=0.379 prices=679.17"
+2025-12-19T10:00:00.000-05:00,[KLB] 10:00 ▲ ~ ~ Week L vol=2.1x pos=^91 vwap=above ema=bull rs=+0% adx=25 body=67% O679.25 H679.9 L679.05 C679.82 ATR=7.58 SL=679.06/678.68 rawVol=166882 volSMA=80619 buf=0.379 prices=679.17
+2025-12-19T11:10:00.000-05:00,[KLB] 11:10 ▲ ~ ~ Week L vol=0.6x pos=^65 vwap=above ema=bull rs=+0% adx=21 body=48% O679.39 H679.96 L679.27 C679.72 ATR=7.58 SL=678.96/678.58 rawVol=66565 volSMA=185823 buf=0.379 prices=679.17
+2025-12-22T09:40:00.000-05:00,[KLB] 9:40 ▼ ~ ~ PM H vol=10.1x pos=v79 vwap=below ema=bull rs=+0% adx=21 body=45% O683.67 H683.93 L683.16 C683.32 ATR=7.37 SL=684.06/684.43 rawVol=185459 volSMA=29604 buf=0.368 prices=684.11
+2025-12-22T09:50:00.000-05:00,[KLB] 5m CHECK 9:50 ▼ pnl=-0.02 → BAIL
+2025-12-22T09:55:00.000-05:00,[KLB] 9:55 ▲ ~ ~ ORB L vol=2.8x pos=^91 vwap=above ema=bull rs=+0% adx=20 body=79% O683.38 H684.06 L683.29 C683.99 ATR=7.37 SL=683.25/682.88 rawVol=93352 volSMA=47843 buf=0.368 prices=683.39
+2025-12-22T10:45:00.000-05:00,[KLB] 10:45 ▲ ~ ~ ORB L vol=1.3x pos=^93 vwap=above ema=bull rs=+0% adx=21 body=91% O682.89 H683.79 L682.87 C683.72 ATR=7.37 SL=682.98/682.61 rawVol=123333 volSMA=95831 buf=0.368 prices=683.39
+2025-12-23T09:35:00.000-05:00,[KLB] 9:35 ▲ ~ ~ Yest L vol=12.5x pos=^67 vwap=above ema=bear rs=+0% adx=50 body=64% O683.92 H685.6 L683.87 C685.03 ATR=7.18 SL=684.31/683.95 rawVol=197995 volSMA=15901 buf=0.359 prices=680.59
+2025-12-23T09:45:00.000-05:00,[KLB] 5m CHECK 9:45 ▲ pnl=0.06 → HOLD
+2025-12-23T10:05:00.000-05:00,[KLB] 10:05 ▼ ~ ~ PM H + ~ Yest H + ~ ORB H vol=2.2x pos=v92 vwap=below ema=bull rs=+0% adx=42 body=86% O685.42 H685.49 L684.45 C684.53 ATR=7.18 SL=685.25/685.61 rawVol=115833 volSMA=52808 buf=0.359 prices=685.57/685.36/685.6
+2025-12-23T10:40:00.000-05:00,[KLB] 10:40 ▲ ~ ~ VWAP vol=0.7x pos=^85 vwap=above ema=bull rs=+0% adx=29 body=78% O685.64 H686.01 L685.61 C685.95 ATR=7.18 SL=685.23/684.87 rawVol=55945 volSMA=80391 buf=0.359 prices=
+2025-12-24T09:55:00.000-05:00,[KLB] 9:55 ▲ BRK PM H + ORB H vol=5x pos=^91 vwap=above ema=bull rs=+0% adx=22 body=90% O688.38 H688.71 L688.37 C688.68 ATR=6.98 SL=687.98/687.63 rawVol=161445 volSMA=32182 buf=0.349 prices=688.34/688.33
+2025-12-24T09:55:00.000-05:00,"[KLB] 9:55 ▲ ◆ ◆¹ PM H 2.4x ^48
+◆¹ ORB H 2.4x ^48 vol= pos= vwap=above ema=bull rs=+0% adx=22 body=90% O688.38 H688.71 L688.37 C688.68 ATR=6.98 SL=687.98/687.63 rawVol=161445 volSMA=32182 buf=0.349 prices="
+2025-12-24T11:15:00.000-05:00,[KLB] 11:15 ▲ ~ ~ VWAP vol=1.6x pos=^97 vwap=above ema=bull rs=+0% adx=46 body=97% O689.57 H689.9 L689.57 C689.89 ATR=6.98 SL=689.19/688.84 rawVol=154846 volSMA=96692 buf=0.349 prices=
+2025-12-26T09:40:00.000-05:00,[KLB] 9:40 ▲ BRK PM H + Yest H vol=10.3x pos=^92 vwap=above ema=bull rs=+0% adx=20 body=75% O690.94 H691.37 L690.85 C691.33 ATR=6.7 SL=690.66/690.33 rawVol=121987 volSMA=17336 buf=0.335 prices=690.83/690.83
+2025-12-26T09:45:00.000-05:00,[KLB] 9:45 ▲ BRK ORB H vol=6.3x pos=^100 vwap=above ema=bull rs=+0% adx=23 body=73% O691.32 H691.56 L691.23 C691.56 ATR=6.7 SL=690.89/690.56 rawVol=158539 volSMA=25184 buf=0.335 prices=691.09
+2025-12-26T09:45:00.000-05:00,[KLB] CONF 9:45 ▲ BRK → ✓★ (auto-promote)
+2025-12-26T09:45:00.000-05:00,[KLB] 9:45 ▲ ◆ ◆¹ ORB H 5.6x ^13 vol= pos= vwap=above ema=bull rs=+0% adx=23 body=73% O691.32 H691.56 L691.23 C691.56 ATR=6.7 SL=690.89/690.56 rawVol=158539 volSMA=25184 buf=0.335 prices=
+2025-12-26T09:50:00.000-05:00,[KLB] 5m CHECK 9:50 ▲ pnl=-0.05 → BAIL
+2025-12-26T09:50:00.000-05:00,[KLB] CONF 9:50 ▲ BRK → ✗ (failed)
+2025-12-26T09:55:00.000-05:00,[KLB] 9:55 ▼ ~~ ~~ ORB H vol=4.5x pos=v55 vwap=below ema=bull rs=+0% adx=25 body=54% O691.25 H691.26 L690.46 C690.82 ATR=6.7 SL=691.49/691.82 rawVol=185312 volSMA=41304 buf=0.335 prices=691.09
+2025-12-26T10:05:00.000-05:00,[KLB] 10:05 ▼ ~~ ~~ PM H + ~~ Yest H vol=2.7x pos=v62 vwap=below ema=bull rs=+0% adx=23 body=55% O690.76 H690.82 L689.88 C690.24 ATR=6.7 SL=690.91/691.24 rawVol=140482 volSMA=52196 buf=0.335 prices=690.83/690.83
+2025-12-26T10:15:00.000-05:00,"[KLB] 10:15 ▼ ~~ ~~ Yest H
+~ VWAP vol=2.2x pos=v75 vwap=below ema=bull rs=+0% adx=24 body=69% O690.35 H690.39 L689.75 C689.91 ATR=6.7 SL=690.58/690.91 rawVol=141783 volSMA=63760 buf=0.335 prices=690.83"
+2025-12-26T10:40:00.000-05:00,[KLB] 10:40 ▼ ~~ ~~ ORB H vol=0.8x pos=v82 vwap=below ema=bull rs=+0% adx=22 body=59% O690.91 H690.99 L690.65 C690.71 ATR=6.7 SL=691.38/691.71 rawVol=68969 volSMA=88067 buf=0.335 prices=691.09
+2025-12-26T10:45:00.000-05:00,[KLB] 10:45 ▼ ~~ ~~ PM H vol=0.8x pos=v100 vwap=below ema=bull rs=+0% adx=21 body=85% O690.72 H690.76 L690.5 C690.5 ATR=6.7 SL=691.17/691.5 rawVol=55166 volSMA=90688 buf=0.335 prices=690.83
+2025-12-26T13:25:00.000-05:00,[KLB] 13:25 ▼ BRK PM L vol=1.8x pos=v51 vwap=below ema=bear rs=+0% adx=21 body=39% O689.72 H689.78 L689.27 C689.52 ATR=6.7 SL=690.19/690.52 rawVol=100186 volSMA=54999 buf=0.335 prices=689.82
+2025-12-26T13:25:00.000-05:00,[KLB] 13:25 ▼ ◆ ◆¹ PM L 0.7x v3 vol= pos= vwap=below ema=bear rs=+0% adx=21 body=39% O689.72 H689.78 L689.27 C689.52 ATR=6.7 SL=690.19/690.52 rawVol=100186 volSMA=54999 buf=0.335 prices=
+2025-12-26T13:45:00.000-05:00,[KLB] CONF 13:45 ▼ BRK → ✗ (failed)
+2025-12-29T09:45:00.000-05:00,[KLB] 5m CHECK 9:45 ▲ pnl=-0.06 → BAIL
+2025-12-29T09:50:00.000-05:00,[KLB] 9:50 ▼ ~ ~ ORB H vol=4x pos=v63 vwap=below ema=bear rs=+0% adx=30 body=60% O688.35 H688.37 L687.56 C687.86 ATR=6.39 SL=688.5/688.82 rawVol=159961 volSMA=39880 buf=0.319 prices=688.09
+2025-12-29T10:00:00.000-05:00,[KLB] 10:00 ▼ ~ ~ ORB H vol=2.1x pos=v63 vwap=below ema=bear rs=+0% adx=26 body=38% O687.8 H687.96 L687.33 C687.56 ATR=6.39 SL=688.2/688.52 rawVol=92262 volSMA=49431 buf=0.319 prices=688.09
+2025-12-29T10:10:00.000-05:00,[KLB] 10:10 ▼ ~ ~ VWAP vol=1.5x pos=v92 vwap=below ema=bear rs=+0% adx=24 body=48% O687.35 H687.58 L687.06 C687.1 ATR=6.39 SL=687.74/688.06 rawVol=81263 volSMA=55793 buf=0.319 prices=
+2025-12-29T14:55:00.000-05:00,[KLB] 14:55 ▲ ~ ~ VWAP vol=1.3x pos=^75 vwap=above ema=bull rs=+0% adx=21 body=65% O688.11 H688.29 L688.09 C688.24 ATR=6.39 SL=687.6/687.28 rawVol=101747 volSMA=77712 buf=0.319 prices=
+2025-12-31T09:45:00.000-05:00,[KLB] 5m CHECK 9:45 ▼ pnl=0.04 → BAIL
+2025-12-31T09:50:00.000-05:00,[KLB] 9:50 ▼ ~ ~ VWAP vol=4.6x pos=v48 vwap=below ema=bull rs=+0% adx=52 body=35% O685.85 H685.94 L685.28 C685.62 ATR=5.93 SL=686.21/686.51 rawVol=132097 volSMA=37259 buf=0.297 prices=
+2025-12-31T14:05:00.000-05:00,[KLB] 14:05 ▲ ~ ~ VWAP vol=2.2x pos=^54 vwap=above ema=bull rs=+0% adx=27 body=54% O685.83 H686.24 L685.83 C686.05 ATR=5.93 SL=685.46/685.16 rawVol=126823 volSMA=57425 buf=0.297 prices=
+2025-12-31T14:35:00.000-05:00,[KLB] 14:35 ▼ BRK PM L vol=2.2x pos=v95 vwap=below ema=bear rs=+0% adx=26 body=86% O685.04 H685.14 L684.09 C684.14 ATR=5.93 SL=684.73/685.03 rawVol=149535 volSMA=68239 buf=0.297 prices=685
+2025-12-31T14:35:00.000-05:00,[KLB] 14:35 ▼ ◆ ◆¹ PM L 1.8x v47 vol= pos= vwap=below ema=bear rs=+0% adx=26 body=86% O685.04 H685.14 L684.09 C684.14 ATR=5.93 SL=684.73/685.03 rawVol=149535 volSMA=68239 buf=0.297 prices=
+2026-01-02T09:55:00.000-05:00,[KLB] 5m CHECK 9:55 ▲ pnl=0.03 → BAIL
+2026-01-02T10:25:00.000-05:00,[KLB] 10:25 ▼ BRK PM L vol=1.8x pos=v93 vwap=below ema=bear rs=+0% adx=22 body=91% O683.85 H683.89 L682 C682.13 ATR=5.91 SL=682.72/683.02 rawVol=218605 volSMA=122338 buf=0.296 prices=683.82
+2026-01-02T10:35:00.000-05:00,[KLB] 10:35 ▼ ◆ ◆³ PM L 1x v34 vol= pos= vwap=below ema=bear rs=+0% adx=24 body=69% O682.43 H683.61 L682.1 C683.47 ATR=5.91 SL=684.06/684.36 rawVol=138391 volSMA=143912 buf=0.296 prices=
+2026-01-02T10:40:00.000-05:00,[KLB] CONF 10:40 ▼ BRK → ✗ (failed)
+2026-01-02T10:50:00.000-05:00,[KLB] 10:50 ▼ ~ ~ VWAP vol=0.6x pos=v100 vwap=below ema=bear rs=+0% adx=23 body=75% O684.15 H684.43 L683.29 C683.29 ATR=5.91 SL=683.88/684.18 rawVol=101794 volSMA=164044 buf=0.296 prices=
+2026-01-05T09:35:00.000-05:00,[KLB] 9:35 ▲ BRK PM H + Yest H vol=14.9x pos=^55 vwap=above ema=bull rs=+0% adx=30 body=42% O686.54 H687.62 L686.38 C687.06 ATR=5.99 SL=686.46/686.16 rawVol=367227 volSMA=24643 buf=0.3 prices=686.63/686.87
+2026-01-05T09:35:00.000-05:00,"[KLB] 9:35 ▲ ◆ ◆¹ PM H 9x ^61
+◆¹ Yest H 9x ^61 vol= pos= vwap=above ema=bull rs=+0% adx=30 body=42% O686.54 H687.62 L686.38 C687.06 ATR=5.99 SL=686.46/686.16 rawVol=367227 volSMA=24643 buf=0.3 prices="
+2026-01-05T09:45:00.000-05:00,[KLB] 9:45 ▲ ~ ~ VWAP vol=4x pos=^84 vwap=above ema=bull rs=+0% adx=35 body=45% O687.01 H687.54 L686.68 C687.4 ATR=5.99 SL=686.8/686.5 rawVol=177051 volSMA=44418 buf=0.3 prices=
+2026-01-05T15:55:00.000-05:00,"[KLB] 15:55 ▼ ~ ~ ORB H
+~ VWAP vol=2.6x pos=v95 vwap=below ema=bear rs=+0% adx=22 body=82% O687.89 H687.98 L687.27 C687.31 ATR=5.99 SL=687.9/688.2 rawVol=268021 volSMA=102818 buf=0.3 prices=687.62"
+2026-01-06T09:35:00.000-05:00,[KLB] 9:35 ▲ BRK PM H vol=15.5x pos=^62 vwap=above ema=bull rs=+0% adx=24 body=62% O687.91 H688.65 L687.91 C688.37 ATR=6.01 SL=687.77/687.47 rawVol=279463 volSMA=18071 buf=0.301 prices=688.2
+2026-01-06T09:35:00.000-05:00,[KLB] 9:35 ▲ ◆ ◆¹ PM H 10.6x ^34 vol= pos= vwap=above ema=bull rs=+0% adx=24 body=62% O687.91 H688.65 L687.91 C688.37 ATR=6.01 SL=687.77/687.47 rawVol=279463 volSMA=18071 buf=0.301 prices=
+2026-01-06T09:45:00.000-05:00,[KLB] 9:45 ▲ ~ ~ ORB L vol=5.2x pos=^96 vwap=above ema=bull rs=+0% adx=25 body=43% O688.18 H688.53 L687.79 C688.5 ATR=6.01 SL=687.9/687.6 rawVol=190416 volSMA=36805 buf=0.301 prices=687.91
+2026-01-06T09:50:00.000-05:00,[KLB] 9:50 ▲ BRK ORB H vol=4.8x pos=^82 vwap=above ema=bull rs=+0% adx=26 body=81% O688.49 H689.39 L688.48 C689.23 ATR=6.01 SL=688.63/688.33 rawVol=234723 volSMA=48475 buf=0.301 prices=688.65
+2026-01-06T09:50:00.000-05:00,[KLB] 9:50 ▲ ~ ~ VWAP vol=4.8x pos=^82 vwap=above ema=bull rs=+0% adx=26 body=81% O688.49 H689.39 L688.48 C689.23 ATR=6.01 SL=688.63/688.33 rawVol=234723 volSMA=48475 buf=0.301 prices=
+2026-01-06T09:50:00.000-05:00,[KLB] CONF 9:50 ▲ BRK → ✓ (auto-promote)
+2026-01-06T09:55:00.000-05:00,[KLB] 9:55 ▲ BRK Yest H + Week H vol=4.3x pos=^79 vwap=above ema=bull rs=+0% adx=28 body=75% O689.24 H689.88 L689.21 C689.74 ATR=6.01 SL=689.14/688.84 rawVol=261133 volSMA=61397 buf=0.301 prices=689.43/689.2
+2026-01-06T09:55:00.000-05:00,[KLB] CONF 9:55 ▲ BRK → ✓ (auto-promote)
+2026-01-06T10:00:00.000-05:00,[KLB] 5m CHECK 10:00 ▲ pnl=0.06 → HOLD
+2026-01-06T10:45:00.000-05:00,[KLB] 10:45 ▲ ◆ ◆¹¹ Yest H 1x ^70 vol= pos= vwap=above ema=bull rs=+0% adx=38 body=18% O689.87 H690.13 L689.68 C689.79 ATR=6.01 SL=689.19/688.89 rawVol=143393 volSMA=154457 buf=0.301 prices=
+2026-01-06T10:50:00.000-05:00,[KLB] CONF 10:50 ▲ BRK → ✗ (failed)
+2026-01-06T11:05:00.000-05:00,"[KLB] 11:05 ▼ ~~ ~~ Week H
+~ VWAP vol=1.1x pos=v89 vwap=below ema=bull rs=+0% adx=32 body=89% O689.1 H689.1 L688.59 C688.64 ATR=6.01 SL=689.24/689.54 rawVol=138479 volSMA=189132 buf=0.301 prices=689.2"
+2026-01-06T11:45:00.000-05:00,[KLB] 11:45 ▼ ~~ ~~ Week H vol=0.9x pos=v78 vwap=below ema=bull rs=+0% adx=22 body=76% O689.2 H689.21 L688.62 C688.75 ATR=6.01 SL=689.35/689.65 rawVol=145788 volSMA=153897 buf=0.301 prices=689.2
+2026-01-07T10:20:00.000-05:00,[KLB] 10:20 ▼ ~ ~ VWAP vol=1.9x pos=v75 vwap=below ema=bull rs=+0% adx=20 body=73% O691.63 H691.64 L691.12 C691.25 ATR=5.91 SL=691.84/692.14 rawVol=164487 volSMA=88644 buf=0.295 prices=
+2026-01-07T10:35:00.000-05:00,[KLB] 10:35 ▲ ~ ~ ORB L vol=1.6x pos=^97 vwap=above ema=bull rs=+0% adx=21 body=63% O691.68 H692.16 L691.43 C692.14 ATR=5.91 SL=691.55/691.25 rawVol=178912 volSMA=109682 buf=0.295 prices=691.71
+2026-01-07T10:50:00.000-05:00,[KLB] 10:50 ▲ ~ ~ ORB L vol=0.9x pos=^96 vwap=above ema=bull rs=+0% adx=22 body=88% O691.73 H692.42 L691.67 C692.39 ATR=5.91 SL=691.8/691.5 rawVol=125910 volSMA=140452 buf=0.295 prices=691.71
+2026-01-07T13:30:00.000-05:00,[KLB] 13:30 ▼ ~ ~ ORB H vol=1.1x pos=v76 vwap=below ema=bull rs=+0% adx=22 body=62% O692.36 H692.41 L692.04 C692.13 ATR=5.91 SL=692.72/693.02 rawVol=118234 volSMA=103063 buf=0.295 prices=692.43
+2026-01-07T14:15:00.000-05:00,[KLB] 14:15 ▼ ~ ~ PM H + ~ ORB H vol=1.6x pos=v63 vwap=below ema=bull rs=+0% adx=20 body=62% O692.36 H692.37 L691.72 C691.96 ATR=5.91 SL=692.55/692.85 rawVol=174596 volSMA=112616 buf=0.295 prices=692.29/692.43
+2026-01-07T14:25:00.000-05:00,[KLB] 14:25 ▼ ~ ~ Yest H vol=1.5x pos=v79 vwap=below ema=bear rs=+0% adx=24 body=68% O691.95 H691.99 L691.61 C691.69 ATR=5.91 SL=692.28/692.58 rawVol=80550 volSMA=117871 buf=0.295 prices=692.32
+2026-01-07T15:00:00.000-05:00,[KLB] 15:00 ▼ ~ ~ Yest H vol=0.8x pos=v91 vwap=below ema=bear rs=+0% adx=27 body=87% O691.94 H691.95 L691.72 C691.74 ATR=5.91 SL=692.33/692.63 rawVol=85042 volSMA=106566 buf=0.295 prices=692.32
+2026-01-07T15:15:00.000-05:00,[KLB] 15:15 ▼ BRK ORB L vol=2.2x pos=v89 vwap=below ema=bear rs=+0% adx=31 body=88% O691.43 H691.44 L690.7 C690.78 ATR=5.91 SL=691.37/691.67 rawVol=255166 volSMA=114743 buf=0.295 prices=691.71
+2026-01-07T15:40:00.000-05:00,[KLB] 15:40 ▼ BRK PM L vol=2x pos=v83 vwap=below ema=bear rs=+0% adx=42 body=81% O689.76 H689.77 L689.39 C689.45 ATR=5.91 SL=690.04/690.34 rawVol=291678 volSMA=147345 buf=0.295 prices=690
+2026-01-07T15:40:00.000-05:00,[KLB] CONF 15:40 ▼ BRK → ✓ (auto-promote)
+2026-01-07T15:40:00.000-05:00,[KLB] 15:40 ▼ ◆ ◆¹ PM L 1.5x v39 vol= pos= vwap=below ema=bear rs=+0% adx=42 body=81% O689.76 H689.77 L689.39 C689.45 ATR=5.91 SL=690.04/690.34 rawVol=291678 volSMA=147345 buf=0.295 prices=
+2026-01-07T15:45:00.000-05:00,[KLB] 5m CHECK 15:45 ▼ pnl=-0.03 → BAIL
+2026-01-09T09:35:00.000-05:00,[KLB] 9:35 ▲ BRK Yest H vol=11x pos=^58 vwap=below ema=bull rs=+0% adx=33 body=33% O690.65 H691.24 L690.46 C690.91 ATR=5.63 SL=690.35/690.07 rawVol=419203 volSMA=38244 buf=0.281 prices=690.62
+2026-01-09T09:40:00.000-05:00,[KLB] 9:40 ▲ BRK ORB H vol=8x pos=^77 vwap=above ema=bull rs=+0% adx=32 body=75% O690.93 H692.28 L690.91 C691.96 ATR=5.63 SL=691.4/691.12 rawVol=291532 volSMA=52248 buf=0.281 prices=691.24
+2026-01-09T09:40:00.000-05:00,[KLB] 9:40 ▲ ~ ~ VWAP vol=8x pos=^77 vwap=above ema=bull rs=+0% adx=32 body=75% O690.93 H692.28 L690.91 C691.96 ATR=5.63 SL=691.4/691.12 rawVol=291532 volSMA=52248 buf=0.281 prices=
+2026-01-09T09:40:00.000-05:00,[KLB] CONF 9:40 ▲ BRK → ✓ (auto-promote)
+2026-01-09T09:40:00.000-05:00,[KLB] 9:40 ▲ ◆ ◆¹ ORB H 4x ^18 vol= pos= vwap=above ema=bull rs=+0% adx=32 body=75% O690.93 H692.28 L690.91 C691.96 ATR=5.63 SL=691.4/691.12 rawVol=291532 volSMA=52248 buf=0.281 prices=
+2026-01-09T09:45:00.000-05:00,[KLB] 5m CHECK 9:45 ▲ pnl=-0.1 → BAIL
+2026-01-09T09:45:00.000-05:00,[KLB] CONF 9:45 ▲ BRK → ✗ (failed)
+2026-01-09T09:50:00.000-05:00,[KLB] 9:50 ▼ ~~ ~~ ORB H vol=2.9x pos=v67 vwap=below ema=bull rs=+0% adx=29 body=33% O691.4 H691.87 L690.52 C690.96 ATR=5.63 SL=691.52/691.8 rawVol=198281 volSMA=72216 buf=0.281 prices=691.24
+2026-01-09T09:55:00.000-05:00,[KLB] 9:55 ▲ BRK ORB H vol=2.2x pos=^68 vwap=above ema=bull rs=+0% adx=27 body=37% O690.99 H691.71 L690.67 C691.38 ATR=5.63 SL=690.82/690.54 rawVol=179563 volSMA=80997 buf=0.281 prices=691.24
+2026-01-09T09:55:00.000-05:00,[KLB] 5m CHECK 9:55 ▼ pnl=-0.07 → BAIL
+2026-01-09T09:55:00.000-05:00,[KLB] 9:55 ▲ ◆ ◆¹ ORB H 1.8x ^86 vol= pos= vwap=above ema=bull rs=+0% adx=27 body=37% O690.99 H691.71 L690.67 C691.38 ATR=5.63 SL=690.82/690.54 rawVol=179563 volSMA=80997 buf=0.281 prices=
+2026-01-09T10:00:00.000-05:00,[KLB] CONF 10:00 ▲ BRK → ✗ (failed)
+2026-01-09T10:05:00.000-05:00,[KLB] 10:05 ▼ ~~ ~~ ORB H vol=2.1x pos=v99 vwap=below ema=bull rs=+0% adx=24 body=71% O691.56 H691.95 L690.56 C690.57 ATR=5.63 SL=691.13/691.41 rawVol=202288 volSMA=97932 buf=0.281 prices=691.24
+2026-01-09T10:10:00.000-05:00,[KLB] 10:10 ▼ ~ ~ VWAP vol=2.9x pos=v73 vwap=below ema=bull rs=+0% adx=24 body=70% O690.63 H690.67 L689.18 C689.58 ATR=5.63 SL=690.14/690.42 rawVol=313627 volSMA=109213 buf=0.281 prices=
+2026-01-09T10:15:00.000-05:00,[KLB] 10:15 ▲ BRK Yest H vol=1.9x pos=^98 vwap=above ema=bull rs=+0% adx=23 body=91% O689.6 H691.32 L689.48 C691.28 ATR=5.63 SL=690.72/690.44 rawVol=228173 volSMA=119529 buf=0.281 prices=690.62
+2026-01-09T10:15:00.000-05:00,[KLB] 10:15 ▲ ~ ~ PM L + ~ ORB L vol=1.9x pos=^98 vwap=above ema=bull rs=+0% adx=23 body=91% O689.6 H691.32 L689.48 C691.28 ATR=5.63 SL=690.72/690.44 rawVol=228173 volSMA=119529 buf=0.281 prices=689.36/690.46
+2026-01-09T10:20:00.000-05:00,[KLB] 10:20 ▲ BRK ORB H vol=1.8x pos=^89 vwap=above ema=bull rs=+0% adx=21 body=35% O691.28 H691.61 L690.9 C691.53 ATR=5.63 SL=690.97/690.69 rawVol=163149 volSMA=125063 buf=0.281 prices=691.24
+2026-01-09T10:20:00.000-05:00,[KLB] CONF 10:20 ▲ BRK → ✓ (auto-promote)
+2026-01-09T10:20:00.000-05:00,[KLB] 10:20 ▲ ◆ ◆¹ ORB H 1.6x ^94 vol= pos= vwap=above ema=bull rs=+0% adx=21 body=35% O691.28 H691.61 L690.9 C691.53 ATR=5.63 SL=690.97/690.69 rawVol=163149 volSMA=125063 buf=0.281 prices=
+2026-01-09T10:25:00.000-05:00,[KLB] 5m CHECK 10:25 ▲ pnl=0.17 → HOLD
+2026-01-09T10:30:00.000-05:00,[KLB] 10:30 ▲ BRK PM H vol=1.9x pos=^76 vwap=above ema=bull rs=+0% adx=21 body=69% O692.47 H693.33 L692.4 C693.11 ATR=5.63 SL=692.55/692.27 rawVol=277371 volSMA=147525 buf=0.281 prices=692.5
+2026-01-09T10:30:00.000-05:00,[KLB] CONF 10:30 ▲ BRK → ✓ (auto-promote)
+2026-01-09T10:30:00.000-05:00,[KLB] 10:30 ▲ ◆ ◆¹ PM H 2.4x ^67 vol= pos= vwap=above ema=bull rs=+0% adx=21 body=69% O692.47 H693.33 L692.4 C693.11 ATR=5.63 SL=692.55/692.27 rawVol=277371 volSMA=147525 buf=0.281 prices=
+2026-01-09T10:35:00.000-05:00,[KLB] 5m CHECK 10:35 ▲ pnl=0.01 → BAIL
+2026-01-09T10:40:00.000-05:00,[KLB] CONF 10:40 ▲ BRK → ✗ (failed)
+2026-01-12T09:50:00.000-05:00,[KLB] 9:50 ▲ ~ ~ VWAP vol=4.9x pos=^78 vwap=above ema=bull rs=+0% adx=25 body=41% O692.76 H693.16 L692.53 C693.02 ATR=5.66 SL=692.45/692.17 rawVol=186021 volSMA=62191 buf=0.283 prices=
+2026-01-12T14:35:00.000-05:00,[KLB] 14:35 ▲ BRK Yest H + Week H vol=2.7x pos=^66 vwap=above ema=bull rs=+0% adx=38 body=62% O695.32 H695.86 L695.3 C695.67 ATR=5.66 SL=695.1/694.82 rawVol=223417 volSMA=83033 buf=0.283 prices=695.31/695.31
+2026-01-12T15:15:00.000-05:00,"[KLB] 15:15 ▲ ◆ ◆⁹ Yest H 1.1x ^33
+◆⁹ Week H 1.1x ^33 vol= pos= vwap=above ema=bull rs=+0% adx=48 body=64% O695.83 H695.86 L695.53 C695.62 ATR=5.66 SL=695.05/694.77 rawVol=69802 volSMA=87931 buf=0.283 prices="
+2026-01-13T09:35:00.000-05:00,[KLB] 9:35 ▲ BRK Week H vol=10.6x pos=^92 vwap=above ema=bull rs=+0% adx=30 body=58% O695.51 H695.91 L695.31 C695.86 ATR=5.65 SL=695.3/695.01 rawVol=309349 volSMA=29225 buf=0.282 prices=695.31
+2026-01-13T09:35:00.000-05:00,[KLB] 9:35 ▲ ◆ ◆¹ Week H 6.8x ^61 vol= pos= vwap=above ema=bull rs=+0% adx=30 body=58% O695.51 H695.91 L695.31 C695.86 ATR=5.65 SL=695.3/695.01 rawVol=309349 volSMA=29225 buf=0.282 prices=
+2026-01-13T09:45:00.000-05:00,[KLB] 9:45 ▼ ~ ~ Yest H + ~ ORB H vol=5.5x pos=v79 vwap=below ema=bull rs=+0% adx=27 body=55% O695.8 H696.09 L694.9 C695.15 ATR=5.65 SL=695.71/696 rawVol=297533 volSMA=53805 buf=0.282 prices=696.09/695.91
+2026-01-13T09:45:00.000-05:00,[KLB] CONF 9:45 ▲ BRK → ✗ (failed)
+2026-01-13T09:50:00.000-05:00,[KLB] 9:50 ▼ ~~ ~ Yest H + ~~ Week H vol=4.4x pos=v53 vwap=below ema=bull rs=+0% adx=26 body=45% O695.14 H695.2 L694.45 C694.8 ATR=5.65 SL=695.36/695.65 rawVol=278483 volSMA=67677 buf=0.282 prices=696.09/695.31
+2026-01-13T09:55:00.000-05:00,[KLB] 9:55 ▼ ~ ~ VWAP vol=3.6x pos=v83 vwap=below ema=bull rs=+0% adx=26 body=43% O694.77 H695.09 L694.28 C694.42 ATR=5.65 SL=694.98/695.27 rawVol=196551 volSMA=77332 buf=0.282 prices=
+2026-01-13T09:55:00.000-05:00,[KLB] 5m CHECK 9:55 ▼ pnl=0.07 → HOLD
+2026-01-13T11:45:00.000-05:00,[KLB] 11:45 ▲ ~ ~ PM L vol=1.3x pos=^70 vwap=above ema=bear rs=+0% adx=22 body=54% O694.17 H694.84 L694.05 C694.6 ATR=5.65 SL=694.04/693.75 rawVol=153129 volSMA=117047 buf=0.282 prices=694
+2026-01-14T09:35:00.000-05:00,[KLB] 9:35 ▲ ~ ~ PM L vol=15.2x pos=^94 vwap=above ema=bear rs=+0% adx=37 body=32% O691 H691.7 L689.87 C691.59 ATR=5.58 SL=691.03/690.75 rawVol=349625 volSMA=22933 buf=0.279 prices=690.23
+2026-01-14T09:40:00.000-05:00,[KLB] 9:40 ▼ BRK Yest L vol=6.5x pos=v79 vwap=below ema=bear rs=+0% adx=38 body=69% O691.58 H691.72 L690.35 C690.64 ATR=5.58 SL=691.2/691.48 rawVol=220470 volSMA=33921 buf=0.279 prices=691.35
+2026-01-14T09:40:00.000-05:00,[KLB] 9:40 ▼ ~ ~ ORB H vol=6.5x pos=v79 vwap=below ema=bear rs=+0% adx=38 body=69% O691.58 H691.72 L690.35 C690.64 ATR=5.58 SL=691.2/691.48 rawVol=220470 volSMA=33921 buf=0.279 prices=691.7
+2026-01-14T09:45:00.000-05:00,[KLB] 9:45 ▼ BRK PM L + ORB L vol=6.7x pos=v93 vwap=below ema=bear rs=+0% adx=40 body=66% O690.61 H691.03 L689.46 C689.57 ATR=5.58 SL=690.13/690.41 rawVol=338252 volSMA=50531 buf=0.279 prices=690.23/689.87
+2026-01-14T09:45:00.000-05:00,[KLB] 9:45 ▼ ~ ~ VWAP vol=6.7x pos=v93 vwap=below ema=bear rs=+0% adx=40 body=66% O690.61 H691.03 L689.46 C689.57 ATR=5.58 SL=690.13/690.41 rawVol=338252 volSMA=50531 buf=0.279 prices=
+2026-01-14T09:45:00.000-05:00,[KLB] CONF 9:45 ▼ BRK → ✓ (auto-promote)
+2026-01-14T09:45:00.000-05:00,[KLB] 9:45 ▼ ◆ ◆¹ PM L 6.5x v23 vol= pos= vwap=below ema=bear rs=+0% adx=40 body=66% O690.61 H691.03 L689.46 C689.57 ATR=5.58 SL=690.13/690.41 rawVol=338252 volSMA=50531 buf=0.279 prices=
+2026-01-14T09:50:00.000-05:00,[KLB] 5m CHECK 9:50 ▼ pnl=-0.11 → BAIL
+2026-01-14T09:50:00.000-05:00,"[KLB] 9:50 ▼ ◆ ◆¹ PM L 6.5x v23
+◆² ORB L 3.9x v53 vol= pos= vwap=below ema=bear rs=+0% adx=42 body=44% O689.56 H690.48 L689.11 C690.16 ATR=5.58 SL=690.72/691 rawVol=329870 volSMA=66746 buf=0.279 prices="
+2026-01-14T09:55:00.000-05:00,[KLB] 9:55 ▼ BRK ORB L vol=3.2x pos=v53 vwap=below ema=bear rs=+0% adx=44 body=52% O690.15 H690.16 L689.29 C689.7 ATR=5.58 SL=690.26/690.54 rawVol=257198 volSMA=79391 buf=0.279 prices=689.87
+2026-01-14T09:55:00.000-05:00,[KLB] CONF 9:55 ▼ BRK → ✓★ (auto-promote)
+2026-01-14T09:55:00.000-05:00,[KLB] 9:55 ▼ ◆ ◆¹ ORB L 2.9x v96 vol= pos= vwap=below ema=bear rs=+0% adx=44 body=52% O690.15 H690.16 L689.29 C689.7 ATR=5.58 SL=690.26/690.54 rawVol=257198 volSMA=79391 buf=0.279 prices=
+2026-01-14T10:00:00.000-05:00,[KLB] 5m CHECK 10:00 ▼ pnl=0.18 → HOLD
+2026-01-14T10:10:00.000-05:00,[KLB] CONF 10:10 ▼ BRK → ✗ (failed)
+2026-01-14T10:15:00.000-05:00,"[KLB] 10:15 ▲ ~~ ~~ PM L + ~~ ORB L
+~ VWAP vol=1.7x pos=^98 vwap=above ema=bear rs=+0% adx=47 body=77% O688.9 H690.63 L688.44 C690.59 ATR=5.58 SL=690.03/689.75 rawVol=216943 volSMA=124514 buf=0.279 prices=690.23/689.87"
+2026-01-15T09:45:00.000-05:00,[KLB] 5m CHECK 9:45 ▼ pnl=0 → BAIL
+2026-01-15T10:25:00.000-05:00,[KLB] 10:25 ▲ ~ ~ ORB L vol=1.4x pos=^72 vwap=above ema=bull rs=+0% adx=25 body=47% O694.05 H694.71 L693.83 C694.46 ATR=5.74 SL=693.89/693.6 rawVol=152328 volSMA=113284 buf=0.287 prices=693.98
+2026-01-15T10:35:00.000-05:00,"[KLB] 10:35 ▲ ~ ~ ORB L
+~ VWAP vol=1x pos=^97 vwap=above ema=bull rs=+0% adx=22 body=89% O693.94 H694.61 L693.88 C694.59 ATR=5.74 SL=694.02/693.73 rawVol=126769 volSMA=127240 buf=0.287 prices=693.98"
+2026-01-15T10:45:00.000-05:00,[KLB] 10:45 ▼ ~ ~ PM H + ~ ORB H vol=1x pos=v97 vwap=below ema=bull rs=+0% adx=21 body=78% O694.63 H694.81 L693.87 C693.9 ATR=5.74 SL=694.47/694.76 rawVol=142827 volSMA=146229 buf=0.287 prices=694.8/694.69
+2026-01-15T10:50:00.000-05:00,[KLB] 10:50 ▼ ~ ~ VWAP vol=1.5x pos=v97 vwap=below ema=bull rs=+0% adx=21 body=79% O693.9 H694.04 L693.26 C693.28 ATR=5.74 SL=693.85/694.14 rawVol=242246 volSMA=157895 buf=0.287 prices=
+2026-01-16T09:50:00.000-05:00,[KLB] 5m CHECK 9:50 ▼ pnl=-0.05 → BAIL
+2026-01-16T09:55:00.000-05:00,[KLB] 9:55 ▼ BRK ORB L vol=2.6x pos=v78 vwap=below ema=bear rs=+0% adx=22 body=69% O693.42 H693.49 L692.69 C692.87 ATR=5.69 SL=693.44/693.72 rawVol=130025 volSMA=50742 buf=0.285 prices=693.29
+2026-01-16T10:00:00.000-05:00,[KLB] 10:00 ▼ BRK PM L vol=3.5x pos=v97 vwap=below ema=bear rs=+0% adx=24 body=96% O692.87 H692.88 L691.93 C691.96 ATR=5.69 SL=692.53/692.81 rawVol=215681 volSMA=61265 buf=0.285 prices=692.86
+2026-01-16T10:00:00.000-05:00,[KLB] 10:00 ▼ ~ ~ VWAP vol=3.5x pos=v97 vwap=below ema=bear rs=+0% adx=24 body=96% O692.87 H692.88 L691.93 C691.96 ATR=5.69 SL=692.53/692.81 rawVol=215681 volSMA=61265 buf=0.285 prices=
+2026-01-16T10:00:00.000-05:00,[KLB] CONF 10:00 ▼ BRK → ✓ (auto-promote)
+2026-01-16T10:05:00.000-05:00,[KLB] 5m CHECK 10:05 ▼ pnl=-0.03 → BAIL
+2026-01-16T10:05:00.000-05:00,[KLB] 10:05 ▼ ◆ ◆² PM L 3.1x v14 vol= pos= vwap=below ema=bear rs=+0% adx=26 body=19% O691.96 H692.39 L691.59 C692.11 ATR=5.69 SL=692.68/692.96 rawVol=301678 volSMA=76179 buf=0.285 prices=
+2026-01-16T10:40:00.000-05:00,[KLB] 10:40 ▼ BRK Yest L vol=1.7x pos=v74 vwap=below ema=bear rs=+0% adx=33 body=66% O691.09 H691.13 L690.6 C690.74 ATR=5.69 SL=691.31/691.59 rawVol=239991 volSMA=143479 buf=0.285 prices=691.25
+2026-01-16T10:40:00.000-05:00,[KLB] CONF 10:40 ▼ BRK → ✓ (auto-promote)
+2026-01-16T10:45:00.000-05:00,[KLB] 5m CHECK 10:45 ▼ pnl=0.01 → BAIL
+2026-01-16T10:45:00.000-05:00,[KLB] 10:45 ▼ ◆ ◆² Yest L 1x v5 vol= pos= vwap=below ema=bear rs=+0% adx=35 body=5% O690.72 H690.74 L690.1 C690.69 ATR=5.69 SL=691.26/691.54 rawVol=238083 volSMA=155015 buf=0.285 prices=
+2026-01-16T10:55:00.000-05:00,[KLB] CONF 10:55 ▼ BRK → ✗ (failed)
+2026-01-16T11:10:00.000-05:00,[KLB] 11:10 ▲ ~~ ~~ Yest L vol=0.9x pos=^98 vwap=above ema=bear rs=+0% adx=31 body=88% O691.7 H692.44 L691.62 C692.42 ATR=5.69 SL=691.85/691.57 rawVol=173908 volSMA=190047 buf=0.285 prices=691.25
+2026-01-16T11:20:00.000-05:00,[KLB] 11:20 ▲ ~~ ~~ Yest L vol=0.6x pos=^82 vwap=above ema=bear rs=+0% adx=27 body=33% O692.3 H692.47 L692.14 C692.41 ATR=5.69 SL=691.84/691.56 rawVol=105127 volSMA=182807 buf=0.285 prices=691.25
+2026-01-16T11:40:00.000-05:00,[KLB] 11:40 ▲ ~ ~ VWAP vol=0.4x pos=^58 vwap=above ema=bear rs=+0% adx=23 body=58% O692.7 H693.06 L692.7 C692.91 ATR=5.69 SL=692.34/692.06 rawVol=67331 volSMA=170516 buf=0.285 prices=
+2026-01-16T11:45:00.000-05:00,[KLB] 11:45 ▲ ~~ ~~ PM L vol=0.4x pos=^84 vwap=above ema=bear rs=+0% adx=22 body=61% O692.92 H693.21 L692.83 C693.15 ATR=5.69 SL=692.58/692.3 rawVol=66086 volSMA=158736 buf=0.285 prices=692.86
+2026-01-20T09:35:00.000-05:00,[KLB] 9:35 ▲ ~ ~ VWAP vol=11.1x pos=^96 vwap=above ema=bear rs=+0% adx=21 body=88% O681.49 H682.69 L681.39 C682.64 ATR=5.58 SL=682.08/681.8 rawVol=534255 volSMA=48180 buf=0.279 prices=
+2026-01-20T10:10:00.000-05:00,[KLB] 10:10 ▼ BRK ORB L vol=1.9x pos=v87 vwap=below ema=bear rs=+0% adx=22 body=58% O681.89 H682.28 L680.96 C681.13 ATR=5.58 SL=681.69/681.97 rawVol=269865 volSMA=141468 buf=0.279 prices=681.39
+2026-01-20T10:10:00.000-05:00,[KLB] 10:10 ▼ ~ ~ VWAP vol=1.9x pos=v87 vwap=below ema=bear rs=+0% adx=22 body=58% O681.89 H682.28 L680.96 C681.13 ATR=5.58 SL=681.69/681.97 rawVol=269865 volSMA=141468 buf=0.279 prices=
+2026-01-20T10:15:00.000-05:00,[KLB] 10:15 ▼ ◆ ◆² ORB L 1.3x v90 vol= pos= vwap=below ema=bear rs=+0% adx=21 body=76% O681.09 H681.68 L680.91 C681.68 ATR=5.58 SL=682.23/682.51 rawVol=212678 volSMA=147758 buf=0.279 prices=
+2026-01-20T10:20:00.000-05:00,[KLB] CONF 10:20 ▼ BRK → ✗ (failed)
+2026-01-20T10:25:00.000-05:00,[KLB] 10:25 ▲ ~~ ~~ ORB L vol=1.6x pos=^86 vwap=above ema=bear rs=+0% adx=21 body=82% O681.28 H683.36 L681.2 C683.06 ATR=5.58 SL=682.5/682.22 rawVol=268671 volSMA=166634 buf=0.279 prices=681.39
+2026-01-20T12:50:00.000-05:00,[KLB] 12:50 ▼ BRK ORB L vol=1.7x pos=v89 vwap=below ema=bear rs=+0% adx=21 body=89% O681.34 H681.34 L680.64 C680.72 ATR=5.58 SL=681.28/681.56 rawVol=198233 volSMA=113422 buf=0.279 prices=681.39
+2026-01-20T12:55:00.000-05:00,[KLB] 12:55 ▼ ◆ ◆² ORB L 0.8x v34 vol= pos= vwap=below ema=bear rs=+0% adx=22 body=37% O680.72 H681.16 L680.45 C680.98 ATR=5.58 SL=681.54/681.82 rawVol=138790 volSMA=113727 buf=0.279 prices=
+2026-01-20T13:55:00.000-05:00,[KLB] 13:55 ▼ BRK PM L vol=1.7x pos=v92 vwap=below ema=bear rs=+0% adx=36 body=92% O678.89 H678.89 L678.03 C678.1 ATR=5.58 SL=678.66/678.94 rawVol=180677 volSMA=108894 buf=0.279 prices=679.09
+2026-01-20T13:55:00.000-05:00,[KLB] CONF 13:55 ▼ BRK → ✓ (auto-promote)
+2026-01-20T13:55:00.000-05:00,[KLB] 13:55 ▼ ◆ ◆¹ PM L 2x v44 vol= pos= vwap=below ema=bear rs=+0% adx=36 body=92% O678.89 H678.89 L678.03 C678.1 ATR=5.58 SL=678.66/678.94 rawVol=180677 volSMA=108894 buf=0.279 prices=
+2026-01-20T14:00:00.000-05:00,[KLB] 5m CHECK 14:00 ▼ pnl=-0.11 → BAIL
+2026-01-21T09:40:00.000-05:00,"[KLB] 9:40 ▲ ~ ~ ORB L
+~ VWAP vol=6.1x pos=^60 vwap=above ema=bull rs=+0% adx=34 body=40% O679.55 H680.7 L679.27 C680.13 ATR=6.26 SL=679.5/679.19 rawVol=410151 volSMA=67553 buf=0.313 prices=679.2"
+2026-01-21T09:50:00.000-05:00,[KLB] 9:50 ▲ BRK PM H + ORB H vol=3.1x pos=^91 vwap=above ema=bull rs=+0% adx=33 body=91% O680.01 H681.28 L680.01 C681.16 ATR=6.26 SL=680.53/680.22 rawVol=318374 volSMA=102333 buf=0.313 prices=680.91/680.46
+2026-01-21T09:50:00.000-05:00,[KLB] 9:50 ▲ ◆ ◆¹ PM H 2.7x ^85 vol= pos= vwap=above ema=bull rs=+0% adx=33 body=91% O680.01 H681.28 L680.01 C681.16 ATR=6.26 SL=680.53/680.22 rawVol=318374 volSMA=102333 buf=0.313 prices=
+2026-01-21T11:45:00.000-05:00,[KLB] 11:45 ▼ ~ ~ Yest H vol=1.7x pos=v95 vwap=below ema=bull rs=+0% adx=38 body=66% O681.87 H682.15 L681.19 C681.24 ATR=6.26 SL=681.87/682.18 rawVol=276995 volSMA=165249 buf=0.313 prices=684.77
+2026-01-21T11:55:00.000-05:00,"[KLB] 11:55 ▼ ~ ~ Yest H
+~ VWAP vol=1x pos=v82 vwap=below ema=bull rs=+0% adx=36 body=68% O681.65 H681.81 L680.67 C680.88 ATR=6.26 SL=681.51/681.82 rawVol=164791 volSMA=166607 buf=0.313 prices=684.77"
+2026-01-21T11:55:00.000-05:00,[KLB] CONF 11:55 ▲ BRK → ✗ (failed)
+2026-01-21T12:00:00.000-05:00,[KLB] 12:00 ▼ ~~ ~~ PM H + ~~ ORB H vol=1.5x pos=v87 vwap=below ema=bull rs=+0% adx=36 body=76% O680.85 H680.96 L679.91 C680.05 ATR=6.26 SL=680.68/680.99 rawVol=245196 volSMA=167875 buf=0.313 prices=680.91/680.46
+2026-01-21T13:05:00.000-05:00,[KLB] 13:05 ▼ ~~ ~~ PM H + ~~ ORB H vol=0.6x pos=v89 vwap=below ema=bear rs=+0% adx=35 body=80% O680.58 H680.77 L678.63 C678.87 ATR=6.26 SL=679.5/679.81 rawVol=116099 volSMA=185030 buf=0.313 prices=680.91/680.46
+2026-01-21T13:20:00.000-05:00,[KLB] 13:20 ▼ ~~ ~~ ORB H vol=0.6x pos=v85 vwap=below ema=bear rs=+0% adx=31 body=52% O680.26 H680.43 L679.91 C679.99 ATR=6.26 SL=680.62/680.93 rawVol=108514 volSMA=173057 buf=0.313 prices=680.46
+2026-01-21T13:40:00.000-05:00,[KLB] 13:40 ▼ ~~ ~~ PM H vol=0.6x pos=v52 vwap=below ema=bear rs=+0% adx=26 body=35% O680.67 H680.86 L679.79 C680.3 ATR=6.26 SL=680.93/681.24 rawVol=84289 volSMA=146139 buf=0.313 prices=680.91
+2026-01-21T13:45:00.000-05:00,[KLB] 13:45 ▼ ~~ ~~ ORB H vol=0.6x pos=v76 vwap=below ema=bear rs=+0% adx=25 body=51% O680.31 H680.44 L679.93 C680.05 ATR=6.26 SL=680.68/680.99 rawVol=66476 volSMA=136153 buf=0.313 prices=680.46
+2026-01-21T14:35:00.000-05:00,[KLB] 14:35 ▲ BRK Yest H vol=4x pos=^96 vwap=above ema=bull rs=+0% adx=20 body=89% O684.41 H685.47 L684.33 C685.42 ATR=6.26 SL=684.79/684.48 rawVol=485031 volSMA=154168 buf=0.313 prices=684.77
+2026-01-21T14:40:00.000-05:00,[KLB] 14:40 ▲ ~ ~ Week L vol=3x pos=^78 vwap=above ema=bull rs=+0% adx=23 body=66% O685.43 H686.68 L685.26 C686.37 ATR=6.26 SL=685.74/685.43 rawVol=520378 volSMA=171120 buf=0.313 prices=686.04
+2026-01-21T14:45:00.000-05:00,[KLB] 14:45 ▲ ~ ~ Week L vol=2.8x pos=^83 vwap=above ema=bull rs=+0% adx=25 body=55% O686.39 H687.51 L685.96 C687.24 ATR=6.26 SL=686.61/686.3 rawVol=401107 volSMA=185370 buf=0.313 prices=686.04
+2026-01-21T15:30:00.000-05:00,[KLB] 15:30 ▲ ◆ ◆¹² Yest H 1.5x ^86 vol= pos= vwap=above ema=bull rs=+0% adx=35 body=93% O686.19 H686.21 L685.32 C685.36 ATR=6.26 SL=684.73/684.42 rawVol=206215 volSMA=257601 buf=0.313 prices=
+2026-01-22T10:00:00.000-05:00,[KLB] 10:00 ▼ ~ ~ VWAP vol=1.5x pos=v58 vwap=below ema=bull rs=+0% adx=20 body=47% O688.45 H688.58 L687.39 C687.89 ATR=6.61 SL=688.55/688.88 rawVol=133983 volSMA=88175 buf=0.33 prices=
+2026-01-23T09:40:00.000-05:00,[KLB] 9:40 ▼ BRK ORB L vol=8.9x pos=v79 vwap=below ema=bear rs=+0% adx=21 body=33% O687.71 H688.11 L687.24 C687.42 ATR=6.55 SL=688.07/688.4 rawVol=161770 volSMA=27410 buf=0.327 prices=687.62
+2026-01-23T09:45:00.000-05:00,[KLB] 5m CHECK 9:45 ▼ pnl=-0.08 → BAIL
+2026-01-23T09:45:00.000-05:00,[KLB] 9:45 ▼ ◆ ◆² ORB L 2.8x v98 vol= pos= vwap=above ema=bear rs=+0% adx=20 body=52% O687.41 H688.19 L687.16 C687.95 ATR=6.55 SL=688.6/688.93 rawVol=170495 volSMA=35763 buf=0.327 prices=
+2026-01-23T09:50:00.000-05:00,[KLB] CONF 9:50 ▼ BRK → ✗ (failed)
+2026-01-23T10:05:00.000-05:00,[KLB] 10:05 ▲ ~ ~ Yest L vol=2x pos=^77 vwap=above ema=bear rs=+0% adx=21 body=69% O688.84 H689.43 L688.79 C689.28 ATR=6.55 SL=688.63/688.3 rawVol=112601 volSMA=55694 buf=0.327 prices=686.92
+2026-01-23T10:25:00.000-05:00,[KLB] 10:25 ▲ BRK ORB H vol=1.8x pos=^87 vwap=above ema=bull rs=+0% adx=23 body=78% O688.43 H689.75 L688.3 C689.56 ATR=6.55 SL=688.9/688.57 rawVol=140710 volSMA=79528 buf=0.327 prices=688.67
+2026-01-23T10:25:00.000-05:00,"[KLB] 10:25 ▲ ~ ~ Yest L
+~ VWAP vol=1.8x pos=^87 vwap=above ema=bull rs=+0% adx=23 body=78% O688.43 H689.75 L688.3 C689.56 ATR=6.55 SL=688.9/688.57 rawVol=140710 volSMA=79528 buf=0.327 prices=686.92"
+2026-01-23T12:40:00.000-05:00,[KLB] 12:40 ▲ ◆ ◆²⁸ ORB H 1.9x ^7 vol= pos= vwap=above ema=bull rs=+0% adx=18 body=38% O689.72 H690.04 L689.7 C689.85 ATR=6.55 SL=689.2/688.87 rawVol=58829 volSMA=82650 buf=0.327 prices=
+2026-01-23T12:50:00.000-05:00,[KLB] CONF 12:50 ▲ BRK → ✗ (failed)
+2026-01-23T12:55:00.000-05:00,"[KLB] 12:55 ▼ ~~ ~~ ORB H
+~ VWAP vol=1.6x pos=v80 vwap=below ema=bull rs=+0% adx=22 body=72% O688.85 H688.93 L687.96 C688.15 ATR=6.55 SL=688.8/689.13 rawVol=139998 volSMA=88567 buf=0.327 prices=688.67"
+2026-01-23T14:05:00.000-05:00,[KLB] 14:05 ▲ ~ ~ Yest L vol=0.9x pos=^84 vwap=above ema=bear rs=+0% adx=25 body=73% O688.98 H689.58 L688.91 C689.47 ATR=6.55 SL=688.82/688.49 rawVol=73941 volSMA=86732 buf=0.327 prices=686.92
+2026-01-23T15:45:00.000-05:00,[KLB] 15:45 ▲ ~ ~ Yest L vol=1.8x pos=^72 vwap=above ema=bear rs=+0% adx=21 body=70% O688.93 H689.35 L688.92 C689.23 ATR=6.55 SL=688.58/688.25 rawVol=125131 volSMA=93109 buf=0.327 prices=686.92
+2026-01-26T09:35:00.000-05:00,[KLB] 9:35 ▲ BRK PM H + Yest H vol=12.7x pos=^96 vwap=above ema=bull rs=+0% adx=30 body=56% O690.49 H691.32 L689.93 C691.27 ATR=6.35 SL=690.63/690.32 rawVol=249161 volSMA=19565 buf=0.318 prices=690.48/690.96
+2026-01-26T09:35:00.000-05:00,[KLB] 9:35 ▲ ~ ~ VWAP vol=12.7x pos=^96 vwap=above ema=bull rs=+0% adx=30 body=56% O690.49 H691.32 L689.93 C691.27 ATR=6.35 SL=690.63/690.32 rawVol=249161 volSMA=19565 buf=0.318 prices=
+2026-01-26T09:40:00.000-05:00,[KLB] 9:40 ▲ BRK Week H + ORB H vol=8.1x pos=^60 vwap=above ema=bull rs=+0% adx=32 body=58% O691.28 H691.99 L691.27 C691.7 ATR=6.35 SL=691.06/690.75 rawVol=264145 volSMA=32655 buf=0.318 prices=691.13/691.32
+2026-01-26T09:40:00.000-05:00,[KLB] CONF 9:40 ▲ BRK → ✓★ (auto-promote)
+2026-01-26T09:40:00.000-05:00,[KLB] 9:40 ▲ ◆ ◆¹ ORB H 7.5x ^87 vol= pos= vwap=above ema=bull rs=+0% adx=32 body=58% O691.28 H691.99 L691.27 C691.7 ATR=6.35 SL=691.06/690.75 rawVol=264145 volSMA=32655 buf=0.318 prices=
+2026-01-26T09:45:00.000-05:00,[KLB] 5m CHECK 9:45 ▲ pnl=0.08 → HOLD
+2026-01-28T09:40:00.000-05:00,[KLB] 9:40 ▼ ~ ~ ORB H vol=7.5x pos=v67 vwap=below ema=bear rs=+0% adx=34 body=34% O697.34 H697.53 L696.95 C697.14 ATR=6.07 SL=697.75/698.05 rawVol=225262 volSMA=29843 buf=0.304 prices=697.7
+2026-01-28T09:45:00.000-05:00,[KLB] 9:45 ▲ ~ ~ ORB L vol=4.5x pos=^92 vwap=above ema=bear rs=+0% adx=33 body=82% O697.14 H697.7 L697.08 C697.65 ATR=6.07 SL=697.04/696.74 rawVol=170402 volSMA=38288 buf=0.304 prices=697.01
+2026-01-28T09:50:00.000-05:00,[KLB] 9:50 ▼ ~ ~ ORB H vol=3.8x pos=v72 vwap=below ema=bear rs=+0% adx=32 body=52% O697.65 H697.84 L696.91 C697.17 ATR=6.07 SL=697.78/698.08 rawVol=178250 volSMA=47084 buf=0.304 prices=697.7
+2026-01-28T09:55:00.000-05:00,[KLB] 9:55 ▲ ~ ~ ORB L vol=1.9x pos=^97 vwap=above ema=bear rs=+0% adx=31 body=85% O697.18 H697.71 L697.11 C697.69 ATR=6.07 SL=697.08/696.78 rawVol=97253 volSMA=51797 buf=0.304 prices=697.01
+2026-01-28T10:00:00.000-05:00,[KLB] 10:00 ▼ ~ ~ ORB H vol=1.6x pos=v93 vwap=below ema=bear rs=+0% adx=29 body=93% O697.7 H697.7 L697.08 C697.12 ATR=6.07 SL=697.73/698.03 rawVol=86777 volSMA=55983 buf=0.304 prices=697.7
+2026-01-28T10:10:00.000-05:00,[KLB] 10:10 ▼ BRK ORB L vol=1.8x pos=v74 vwap=below ema=bear rs=+0% adx=27 body=67% O697.03 H697.07 L696.46 C696.62 ATR=6.07 SL=697.23/697.53 rawVol=114597 volSMA=67331 buf=0.304 prices=697.01
+2026-01-28T10:15:00.000-05:00,[KLB] 10:15 ▼ BRK PM L vol=1.9x pos=v100 vwap=below ema=bear rs=+0% adx=27 body=94% O696.61 H696.64 L696.11 C696.11 ATR=6.07 SL=696.72/697.02 rawVol=142744 volSMA=74308 buf=0.304 prices=696.57
+2026-01-28T10:15:00.000-05:00,[KLB] 10:15 ▼ ~ ~ VWAP vol=1.9x pos=v100 vwap=below ema=bear rs=+0% adx=27 body=94% O696.61 H696.64 L696.11 C696.11 ATR=6.07 SL=696.72/697.02 rawVol=142744 volSMA=74308 buf=0.304 prices=
+2026-01-28T10:15:00.000-05:00,[KLB] CONF 10:15 ▼ BRK → ✓ (auto-promote)
+2026-01-28T10:15:00.000-05:00,[KLB] 10:15 ▼ ◆ ◆¹ PM L 1.7x v33 vol= pos= vwap=below ema=bear rs=+0% adx=27 body=94% O696.61 H696.64 L696.11 C696.11 ATR=6.07 SL=696.72/697.02 rawVol=142744 volSMA=74308 buf=0.304 prices=
+2026-01-28T10:20:00.000-05:00,[KLB] 5m CHECK 10:20 ▼ pnl=-0.07 → BAIL
+2026-01-28T10:20:00.000-05:00,[KLB] CONF 10:20 ▼ BRK → ✗ (failed)
+2026-01-28T11:35:00.000-05:00,[KLB] 11:35 ▼ ~ ~ Yest H vol=1x pos=v94 vwap=below ema=bear rs=+0% adx=26 body=94% O696.12 H696.12 L695.33 C695.38 ATR=6.07 SL=695.99/696.29 rawVol=89939 volSMA=86567 buf=0.304 prices=696.53
+2026-01-28T12:25:00.000-05:00,[KLB] 12:25 ▼ ~ ~ Yest H vol=0.9x pos=v99 vwap=below ema=bear rs=+0% adx=30 body=88% O695.59 H695.68 L694.86 C694.87 ATR=6.07 SL=695.47/695.78 rawVol=64532 volSMA=75719 buf=0.304 prices=696.53
+2026-01-28T14:40:00.000-05:00,[KLB] 14:40 ▼ ~ ~ Yest H vol=1.7x pos=v98 vwap=below ema=bear rs=+0% adx=23 body=51% O695.12 H695.52 L694.67 C694.69 ATR=6.07 SL=695.3/695.6 rawVol=121142 volSMA=72367 buf=0.304 prices=696.53
+2026-01-29T09:45:00.000-05:00,[KLB] 9:45 ▼ BRK Yest L vol=6.9x pos=v98 vwap=below ema=bear rs=+0% adx=22 body=91% O695.4 H695.58 L693.17 C693.21 ATR=5.92 SL=693.8/694.1 rawVol=317539 volSMA=45812 buf=0.296 prices=693.94
+2026-01-29T09:45:00.000-05:00,[KLB] 9:45 ▼ ~ ~ VWAP vol=6.9x pos=v98 vwap=below ema=bear rs=+0% adx=22 body=91% O695.4 H695.58 L693.17 C693.21 ATR=5.92 SL=693.8/694.1 rawVol=317539 volSMA=45812 buf=0.296 prices=
+2026-01-29T09:45:00.000-05:00,[KLB] 9:45 ▼ ◆ ◆¹ Yest L 8.9x v19 vol= pos= vwap=below ema=bear rs=+0% adx=22 body=91% O695.4 H695.58 L693.17 C693.21 ATR=5.92 SL=693.8/694.1 rawVol=317539 volSMA=45812 buf=0.296 prices=
+2026-01-29T10:05:00.000-05:00,[KLB] 10:05 ▼ ~ ~ Week H vol=3.5x pos=v62 vwap=below ema=bear rs=+0% adx=34 body=58% O691.56 H691.64 L689.63 C690.39 ATR=5.92 SL=690.98/691.28 rawVol=369340 volSMA=104525 buf=0.296 prices=691.13
+2026-01-29T12:15:00.000-05:00,[KLB] 12:15 ▲ ~ ~ VWAP vol=0.6x pos=^80 vwap=above ema=bear rs=+0% adx=31 body=76% O689.61 H690.84 L689.57 C690.58 ATR=5.92 SL=689.99/689.69 rawVol=111134 volSMA=192263 buf=0.296 prices=
+2026-01-30T09:55:00.000-05:00,[KLB] 5m CHECK 9:55 ▼ pnl=0.05 → BAIL
+2026-01-30T10:00:00.000-05:00,[KLB] 10:00 ▼ ~ ~ PM H vol=2.9x pos=v72 vwap=below ema=bull rs=+0% adx=21 body=38% O692.33 H692.92 L691.23 C691.7 ATR=6.37 SL=692.33/692.65 rawVol=156289 volSMA=54269 buf=0.318 prices=692.76
+2026-01-30T10:10:00.000-05:00,[KLB] 10:10 ▲ BRK PM H vol=2.1x pos=^92 vwap=above ema=bull rs=+0% adx=21 body=87% O691.77 H693.48 L691.69 C693.33 ATR=6.37 SL=692.69/692.37 rawVol=122944 volSMA=67117 buf=0.318 prices=692.76
+2026-01-30T10:10:00.000-05:00,[KLB] 10:10 ▲ ~ ~ VWAP vol=2.1x pos=^92 vwap=above ema=bull rs=+0% adx=21 body=87% O691.77 H693.48 L691.69 C693.33 ATR=6.37 SL=692.69/692.37 rawVol=122944 volSMA=67117 buf=0.318 prices=
+2026-01-30T10:10:00.000-05:00,[KLB] 10:10 ▲ ◆ ◆¹ PM H 2.5x ^53 vol= pos= vwap=above ema=bull rs=+0% adx=21 body=87% O691.77 H693.48 L691.69 C693.33 ATR=6.37 SL=692.69/692.37 rawVol=122944 volSMA=67117 buf=0.318 prices=
+2026-01-30T10:25:00.000-05:00,[KLB] CONF 10:25 ▲ BRK → ✗ (failed)
+2026-01-30T10:30:00.000-05:00,"[KLB] 10:30 ▼ ~~ ~~ PM H
+~ VWAP vol=1.2x pos=v93 vwap=below ema=bull rs=+0% adx=21 body=93% O692.76 H692.76 L691.28 C691.38 ATR=6.37 SL=692.02/692.34 rawVol=109780 volSMA=87913 buf=0.318 prices=692.76"
+2026-02-02T09:35:00.000-05:00,[KLB] 9:35 ▲ BRK PM H vol=15.9x pos=^100 vwap=above ema=bull rs=+0% adx=23 body=92% O689.58 H691.23 L689.43 C691.23 ATR=6.42 SL=690.59/690.27 rawVol=458739 volSMA=28830 buf=0.321 prices=690.56
+2026-02-02T09:40:00.000-05:00,[KLB] 9:40 ▲ BRK ORB H vol=10.1x pos=^78 vwap=above ema=bull rs=+0% adx=26 body=54% O691.24 H692.23 L690.94 C691.94 ATR=6.42 SL=691.3/690.98 rawVol=338824 volSMA=45464 buf=0.321 prices=691.23
+2026-02-02T09:40:00.000-05:00,"[KLB] 9:40 ▲ ~ ~ Yest L
+~ VWAP vol=10.1x pos=^78 vwap=above ema=bull rs=+0% adx=26 body=54% O691.24 H692.23 L690.94 C691.94 ATR=6.42 SL=691.3/690.98 rawVol=338824 volSMA=45464 buf=0.321 prices=687.12"
+2026-02-02T09:40:00.000-05:00,[KLB] CONF 9:40 ▲ BRK → ✓★ (auto-promote)
+2026-02-02T09:45:00.000-05:00,[KLB] 9:45 ▲ ~ ~ Yest L vol=6.2x pos=^87 vwap=above ema=bull rs=+0% adx=29 body=49% O692 H692.73 L691.54 C692.58 ATR=6.42 SL=691.94/691.62 rawVol=199071 volSMA=54998 buf=0.321 prices=687.12
+2026-02-02T09:45:00.000-05:00,[KLB] 5m CHECK 9:45 ▲ pnl=0.1 → HOLD
+2026-02-02T10:10:00.000-05:00,[KLB] 10:10 ▲ BRK Yest H vol=2.9x pos=^94 vwap=above ema=bull rs=+0% adx=40 body=80% O693.78 H694.55 L693.65 C694.5 ATR=6.42 SL=693.86/693.54 rawVol=290416 volSMA=98899 buf=0.321 prices=694.21
+2026-02-02T10:10:00.000-05:00,[KLB] CONF 10:10 ▲ BRK → ✓ (auto-promote)
+2026-02-02T10:10:00.000-05:00,[KLB] 10:10 ▲ ◆ ◆¹ Yest H 2.4x ^88 vol= pos= vwap=above ema=bull rs=+0% adx=40 body=80% O693.78 H694.55 L693.65 C694.5 ATR=6.42 SL=693.86/693.54 rawVol=290416 volSMA=98899 buf=0.321 prices=
+2026-02-02T10:15:00.000-05:00,[KLB] 5m CHECK 10:15 ▲ pnl=0.1 → HOLD
+2026-02-03T09:40:00.000-05:00,[KLB] 9:40 ▼ BRK PM L vol=10x pos=v72 vwap=below ema=bear rs=+0% adx=23 body=34% O696.1 H696.51 L695.42 C695.73 ATR=6.5 SL=696.38/696.7 rawVol=281153 volSMA=35675 buf=0.325 prices=696.05
+2026-02-03T09:40:00.000-05:00,[KLB] 9:40 ▼ ◆ ◆¹ PM L 8.5x v80 vol= pos= vwap=below ema=bear rs=+0% adx=23 body=34% O696.1 H696.51 L695.42 C695.73 ATR=6.5 SL=696.38/696.7 rawVol=281153 volSMA=35675 buf=0.325 prices=
+2026-02-03T09:45:00.000-05:00,[KLB] 9:45 ▼ BRK ORB L vol=6x pos=v80 vwap=below ema=bear rs=+0% adx=24 body=38% O695.74 H696.34 L694.91 C695.19 ATR=6.5 SL=695.84/696.16 rawVol=302847 volSMA=50739 buf=0.325 prices=695.67
+2026-02-03T09:45:00.000-05:00,"[KLB] 9:45 ▼ ~ ~ Yest H
+~ VWAP vol=6x pos=v80 vwap=below ema=bear rs=+0% adx=24 body=38% O695.74 H696.34 L694.91 C695.19 ATR=6.5 SL=695.84/696.16 rawVol=302847 volSMA=50739 buf=0.325 prices=696.93"
+2026-02-03T09:45:00.000-05:00,[KLB] CONF 9:45 ▼ BRK → ✓ (auto-promote)
+2026-02-03T09:50:00.000-05:00,[KLB] 9:50 ▲ ~ ~ ORB L vol=2.8x pos=^94 vwap=above ema=bear rs=+0% adx=25 body=78% O695.23 H696.15 L695.06 C696.08 ATR=6.5 SL=695.43/695.11 rawVol=165852 volSMA=58810 buf=0.325 prices=695.67
+2026-02-03T09:50:00.000-05:00,[KLB] 5m CHECK 9:50 ▼ pnl=-0.14 → BAIL
+2026-02-03T09:50:00.000-05:00,[KLB] 9:50 ▼ ◆ ◆² ORB L 2.7x v100 vol= pos= vwap=above ema=bear rs=+0% adx=25 body=78% O695.23 H696.15 L695.06 C696.08 ATR=6.5 SL=696.73/697.05 rawVol=165852 volSMA=58810 buf=0.325 prices=
+2026-02-03T09:55:00.000-05:00,[KLB] 9:55 ▼ BRK ORB L vol=2.4x pos=v100 vwap=below ema=bear rs=+0% adx=26 body=96% O696.05 H696.1 L694.95 C694.95 ATR=6.5 SL=695.6/695.92 rawVol=156316 volSMA=66462 buf=0.325 prices=695.67
+2026-02-03T09:55:00.000-05:00,[KLB] 9:55 ▼ ~ ~ Yest H vol=2.4x pos=v100 vwap=below ema=bear rs=+0% adx=26 body=96% O696.05 H696.1 L694.95 C694.95 ATR=6.5 SL=695.6/695.92 rawVol=156316 volSMA=66462 buf=0.325 prices=696.93
+2026-02-03T09:55:00.000-05:00,[KLB] CONF 9:55 ▼ BRK → ✓★ (auto-promote)
+2026-02-03T10:00:00.000-05:00,[KLB] 5m CHECK 10:00 ▼ pnl=0.22 → HOLD
+2026-02-03T12:15:00.000-05:00,[KLB] 12:15 ▼ BRK Yest L vol=2.4x pos=v75 vwap=below ema=bear rs=+0% adx=52 body=69% O690.56 H690.69 L688.61 C689.12 ATR=6.5 SL=689.77/690.09 rawVol=314004 volSMA=131426 buf=0.325 prices=689.42
+2026-02-03T12:15:00.000-05:00,[KLB] CONF 12:15 ▼ BRK → ✓ (auto-promote)
+2026-02-03T12:15:00.000-05:00,[KLB] 12:15 ▼ ◆ ◆¹ Yest L 1.7x v66 vol= pos= vwap=below ema=bear rs=+0% adx=52 body=69% O690.56 H690.69 L688.61 C689.12 ATR=6.5 SL=689.77/690.09 rawVol=314004 volSMA=131426 buf=0.325 prices=
+2026-02-03T12:20:00.000-05:00,[KLB] 5m CHECK 12:20 ▼ pnl=-0.02 → BAIL
+2026-02-03T12:20:00.000-05:00,[KLB] CONF 12:20 ▼ BRK → ✗ (failed)
+2026-02-03T14:05:00.000-05:00,[KLB] 14:05 ▼ BRK Week L vol=1.8x pos=v74 vwap=below ema=bear rs=+0% adx=58 body=33% O684.85 H685.22 L684.33 C684.56 ATR=6.5 SL=685.21/685.53 rawVol=262718 volSMA=142426 buf=0.325 prices=684.83
+2026-02-03T14:05:00.000-05:00,[KLB] 14:05 ▼ ◆ ◆¹ Week L 1.4x v72 vol= pos= vwap=below ema=bear rs=+0% adx=58 body=33% O684.85 H685.22 L684.33 C684.56 ATR=6.5 SL=685.21/685.53 rawVol=262718 volSMA=142426 buf=0.325 prices=
+2026-02-03T14:10:00.000-05:00,[KLB] CONF 14:10 ▼ BRK → ✗ (failed)
+2026-02-04T11:05:00.000-05:00,[KLB] 11:05 ▼ ~ ~ VWAP vol=1x pos=v98 vwap=below ema=bear rs=+0% adx=20 body=80% O688.58 H688.92 L687.03 C687.07 ATR=6.96 SL=687.77/688.11 rawVol=159630 volSMA=159557 buf=0.348 prices=
+2026-02-04T12:30:00.000-05:00,[KLB] 12:30 ▼ BRK Yest L + Week L vol=2.1x pos=v81 vwap=below ema=bear rs=+0% adx=26 body=76% O685.53 H685.67 L683.22 C683.68 ATR=6.96 SL=684.38/684.72 rawVol=283861 volSMA=133706 buf=0.348 prices=684.03/684.83
+2026-02-04T12:30:00.000-05:00,"[KLB] 12:30 ▼ ◆ ◆¹ Yest L 1.8x v72
+◆¹ Week L 1.8x v72 vol= pos= vwap=below ema=bear rs=+0% adx=26 body=76% O685.53 H685.67 L683.22 C683.68 ATR=6.96 SL=684.38/684.72 rawVol=283861 volSMA=133706 buf=0.348 prices="
+2026-02-04T13:25:00.000-05:00,[KLB] CONF 13:25 ▼ BRK → ✗ (failed)
+2026-02-04T15:25:00.000-05:00,[KLB] 15:25 ▲ ~ ~ VWAP vol=0.8x pos=^79 vwap=above ema=bull rs=+0% adx=26 body=47% O687.38 H687.96 L687.1 C687.78 ATR=6.96 SL=687.08/686.74 rawVol=93413 volSMA=118190 buf=0.348 prices=
+2026-02-05T09:40:00.000-05:00,"[KLB] 9:40 ▲ ~ ~ PM L
+~ VWAP vol=6.4x pos=^94 vwap=above ema=bear rs=+0% adx=46 body=65% O680.8 H682.63 L680.06 C682.48 ATR=7.15 SL=681.76/681.41 rawVol=352685 volSMA=55377 buf=0.358 prices=680.3"
+2026-02-05T09:50:00.000-05:00,[KLB] 5m CHECK 9:50 ▲ pnl=0 → BAIL
+2026-02-05T10:00:00.000-05:00,[KLB] 10:00 ▼ BRK Yest L vol=1.6x pos=v80 vwap=below ema=bear rs=+0% adx=41 body=62% O681.87 H682.22 L680.28 C680.66 ATR=7.15 SL=681.38/681.73 rawVol=134962 volSMA=86128 buf=0.358 prices=681.76
+2026-02-05T10:00:00.000-05:00,"[KLB] 10:00 ▼ ~ ~ ORB H
+~ VWAP vol=1.6x pos=v80 vwap=below ema=bear rs=+0% adx=41 body=62% O681.87 H682.22 L680.28 C680.66 ATR=7.15 SL=681.38/681.73 rawVol=134962 volSMA=86128 buf=0.358 prices=680.94"
+2026-02-05T10:05:00.000-05:00,[KLB] 10:05 ▼ BRK PM L vol=1.7x pos=v83 vwap=below ema=bear rs=+0% adx=41 body=51% O680.6 H681.38 L678.95 C679.37 ATR=7.15 SL=680.09/680.44 rawVol=159129 volSMA=93726 buf=0.358 prices=680.3
+2026-02-05T10:05:00.000-05:00,[KLB] 10:05 ▼ ~ ~ ORB H vol=1.7x pos=v83 vwap=below ema=bear rs=+0% adx=41 body=51% O680.6 H681.38 L678.95 C679.37 ATR=7.15 SL=680.09/680.44 rawVol=159129 volSMA=93726 buf=0.358 prices=680.94
+2026-02-05T10:05:00.000-05:00,[KLB] CONF 10:05 ▼ BRK → ✓ (auto-promote)
+2026-02-05T10:10:00.000-05:00,[KLB] 5m CHECK 10:10 ▼ pnl=0.07 → HOLD
+2026-02-05T10:15:00.000-05:00,[KLB] 10:15 ▼ BRK ORB L vol=2.8x pos=v97 vwap=below ema=bear rs=+0% adx=43 body=83% O678.86 H679.2 L676.8 C676.86 ATR=7.15 SL=677.58/677.93 rawVol=340562 volSMA=120356 buf=0.358 prices=678.77
+2026-02-05T10:15:00.000-05:00,[KLB] CONF 10:15 ▼ BRK → ✓ (auto-promote)
+2026-02-05T10:15:00.000-05:00,[KLB] 10:15 ▼ ◆ ◆¹ ORB L 1.9x v23 vol= pos= vwap=below ema=bear rs=+0% adx=43 body=83% O678.86 H679.2 L676.8 C676.86 ATR=7.15 SL=677.58/677.93 rawVol=340562 volSMA=120356 buf=0.358 prices=
+2026-02-05T10:20:00.000-05:00,[KLB] 5m CHECK 10:20 ▼ pnl=-0.18 → BAIL
+2026-02-05T11:20:00.000-05:00,[KLB] CONF 11:20 ▼ BRK → ✗ (failed)
+2026-02-05T11:30:00.000-05:00,[KLB] 11:30 ▲ ~~ ~~ ORB L vol=1.2x pos=^88 vwap=above ema=bear rs=+0% adx=40 body=51% O679.11 H679.79 L678.72 C679.66 ATR=7.15 SL=678.94/678.59 rawVol=179687 volSMA=165234 buf=0.358 prices=678.77
+2026-02-05T11:55:00.000-05:00,[KLB] 11:55 ▲ ~~ ~~ PM L vol=0.7x pos=^80 vwap=above ema=bear rs=+0% adx=30 body=80% O680.03 H681.26 L680.03 C681.02 ATR=7.15 SL=680.3/679.95 rawVol=103137 volSMA=151433 buf=0.358 prices=680.3
+2026-02-05T12:25:00.000-05:00,[KLB] 12:25 ▲ ~~ ~~ PM L + ~~ ORB L vol=0.7x pos=^100 vwap=above ema=bear rs=+0% adx=22 body=64% O679.73 H681.06 L678.98 C681.06 ATR=7.15 SL=680.34/679.99 rawVol=80734 volSMA=119605 buf=0.358 prices=680.3/678.77
+2026-02-06T09:40:00.000-05:00,[KLB] 9:40 ▲ BRK ORB H vol=9x pos=^78 vwap=above ema=bull rs=+0% adx=20 body=59% O683.8 H685.05 L683.52 C684.71 ATR=7.38 SL=683.97/683.6 rawVol=517336 volSMA=62717 buf=0.369 prices=684.47
+2026-02-06T09:40:00.000-05:00,[KLB] 9:40 ▲ ~ ~ VWAP vol=9x pos=^78 vwap=above ema=bull rs=+0% adx=20 body=59% O683.8 H685.05 L683.52 C684.71 ATR=7.38 SL=683.97/683.6 rawVol=517336 volSMA=62717 buf=0.369 prices=
+2026-02-06T09:40:00.000-05:00,[KLB] 9:40 ▲ ◆ ◆¹ ORB H 5.3x ^99 vol= pos= vwap=above ema=bull rs=+0% adx=20 body=59% O683.8 H685.05 L683.52 C684.71 ATR=7.38 SL=683.97/683.6 rawVol=517336 volSMA=62717 buf=0.369 prices=
+2026-02-06T09:45:00.000-05:00,[KLB] 9:45 ▲ ~ ~ Week L vol=6.6x pos=^99 vwap=above ema=bull rs=+0% adx=23 body=53% O684.7 H685.56 L683.97 C685.55 ATR=7.38 SL=684.81/684.44 rawVol=332074 volSMA=78504 buf=0.369 prices=684.83
+2026-02-06T09:50:00.000-05:00,[KLB] 5m CHECK 9:50 ▲ pnl=0 → BAIL
+2026-02-06T10:00:00.000-05:00,[KLB] CONF 10:00 ▲ BRK → ✗ (failed)
+2026-02-06T10:15:00.000-05:00,[KLB] 5m CHECK 10:15 ▼ pnl=0.03 → BAIL
+2026-02-06T10:30:00.000-05:00,[KLB] 10:30 ▲ ~ ~ Week L vol=0.9x pos=^89 vwap=above ema=bull rs=+0% adx=26 body=74% O684.38 H685.81 L684.12 C685.63 ATR=7.38 SL=684.89/684.52 rawVol=145185 volSMA=162052 buf=0.369 prices=684.83
+2026-02-06T10:35:00.000-05:00,[KLB] 10:35 ▲ ~ ~ Week L vol=1.1x pos=^86 vwap=above ema=bull rs=+0% adx=26 body=34% O685.65 H686.36 L684.91 C686.15 ATR=7.38 SL=685.41/685.04 rawVol=194534 volSMA=171207 buf=0.369 prices=684.83
+2026-02-06T11:00:00.000-05:00,[KLB] 11:00 ▲ ~ ~ Week L vol=0.8x pos=^90 vwap=above ema=bull rs=+0% adx=25 body=78% O684.53 H685.95 L684.33 C685.79 ATR=7.38 SL=685.05/684.68 rawVol=175860 volSMA=210646 buf=0.369 prices=684.83
+2026-02-09T15:40:00.000-05:00,[KLB] 15:40 ▲ ~ ~ VWAP vol=1.7x pos=^99 vwap=above ema=bull rs=+0% adx=22 body=66% O694.11 H694.58 L693.88 C694.57 ATR=7.91 SL=693.78/693.38 rawVol=159568 volSMA=94201 buf=0.395 prices=
+2026-02-10T09:40:00.000-05:00,[KLB] 9:40 ▼ BRK ORB L vol=8.1x pos=v59 vwap=below ema=bear rs=+0% adx=23 body=51% O695.04 H695.14 L693.78 C694.34 ATR=7.88 SL=695.13/695.52 rawVol=278022 volSMA=34436 buf=0.394 prices=694.8
+2026-02-10T09:50:00.000-05:00,[KLB] 5m CHECK 9:50 ▼ pnl=0.01 → BAIL
+2026-02-10T09:50:00.000-05:00,[KLB] CONF 9:50 ▼ BRK → ✗ (failed)
+2026-02-10T09:55:00.000-05:00,[KLB] 9:55 ▲ ~~ ~~ ORB L vol=2.9x pos=^100 vwap=above ema=bear rs=+0% adx=22 body=99% O693.95 H695.37 L693.94 C695.37 ATR=7.88 SL=694.58/694.19 rawVol=170446 volSMA=59538 buf=0.394 prices=694.8
+2026-02-10T10:00:00.000-05:00,[KLB] 10:00 ▲ BRK ORB H vol=2.5x pos=^58 vwap=above ema=bull rs=+0% adx=23 body=41% O695.38 H696.15 L695.23 C695.76 ATR=7.88 SL=694.97/694.58 rawVol=152541 volSMA=66922 buf=0.394 prices=695.54
+2026-02-10T10:00:00.000-05:00,[KLB] 10:00 ▲ ~ ~ VWAP vol=2.5x pos=^58 vwap=above ema=bull rs=+0% adx=23 body=41% O695.38 H696.15 L695.23 C695.76 ATR=7.88 SL=694.97/694.58 rawVol=152541 volSMA=66922 buf=0.394 prices=
+2026-02-10T10:00:00.000-05:00,[KLB] 10:00 ▲ ◆ ◆¹ ORB H 1.2x ^100 vol= pos= vwap=above ema=bull rs=+0% adx=23 body=41% O695.38 H696.15 L695.23 C695.76 ATR=7.88 SL=694.97/694.58 rawVol=152541 volSMA=66922 buf=0.394 prices=
+2026-02-10T10:10:00.000-05:00,[KLB] 10:10 ▲ BRK Yest H vol=1.5x pos=^73 vwap=above ema=bull rs=+0% adx=24 body=44% O695.81 H696.44 L695.56 C696.2 ATR=7.88 SL=695.41/695.02 rawVol=115724 volSMA=76642 buf=0.394 prices=695.87
+2026-02-10T10:10:00.000-05:00,[KLB] CONF 10:10 ▲ BRK → ✓ (auto-promote)
+2026-02-10T10:15:00.000-05:00,[KLB] 5m CHECK 10:15 ▲ pnl=-0.1 → BAIL
+2026-02-10T10:15:00.000-05:00,[KLB] 10:15 ▲ ◆ ◆² Yest H 1.5x ^95 vol= pos= vwap=above ema=bull rs=+0% adx=24 body=46% O696.2 H696.37 L694.71 C695.43 ATR=7.88 SL=694.64/694.25 rawVol=137202 volSMA=82583 buf=0.394 prices=
+2026-02-10T10:20:00.000-05:00,[KLB] 10:20 ▲ ~~ ~~ ORB L vol=1.4x pos=^95 vwap=above ema=bull rs=+0% adx=23 body=53% O695.42 H696.06 L694.96 C696 ATR=7.88 SL=695.21/694.82 rawVol=125660 volSMA=88141 buf=0.394 prices=694.8
+2026-02-10T10:20:00.000-05:00,[KLB] CONF 10:20 ▲ BRK → ✗ (failed)
+2026-02-10T14:35:00.000-05:00,"[KLB] 14:35 ▼ ~~ ~~ Yest H
+~ VWAP vol=0.9x pos=v89 vwap=below ema=bear rs=+0% adx=28 body=37% O693.89 H694.13 L693.67 C693.72 ATR=7.88 SL=694.51/694.9 rawVol=63866 volSMA=74420 buf=0.394 prices=695.87"
+2026-02-10T14:45:00.000-05:00,[KLB] 14:45 ▼ ~~ ~~ Yest H vol=0.5x pos=v76 vwap=below ema=bear rs=+0% adx=27 body=59% O693.87 H693.98 L693.35 C693.5 ATR=7.88 SL=694.29/694.68 rawVol=39692 volSMA=77155 buf=0.394 prices=695.87
+2026-02-10T15:05:00.000-05:00,[KLB] 15:05 ▼ ~~ ~~ Yest H vol=1x pos=v90 vwap=below ema=bear rs=+0% adx=26 body=52% O693.76 H693.99 L693.39 C693.45 ATR=7.88 SL=694.24/694.63 rawVol=70856 volSMA=72147 buf=0.394 prices=695.87
+2026-02-10T15:55:00.000-05:00,[KLB] 15:55 ▼ BRK PM L vol=5.4x pos=v89 vwap=below ema=bear rs=+0% adx=25 body=86% O693.39 H693.43 L692.2 C692.33 ATR=7.88 SL=693.12/693.51 rawVol=522576 volSMA=97335 buf=0.394 prices=693.03
+2026-02-11T10:00:00.000-05:00,"[KLB] 10:00 ▼ ~ ~ Yest H
+~ VWAP vol=2.9x pos=v82 vwap=below ema=bull rs=+0% adx=38 body=62% O695.13 H695.46 L693.81 C694.1 ATR=7.66 SL=694.87/695.25 rawVol=194259 volSMA=67072 buf=0.383 prices=696.54"
+2026-02-11T11:15:00.000-05:00,[KLB] 11:15 ▲ ~ ~ PM L + ~ Yest L vol=0.5x pos=^93 vwap=above ema=bear rs=+0% adx=31 body=92% O691.45 H692.92 L691.43 C692.82 ATR=7.66 SL=692.05/691.67 rawVol=103226 volSMA=188169 buf=0.383 prices=691.36/691.66
+2026-02-11T11:40:00.000-05:00,[KLB] 11:40 ▲ ~ ~ Yest L vol=0.7x pos=^99 vwap=above ema=bear rs=+0% adx=24 body=43% O692.42 H692.79 L691.95 C692.78 ATR=7.66 SL=692.01/691.63 rawVol=70054 volSMA=169292 buf=0.383 prices=691.66
+2026-02-12T10:20:00.000-05:00,[KLB] 10:20 ▼ ~ ~ VWAP vol=1.2x pos=v98 vwap=below ema=bear rs=+0% adx=23 body=67% O693.37 H693.62 L692.79 C692.81 ATR=7.69 SL=693.58/693.96 rawVol=108660 volSMA=91798 buf=0.384 prices=
+2026-02-12T11:00:00.000-05:00,[KLB] 11:00 ▼ BRK Yest L vol=1.6x pos=v93 vwap=below ema=bear rs=+0% adx=39 body=80% O689.51 H689.65 L688.58 C688.65 ATR=7.69 SL=689.42/689.8 rawVol=247578 volSMA=156419 buf=0.384 prices=689.18
+2026-02-13T09:30:00.000-05:00,[KLB] 9:30 ▲ ~ ~ Yest L vol=0.8x pos=^59 vwap=above ema=bull rs=+0% adx=21 body=59% O681.16 H681.91 L681.16 C681.6 ATR=8.21 SL=680.78/680.37 rawVol=16350 volSMA=19853 buf=0.41 prices=680.37
+2026-02-13T09:40:00.000-05:00,[KLB] 9:40 ▼ ~ ~ VWAP vol=7.8x pos=v96 vwap=below ema=bull rs=+0% adx=20 body=93% O681.2 H681.24 L679.78 C679.84 ATR=8.21 SL=680.66/681.07 rawVol=275640 volSMA=53412 buf=0.41 prices=
+2026-02-13T09:45:00.000-05:00,[KLB] 5m CHECK 9:45 ▼ pnl=-0.08 → BAIL
+2026-02-13T15:15:00.000-05:00,[KLB] 15:15 ▼ ~ ~ PM H + ~ ORB H vol=1.5x pos=v98 vwap=below ema=bear rs=+0% adx=27 body=98% O683.14 H683.14 L682.11 C682.13 ATR=8.21 SL=682.95/683.36 rawVol=115675 volSMA=77178 buf=0.41 prices=683.02/682.5
+2026-02-13T15:25:00.000-05:00,[KLB] 15:25 ▼ ~ ~ ORB H vol=1x pos=v100 vwap=below ema=bear rs=+0% adx=32 body=97% O682.57 H682.6 L681.69 C681.69 ATR=8.21 SL=682.51/682.92 rawVol=86318 volSMA=83111 buf=0.41 prices=682.5
+2026-02-13T15:30:00.000-05:00,[KLB] 15:30 ▼ BRK ORB L vol=1.9x pos=v82 vwap=below ema=bear rs=+0% adx=35 body=71% O681.68 H681.84 L680.36 C680.63 ATR=8.21 SL=681.45/681.86 rawVol=164290 volSMA=88506 buf=0.41 prices=680.83
+2026-02-13T15:30:00.000-05:00,[KLB] 15:30 ▼ ◆ ◆¹ ORB L 1.8x v94 vol= pos= vwap=below ema=bear rs=+0% adx=35 body=71% O681.68 H681.84 L680.36 C680.63 ATR=8.21 SL=681.45/681.86 rawVol=164290 volSMA=88506 buf=0.41 prices=
+2026-02-13T15:45:00.000-05:00,[KLB] CONF 15:45 ▼ BRK → ✗ (failed)
+2026-02-17T09:35:00.000-05:00,[KLB] 9:35 ▲ BRK PM H vol=12.5x pos=^87 vwap=above ema=bull rs=+0% adx=28 body=80% O680.17 H681.98 L680.04 C681.73 ATR=8.25 SL=680.91/680.49 rawVol=339707 volSMA=27259 buf=0.412 prices=681.02
+2026-02-17T09:35:00.000-05:00,"[KLB] 9:35 ▲ ~ ~ Yest L
+~ VWAP vol=12.5x pos=^87 vwap=above ema=bull rs=+0% adx=28 body=80% O680.17 H681.98 L680.04 C681.73 ATR=8.25 SL=680.91/680.49 rawVol=339707 volSMA=27259 buf=0.412 prices=677.52"
+2026-02-17T09:40:00.000-05:00,[KLB] 9:40 ▲ BRK ORB H vol=9.2x pos=^83 vwap=above ema=bull rs=+0% adx=30 body=60% O681.74 H682.76 L681.44 C682.53 ATR=8.25 SL=681.71/681.29 rawVol=200894 volSMA=37108 buf=0.412 prices=681.98
+2026-02-17T09:40:00.000-05:00,[KLB] 9:40 ▲ ~ ~ Yest L vol=9.2x pos=^83 vwap=above ema=bull rs=+0% adx=30 body=60% O681.74 H682.76 L681.44 C682.53 ATR=8.25 SL=681.71/681.29 rawVol=200894 volSMA=37108 buf=0.412 prices=677.52
+2026-02-17T09:40:00.000-05:00,[KLB] CONF 9:40 ▲ BRK → ✓★ (auto-promote)
+2026-02-17T09:45:00.000-05:00,[KLB] 9:45 ▼ ~ ~ PM H + ~ Yest H + ~ ORB H vol=4.6x pos=v89 vwap=below ema=bull rs=+0% adx=31 body=76% O682.49 H682.78 L680.45 C680.71 ATR=8.25 SL=681.53/681.95 rawVol=213615 volSMA=46795 buf=0.412 prices=681.02/686.28/681.98
+2026-02-17T09:45:00.000-05:00,[KLB] 5m CHECK 9:45 ▲ pnl=-0.22 → BAIL
+2026-02-17T09:45:00.000-05:00,[KLB] CONF 9:45 ▲ BRK → ✗ (failed)
+2026-02-17T09:55:00.000-05:00,[KLB] 9:55 ▼ ~ ~ VWAP vol=4.2x pos=v94 vwap=below ema=bull rs=+0% adx=28 body=83% O680.28 H680.6 L677.63 C677.82 ATR=8.25 SL=678.64/679.06 rawVol=279724 volSMA=75663 buf=0.412 prices=
+2026-02-17T09:55:00.000-05:00,[KLB] 5m CHECK 9:55 ▼ pnl=0.3 → HOLD
+2026-02-17T10:00:00.000-05:00,[KLB] 10:00 ▼ BRK PM L + Yest L + Week L vol=3.2x pos=v89 vwap=below ema=bear rs=+0% adx=28 body=86% O677.86 H677.9 L676.48 C676.64 ATR=8.25 SL=677.46/677.88 rawVol=266881 volSMA=88565 buf=0.412 prices=677.23/677.52/677.52
+2026-02-17T10:05:00.000-05:00,"[KLB] 10:05 ▼ ◆ ◆² PM L 1.8x v96
+◆² Yest L 1.8x v96
+◆² Week L 1.8x v96 vol= pos= vwap=below ema=bear rs=+0% adx=27 body=77% O676.6 H678.26 L676.27 C678.14 ATR=8.25 SL=678.96/679.38 rawVol=221766 volSMA=98621 buf=0.412 prices="
+2026-02-17T10:15:00.000-05:00,[KLB] 10:15 ▼ BRK PM L + Yest L + Week L vol=1.6x pos=v83 vwap=below ema=bear rs=+0% adx=26 body=38% O677.41 H678.01 L676.68 C676.91 ATR=8.25 SL=677.73/678.15 rawVol=139757 volSMA=113464 buf=0.412 prices=677.23/677.52/677.52
+2026-02-17T10:15:00.000-05:00,[KLB] CONF 10:15 ▼ BRK → ✓ (auto-promote)
+2026-02-17T10:20:00.000-05:00,[KLB] 10:20 ▲ ~ ~ PM L + ~ Week L vol=1.6x pos=^96 vwap=above ema=bear rs=+0% adx=24 body=93% O676.9 H679.76 L676.83 C679.63 ATR=8.25 SL=678.81/678.39 rawVol=195965 volSMA=123076 buf=0.412 prices=677.23/677.52
+2026-02-17T10:20:00.000-05:00,[KLB] 5m CHECK 10:20 ▼ pnl=-0.33 → BAIL
+2026-02-17T10:20:00.000-05:00,[KLB] CONF 10:20 ▼ BRK → ✗ (failed)
+2026-02-17T11:40:00.000-05:00,[KLB] 11:40 ▲ ~~ ~~ Yest L vol=0.9x pos=^70 vwap=above ema=bull rs=+0% adx=24 body=50% O681.79 H682.84 L681.52 C682.45 ATR=8.25 SL=681.63/681.21 rawVol=106318 volSMA=166733 buf=0.412 prices=677.52
+2026-02-17T11:55:00.000-05:00,[KLB] 11:55 ▲ ~~ ~~ Yest L vol=0.4x pos=^97 vwap=above ema=bull rs=+0% adx=25 body=92% O681.72 H682.45 L681.68 C682.43 ATR=8.25 SL=681.61/681.19 rawVol=65049 volSMA=152487 buf=0.412 prices=677.52
+2026-02-17T12:30:00.000-05:00,[KLB] 12:30 ▲ ~~ ~~ Yest L vol=0.6x pos=^100 vwap=above ema=bull rs=+0% adx=23 body=89% O681.12 H682.19 L680.99 C682.19 ATR=8.25 SL=681.37/680.95 rawVol=83087 volSMA=131006 buf=0.412 prices=677.52
+2026-02-18T09:50:00.000-05:00,[KLB] 9:50 ▼ ~ ~ ORB H vol=3.8x pos=v92 vwap=below ema=bear rs=+0% adx=23 body=76% O685.01 H685.29 L683.56 C683.7 ATR=8.31 SL=684.53/684.95 rawVol=166702 volSMA=44363 buf=0.416 prices=684.37
+2026-02-18T09:50:00.000-05:00,[KLB] 5m CHECK 9:50 ▲ pnl=-0.16 → BAIL
+2026-02-18T10:00:00.000-05:00,[KLB] 10:00 ▲ ~ ~ VWAP vol=2.7x pos=^79 vwap=above ema=bear rs=+0% adx=21 body=70% O685.27 H686.4 L685.16 C686.14 ATR=8.31 SL=685.31/684.89 rawVol=149715 volSMA=56241 buf=0.416 prices=
+2026-02-18T14:10:00.000-05:00,[KLB] 14:10 ▼ ~ ~ PM H vol=0.7x pos=v99 vwap=below ema=bull rs=+0% adx=27 body=90% O687.33 H687.39 L686.66 C686.67 ATR=8.31 SL=687.5/687.92 rawVol=44923 volSMA=63252 buf=0.416 prices=686.92
+2026-02-18T14:15:00.000-05:00,[KLB] 14:15 ▼ ~ ~ PM H vol=2x pos=v99 vwap=below ema=bull rs=+0% adx=28 body=46% O686.72 H687.08 L686.4 C686.41 ATR=8.31 SL=687.24/687.66 rawVol=135777 volSMA=67343 buf=0.416 prices=686.92
+2026-02-18T14:20:00.000-05:00,[KLB] 14:20 ▼ ~ ~ VWAP vol=1.9x pos=v72 vwap=below ema=bear rs=+0% adx=29 body=52% O686.44 H686.53 L686.07 C686.2 ATR=8.31 SL=687.03/687.45 rawVol=103727 volSMA=70722 buf=0.416 prices=
+2026-02-18T14:30:00.000-05:00,[KLB] 14:30 ▼ ~ ~ PM H vol=1.2x pos=v72 vwap=below ema=bear rs=+0% adx=30 body=43% O686.69 H686.88 L686.23 C686.41 ATR=8.31 SL=687.24/687.66 rawVol=91554 volSMA=74396 buf=0.416 prices=686.92
+2026-02-19T09:45:00.000-05:00,[KLB] 9:45 ▲ ~ ~ PM L + ~ Yest L + ~ ORB L vol=5.1x pos=^93 vwap=above ema=bear rs=+0% adx=21 body=54% O683.65 H684.72 L682.97 C684.6 ATR=8.17 SL=683.78/683.37 rawVol=169620 volSMA=32991 buf=0.408 prices=683.1/682.83/683.56
+2026-02-19T12:00:00.000-05:00,[KLB] 12:00 ▼ ~ ~ VWAP vol=0.9x pos=v83 vwap=below ema=bear rs=+0% adx=21 body=77% O684.04 H684.08 L683.42 C683.53 ATR=8.17 SL=684.35/684.76 rawVol=61042 volSMA=70026 buf=0.408 prices=
+2026-02-19T12:25:00.000-05:00,[KLB] 12:25 ▲ ~ ~ Yest L vol=1.1x pos=^70 vwap=above ema=bear rs=+0% adx=26 body=47% O684.12 H684.78 L683.92 C684.52 ATR=8.17 SL=683.7/683.29 rawVol=68649 volSMA=63436 buf=0.408 prices=682.83
+2026-02-19T12:30:00.000-05:00,[KLB] 12:30 ▼ ~ ~ ORB H vol=1.1x pos=v72 vwap=below ema=bear rs=+0% adx=26 body=66% O684.48 H684.53 L683.7 C683.93 ATR=8.17 SL=684.75/685.16 rawVol=73367 volSMA=64612 buf=0.408 prices=684.52
+2026-02-19T12:50:00.000-05:00,[KLB] 12:50 ▼ BRK PM L + Yest L + ORB L vol=1.5x pos=v78 vwap=below ema=bear rs=+0% adx=27 body=78% O683.79 H683.79 L682.39 C682.7 ATR=8.17 SL=683.52/683.93 rawVol=94096 volSMA=62286 buf=0.408 prices=683.1/682.83/683.56
+2026-02-19T12:50:00.000-05:00,"[KLB] 12:50 ▼ ◆ ◆¹ PM L 1.7x v60
+◆¹ Yest L 1.7x v60 vol= pos= vwap=below ema=bear rs=+0% adx=27 body=78% O683.79 H683.79 L682.39 C682.7 ATR=8.17 SL=683.52/683.93 rawVol=94096 volSMA=62286 buf=0.408 prices="
+2026-02-19T13:10:00.000-05:00,[KLB] CONF 13:10 ▼ BRK → ✗ (failed)
+2026-02-20T09:40:00.000-05:00,[KLB] 9:40 ▲ ~ ~ Yest L vol=7.9x pos=^58 vwap=above ema=bear rs=+0% adx=29 body=36% O683.33 H684.53 L682.99 C683.88 ATR=7.92 SL=683.09/682.69 rawVol=230938 volSMA=34528 buf=0.396 prices=681.55
+2026-02-20T09:45:00.000-05:00,"[KLB] 9:45 ▲ ~ ~ Yest L
+~ VWAP vol=5.7x pos=^64 vwap=above ema=bear rs=+0% adx=29 body=43% O683.93 H685.35 L683.56 C684.7 ATR=7.92 SL=683.91/683.51 rawVol=129702 volSMA=40775 buf=0.396 prices=681.55"
+2026-02-20T09:45:00.000-05:00,[KLB] 5m CHECK 9:45 ▲ pnl=0.1 → HOLD
+2026-02-20T10:00:00.000-05:00,[KLB] 10:00 ▲ ~ ~ Yest L vol=2x pos=^86 vwap=above ema=bear rs=+0% adx=28 body=59% O684.15 H685.04 L683.82 C684.87 ATR=7.92 SL=684.08/683.68 rawVol=115369 volSMA=58465 buf=0.396 prices=681.55
+2026-02-20T10:20:00.000-05:00,[KLB] 10:20 ▲ BRK Yest H vol=1.6x pos=^78 vwap=above ema=bull rs=+0% adx=35 body=37% O685.44 H687.25 L684.2 C686.57 ATR=7.92 SL=685.78/685.38 rawVol=178766 volSMA=109546 buf=0.396 prices=686.18
+2026-02-20T10:25:00.000-05:00,[KLB] 10:25 ▲ BRK PM H vol=1.5x pos=^60 vwap=above ema=bull rs=+0% adx=35 body=50% O686.6 H687.98 L686.45 C687.37 ATR=7.92 SL=686.58/686.18 rawVol=164291 volSMA=117128 buf=0.396 prices=687.34
+2026-02-20T10:25:00.000-05:00,[KLB] CONF 10:25 ▲ BRK → ✓ (auto-promote)
+2026-02-20T10:30:00.000-05:00,[KLB] 5m CHECK 10:30 ▲ pnl=-0.07 → BAIL
+2026-02-20T10:30:00.000-05:00,[KLB] CONF 10:30 ▲ BRK → ✗ (failed)
+2026-02-20T12:15:00.000-05:00,[KLB] 12:15 ▼ ~~ ~~ PM H vol=1.3x pos=v98 vwap=below ema=bull rs=+0% adx=25 body=92% O687.08 H687.14 L686.09 C686.11 ATR=7.92 SL=686.9/687.3 rawVol=148929 volSMA=113270 buf=0.396 prices=687.34
+2026-02-20T12:20:00.000-05:00,[KLB] 12:20 ▼ ~ ~ VWAP vol=1.6x pos=v87 vwap=below ema=bull rs=+0% adx=25 body=87% O686.11 H686.11 L684.88 C685.04 ATR=7.92 SL=685.83/686.23 rawVol=183631 volSMA=116224 buf=0.396 prices=
+2026-02-20T12:25:00.000-05:00,[KLB] 12:25 ▼ ~~ ~~ Yest H vol=1.6x pos=v98 vwap=below ema=bull rs=+0% adx=25 body=71% O685 H685.3 L684.2 C684.22 ATR=7.92 SL=685.01/685.41 rawVol=110237 volSMA=116508 buf=0.396 prices=686.18
+2026-02-23T09:35:00.000-05:00,[KLB] 9:35 ▲ BRK PM H vol=14.6x pos=^81 vwap=above ema=bull rs=+0% adx=27 body=75% O687.79 H689.75 L687.67 C689.35 ATR=7.95 SL=688.55/688.16 rawVol=250055 volSMA=17113 buf=0.398 prices=688.2
+2026-02-23T09:35:00.000-05:00,[KLB] 9:35 ▲ ~ ~ VWAP vol=14.6x pos=^81 vwap=above ema=bull rs=+0% adx=27 body=75% O687.79 H689.75 L687.67 C689.35 ATR=7.95 SL=688.55/688.16 rawVol=250055 volSMA=17113 buf=0.398 prices=
+2026-02-23T09:40:00.000-05:00,[KLB] CONF 9:40 ▲ BRK → ✗ (failed)
+2026-02-23T09:45:00.000-05:00,[KLB] 9:45 ▼ ~~ ~~ PM H + ~ Yest H + ~ ORB H vol=5.6x pos=v95 vwap=below ema=bull rs=+0% adx=29 body=95% O689.57 H689.57 L687.44 C687.55 ATR=7.95 SL=688.35/688.74 rawVol=212714 volSMA=38227 buf=0.398 prices=688.2/690.06/689.75
+2026-02-23T09:45:00.000-05:00,[KLB] 5m CHECK 9:45 ▲ pnl=-0.25 → BAIL
+2026-02-23T09:50:00.000-05:00,[KLB] 9:50 ▼ ~ ~ VWAP vol=5x pos=v87 vwap=below ema=bull rs=+0% adx=28 body=53% O687.51 H687.89 L686.76 C686.91 ATR=7.95 SL=687.71/688.1 rawVol=253807 volSMA=50785 buf=0.398 prices=
+2026-02-23T09:55:00.000-05:00,[KLB] 5m CHECK 9:55 ▼ pnl=-0.02 → BAIL
+2026-02-23T10:05:00.000-05:00,[KLB] 10:05 ▼ BRK PM L vol=2.6x pos=v97 vwap=below ema=bear rs=+0% adx=24 body=59% O686.48 H687.23 L685.22 C685.29 ATR=7.95 SL=686.09/686.48 rawVol=204371 volSMA=78443 buf=0.398 prices=685.65
+2026-02-23T10:05:00.000-05:00,[KLB] 10:05 ▼ ◆ ◆¹ PM L 2.6x v74 vol= pos= vwap=below ema=bear rs=+0% adx=24 body=59% O686.48 H687.23 L685.22 C685.29 ATR=7.95 SL=686.09/686.48 rawVol=204371 volSMA=78443 buf=0.398 prices=
+2026-02-23T15:55:00.000-05:00,[KLB] 15:55 ▼ BRK Yest L vol=5x pos=v93 vwap=below ema=bear rs=+0% adx=23 body=68% O681.93 H682.25 L680.97 C681.05 ATR=7.95 SL=681.85/682.24 rawVol=647916 volSMA=128859 buf=0.398 prices=681.73
+2026-02-23T15:55:00.000-05:00,[KLB] CONF 15:55 ▼ BRK → ✓ (auto-promote)
+2026-02-23T16:00:00.000-05:00,[KLB] 5m CHECK 16:00 ▼ pnl=-0.17 → BAIL
+2026-02-24T09:35:00.000-05:00,[KLB] 9:35 ▼ BRK PM L vol=11.5x pos=v88 vwap=below ema=bear rs=+0% adx=21 body=69% O681.89 H682.2 L680.56 C680.76 ATR=8.07 SL=681.57/681.97 rawVol=228469 volSMA=19788 buf=0.404 prices=681.66
+2026-02-24T09:35:00.000-05:00,[KLB] 9:35 ▼ ~ ~ VWAP vol=11.5x pos=v88 vwap=below ema=bear rs=+0% adx=21 body=69% O681.89 H682.2 L680.56 C680.76 ATR=8.07 SL=681.57/681.97 rawVol=228469 volSMA=19788 buf=0.404 prices=
+2026-02-24T09:40:00.000-05:00,[KLB] 9:40 ▲ ~ ~ PM L + ~ ORB L vol=8.9x pos=^91 vwap=above ema=bear rs=+0% adx=23 body=62% O680.75 H682.52 L680 C682.3 ATR=8.07 SL=681.49/681.09 rawVol=315472 volSMA=35476 buf=0.404 prices=681.66/680.56
+2026-02-24T09:40:00.000-05:00,[KLB] CONF 9:40 ▼ BRK → ✗ (failed)
+2026-02-24T09:45:00.000-05:00,"[KLB] 9:45 ▲ ~ ~ Yest L
+~ VWAP vol=6.9x pos=^98 vwap=above ema=bear rs=+0% adx=22 body=96% O682.24 H684.38 L682.2 C684.34 ATR=8.07 SL=683.53/683.13 rawVol=214760 volSMA=46044 buf=0.404 prices=680.37"
+2026-02-24T09:50:00.000-05:00,[KLB] 5m CHECK 9:50 ▲ pnl=0.07 → HOLD
+2026-02-25T09:35:00.000-05:00,[KLB] 9:35 ▲ BRK PM H + Week H vol=9.3x pos=^66 vwap=above ema=bull rs=+0% adx=26 body=58% O690.19 H691.23 L690.1 C690.85 ATR=8.09 SL=690.04/689.64 rawVol=139091 volSMA=14958 buf=0.405 prices=690.74/690.06
+2026-02-25T09:35:00.000-05:00,[KLB] 9:35 ▲ ◆ ◆¹ PM H 9.4x ^60 vol= pos= vwap=above ema=bull rs=+0% adx=26 body=58% O690.19 H691.23 L690.1 C690.85 ATR=8.09 SL=690.04/689.64 rawVol=139091 volSMA=14958 buf=0.405 prices=
+2026-02-25T09:50:00.000-05:00,[KLB] 9:50 ▲ BRK ORB H vol=4.4x pos=^80 vwap=above ema=bull rs=+0% adx=30 body=80% O690.91 H691.87 L690.91 C691.68 ATR=8.09 SL=690.87/690.47 rawVol=164047 volSMA=36965 buf=0.405 prices=691.23
+2026-02-25T09:50:00.000-05:00,[KLB] 9:50 ▲ ~ ~ VWAP vol=4.4x pos=^80 vwap=above ema=bull rs=+0% adx=30 body=80% O690.91 H691.87 L690.91 C691.68 ATR=8.09 SL=690.87/690.47 rawVol=164047 volSMA=36965 buf=0.405 prices=
+2026-02-25T09:50:00.000-05:00,[KLB] CONF 9:50 ▲ BRK → ✓ (auto-promote)
+2026-02-25T09:50:00.000-05:00,[KLB] 9:50 ▲ ◆ ◆¹ ORB H 3.5x ^17 vol= pos= vwap=above ema=bull rs=+0% adx=30 body=80% O690.91 H691.87 L690.91 C691.68 ATR=8.09 SL=690.87/690.47 rawVol=164047 volSMA=36965 buf=0.405 prices=
+2026-02-25T09:55:00.000-05:00,[KLB] 5m CHECK 9:55 ▲ pnl=-0.03 → BAIL
+2026-02-25T10:00:00.000-05:00,[KLB] CONF 10:00 ▲ BRK → ✗ (failed)
+2026-02-25T10:10:00.000-05:00,[KLB] 10:10 ▼ ~~ ~~ ORB H vol=1.6x pos=v67 vwap=below ema=bull rs=+0% adx=31 body=55% O690.96 H691.04 L690.38 C690.6 ATR=8.09 SL=691.41/691.81 rawVol=92164 volSMA=57047 buf=0.405 prices=691.23
+2026-02-25T10:35:00.000-05:00,[KLB] 10:35 ▼ ~~ ~~ PM H + ~~ ORB H vol=1.2x pos=v95 vwap=below ema=bull rs=+0% adx=26 body=73% O691.14 H691.36 L690.36 C690.41 ATR=8.09 SL=691.22/691.62 rawVol=86106 volSMA=74085 buf=0.405 prices=690.74/691.23
+2026-02-25T11:00:00.000-05:00,[KLB] 11:00 ▲ ~ ~ ORB L vol=0.5x pos=^96 vwap=above ema=bull rs=+0% adx=21 body=56% O690.46 H690.87 L690.19 C690.84 ATR=8.09 SL=690.03/689.63 rawVol=42705 volSMA=82991 buf=0.405 prices=690.1
+2026-02-26T09:35:00.000-05:00,[KLB] 9:35 ▼ ~ ~ Yest H vol=14.6x pos=v81 vwap=below ema=bull rs=+0% adx=23 body=81% O693.29 H693.29 L692.02 C692.26 ATR=7.97 SL=693.06/693.46 rawVol=191460 volSMA=13133 buf=0.398 prices=693.68
+2026-02-26T09:45:00.000-05:00,[KLB] 9:45 ▼ BRK ORB L vol=7.1x pos=v59 vwap=below ema=bear rs=+0% adx=29 body=53% O692.15 H692.23 L690.9 C691.45 ATR=7.97 SL=692.25/692.65 rawVol=183364 volSMA=34368 buf=0.398 prices=692.02
+2026-02-26T09:45:00.000-05:00,[KLB] 5m CHECK 9:45 ▼ pnl=0.09 → HOLD
+2026-02-26T09:50:00.000-05:00,[KLB] 9:50 ▼ ~ ~ VWAP vol=4.3x pos=v51 vwap=below ema=bear rs=+0% adx=32 body=36% O691.36 H691.48 L690.67 C691.07 ATR=7.97 SL=691.87/692.27 rawVol=169669 volSMA=42775 buf=0.398 prices=
+2026-02-26T10:15:00.000-05:00,[KLB] 10:15 ▼ BRK Yest L vol=2.4x pos=v99 vwap=below ema=bear rs=+0% adx=45 body=71% O689.98 H690.54 L688.56 C688.57 ATR=7.97 SL=689.37/689.77 rawVol=186689 volSMA=78372 buf=0.398 prices=690.1
+2026-02-26T10:15:00.000-05:00,[KLB] 10:15 ▼ ~ ~ Week H vol=2.4x pos=v99 vwap=below ema=bear rs=+0% adx=45 body=71% O689.98 H690.54 L688.56 C688.57 ATR=7.97 SL=689.37/689.77 rawVol=186689 volSMA=78372 buf=0.398 prices=690.06
+2026-02-26T10:15:00.000-05:00,[KLB] CONF 10:15 ▼ BRK → ✓ (auto-promote)
+2026-02-26T10:20:00.000-05:00,[KLB] 5m CHECK 10:20 ▼ pnl=0.26 → HOLD
+2026-02-26T14:20:00.000-05:00,[KLB] 14:20 ▲ ~ ~ VWAP vol=1.6x pos=^68 vwap=above ema=bear rs=+0% adx=34 body=66% O688.52 H689.19 L688.51 C688.97 ATR=7.97 SL=688.17/687.77 rawVol=114148 volSMA=73238 buf=0.398 prices=
+2026-02-27T09:45:00.000-05:00,[KLB] 9:45 ▼ BRK Yest L + ORB L vol=3.9x pos=v61 vwap=below ema=bear rs=+0% adx=38 body=61% O684.1 H684.1 L681.66 C682.62 ATR=8.04 SL=683.42/683.83 rawVol=196422 volSMA=50868 buf=0.402 prices=684.35/682.8
+2026-02-27T09:45:00.000-05:00,"[KLB] 9:45 ▼ ~ ~ ORB H
+~ VWAP vol=3.9x pos=v61 vwap=below ema=bear rs=+0% adx=38 body=61% O684.1 H684.1 L681.66 C682.62 ATR=8.04 SL=683.42/683.83 rawVol=196422 volSMA=50868 buf=0.402 prices=684.16"
+2026-02-27T09:45:00.000-05:00,[KLB] 5m CHECK 9:45 ▲ pnl=-0.18 → BAIL
+2026-02-27T09:50:00.000-05:00,[KLB] CONF 9:50 ▼ BRK → ✗ (failed)
+2026-02-27T10:05:00.000-05:00,[KLB] 10:05 ▲ ~~ ~~ ORB L vol=2.3x pos=^71 vwap=above ema=bear rs=+0% adx=36 body=60% O682.86 H684.43 L682.67 C683.92 ATR=8.04 SL=683.12/682.71 rawVol=189726 volSMA=81490 buf=0.402 prices=682.8
+2026-02-27T10:10:00.000-05:00,[KLB] 10:10 ▲ ~ ~ VWAP vol=2.2x pos=^56 vwap=above ema=bear rs=+0% adx=34 body=52% O683.9 H685.41 L683.84 C684.72 ATR=8.04 SL=683.92/683.51 rawVol=143763 volSMA=86516 buf=0.402 prices=
+2026-03-02T09:50:00.000-05:00,[KLB] 9:50 ▲ ~ ~ Yest L vol=2.9x pos=^92 vwap=above ema=bull rs=+0% adx=23 body=73% O682.07 H683.36 L681.78 C683.23 ATR=8.01 SL=682.43/682.03 rawVol=162643 volSMA=55681 buf=0.401 prices=681.64
+2026-03-02T10:05:00.000-05:00,"[KLB] 10:05 ▲ ~ ~ Yest L
+~ VWAP vol=2.5x pos=^91 vwap=above ema=bull rs=+0% adx=31 body=54% O682.89 H684.46 L681.96 C684.24 ATR=8.01 SL=683.44/683.04 rawVol=194950 volSMA=77263 buf=0.401 prices=681.64"
+2026-03-02T10:40:00.000-05:00,[KLB] 10:40 ▲ ~ ~ Yest L vol=0.8x pos=^99 vwap=above ema=bull rs=+0% adx=38 body=62% O682.99 H683.96 L682.42 C683.94 ATR=8.01 SL=683.14/682.74 rawVol=107604 volSMA=131035 buf=0.401 prices=681.64
+2026-03-02T11:35:00.000-05:00,[KLB] 11:35 ▲ ~ ~ Yest L vol=0.8x pos=^88 vwap=above ema=bull rs=+0% adx=30 body=59% O683.22 H683.96 L682.92 C683.83 ATR=8.01 SL=683.03/682.63 rawVol=102698 volSMA=134889 buf=0.401 prices=681.64
+2026-03-03T09:40:00.000-05:00,[KLB] 9:40 ▲ ~ ~ ORB L vol=4.7x pos=^55 vwap=above ema=bear rs=+0% adx=28 body=41% O674.57 H677.09 L674.13 C675.77 ATR=8.2 SL=674.95/674.54 rawVol=312469 volSMA=66736 buf=0.41 prices=674.46
+2026-03-03T09:45:00.000-05:00,[KLB] 9:45 ▼ BRK ORB L vol=3x pos=v92 vwap=below ema=bear rs=+0% adx=26 body=85% O675.77 H675.96 L673.23 C673.44 ATR=8.2 SL=674.26/674.67 rawVol=231901 volSMA=77782 buf=0.41 prices=674.46
+2026-03-03T09:45:00.000-05:00,[KLB] 9:45 ▼ ~ ~ VWAP vol=3x pos=v92 vwap=below ema=bear rs=+0% adx=26 body=85% O675.77 H675.96 L673.23 C673.44 ATR=8.2 SL=674.26/674.67 rawVol=231901 volSMA=77782 buf=0.41 prices=
+2026-03-03T09:45:00.000-05:00,[KLB] 9:45 ▼ ◆ ◆¹ ORB L 3.8x v98 vol= pos= vwap=below ema=bear rs=+0% adx=26 body=85% O675.77 H675.96 L673.23 C673.44 ATR=8.2 SL=674.26/674.67 rawVol=231901 volSMA=77782 buf=0.41 prices=
+2026-03-03T09:55:00.000-05:00,[KLB] 5m CHECK 9:55 ▼ pnl=-0.1 → BAIL
+2026-03-03T10:20:00.000-05:00,[KLB] 10:20 ▼ BRK PM L vol=1.7x pos=v91 vwap=below ema=bear rs=+0% adx=21 body=73% O672.58 H672.95 L670.88 C671.07 ATR=8.2 SL=671.89/672.3 rawVol=278010 volSMA=160757 buf=0.41 prices=672.19
+2026-03-03T10:20:00.000-05:00,[KLB] CONF 10:20 ▼ BRK → ✓ (auto-promote)
+2026-03-03T10:25:00.000-05:00,[KLB] 5m CHECK 10:25 ▼ pnl=0.07 → HOLD
+2026-03-03T10:35:00.000-05:00,[KLB] 10:35 ▼ ◆ ◆⁴ PM L 0.6x v37 vol= pos= vwap=below ema=bear rs=+0% adx=22 body=56% O669.85 H671.87 L669.79 C671.02 ATR=8.2 SL=671.84/672.25 rawVol=234480 volSMA=194047 buf=0.41 prices=
+2026-03-03T11:00:00.000-05:00,[KLB] CONF 11:00 ▼ BRK → ✗ (failed)
+2026-03-03T13:10:00.000-05:00,[KLB] 13:10 ▲ ~ ~ Yest L vol=0.8x pos=^89 vwap=above ema=bull rs=+0% adx=25 body=49% O678.47 H678.91 L678.17 C678.83 ATR=8.2 SL=678.01/677.6 rawVol=44359 volSMA=90265 buf=0.41 prices=678.02
+2026-03-03T13:25:00.000-05:00,[KLB] 13:25 ▲ ~ ~ Yest L vol=1.3x pos=^97 vwap=above ema=bull rs=+0% adx=24 body=95% O678.65 H680.08 L678.62 C680.03 ATR=8.2 SL=679.21/678.8 rawVol=116119 volSMA=86066 buf=0.41 prices=678.02
+2026-03-03T13:35:00.000-05:00,[KLB] 13:35 ▲ ~ ~ Week L vol=1.1x pos=^83 vwap=above ema=bull rs=+0% adx=26 body=69% O679.82 H680.77 L679.67 C680.58 ATR=8.2 SL=679.76/679.35 rawVol=83827 volSMA=78023 buf=0.41 prices=680
+2026-03-03T14:15:00.000-05:00,[KLB] 14:15 ▲ ~ ~ Week L vol=1.2x pos=^85 vwap=above ema=bull rs=+0% adx=28 body=44% O680.09 H680.68 L679.67 C680.53 ATR=8.2 SL=679.71/679.3 rawVol=103908 volSMA=84982 buf=0.41 prices=680
+2026-03-03T14:40:00.000-05:00,[KLB] 14:40 ▲ BRK PM H vol=2.2x pos=^68 vwap=above ema=bull rs=+0% adx=23 body=53% O679.67 H681.81 L679.29 C681 ATR=8.2 SL=680.18/679.77 rawVol=185978 volSMA=86065 buf=0.41 prices=679.72
+2026-03-03T14:40:00.000-05:00,[KLB] 14:40 ▲ ~ ~ Week L vol=2.2x pos=^68 vwap=above ema=bull rs=+0% adx=23 body=53% O679.67 H681.81 L679.29 C681 ATR=8.2 SL=680.18/679.77 rawVol=185978 volSMA=86065 buf=0.41 prices=680

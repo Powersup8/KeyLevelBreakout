@@ -1,22 +1,36 @@
 // © TSLA Open Scalper
-// 0DTE/1DTE opening trade decision system (v1.1k)
-// v1.1k: ORB-based breakout replaces fixed-time 5m BAIL
+// 0DTE/1DTE opening trade decision system (v1.2c)
+// v1.2: 2m accel, 15s/30s sub-bars, ORB-based SL, min ORB width
+// v1.2c: fix SL self-trigger on ORB freeze bar, disable PM vol kill (TV vs IB volume mismatch)
+// v1.2c: fakeout downgraded to warning, SL price label updates on ORB freeze
+// v1.2c: fakeout = bar2 must break bar1 low (real trap vs normal pullback)
 // Designed for TSLA on 1-min chart with Extended Hours ON
 //@version=6
-indicator("TSLA Open Scalper v1.1k", overlay=true, max_labels_count=50, max_lines_count=20)
+indicator("TSLA Open Scalper v1.2c", overlay=true, max_labels_count=50, max_lines_count=20)
 
 // ─── Inputs ────────────────────────────────────────────────
-i_vixSymbol = input.string("CBOE:VIX", "VIX Symbol", tooltip="VIX data provider. Try TVC:VIX if CBOE:VIX fails.", group="Data")
-i_slDistance = input.float(2.0, "Stop Loss Distance ($)", minval=0.5, step=0.5, tooltip="Distance below entry for SL line. Research: median max dip on HOLD days = $2.08", group="Trade")
-i_dipRecovery = input.float(15.0, "Dip Entry Recovery (%)", minval=5.0, maxval=50.0, step=5.0, tooltip="On shakeout bars: enter at bar low + X% of bar range (captures turning point)", group="Trade")
-i_showTable = input.bool(true, "Show Info Table", group="Visuals")
-i_showBG    = input.bool(true, "Show Background Colors", group="Visuals")
-i_debugLog  = input.bool(false, "Log Signals (Pine Logs)", group="Debug")
+i_vixSymbol    = input.string("CBOE:VIX", "VIX Symbol", tooltip="VIX data provider. Try TVC:VIX if CBOE:VIX fails.", group="Data")
+i_slFallback   = input.float(1.5, "Fallback SL ($)", minval=0.5, step=0.25, tooltip="SL before ORB freezes (9:30-9:34). After ORB: SL = ORB low. Research: P50 max dip in first 10m = $1.29.", group="Trade")
+i_minOrbWidth  = input.float(1.0, "Min ORB Width ($)", minval=0.25, step=0.25, tooltip="Skip breakout if ORB range < this (noise filter). Research: P25=$3.70, too narrow = false breakouts.", group="Trade")
+i_dipRecovery  = input.float(15.0, "Dip Entry Recovery (%)", minval=5.0, maxval=50.0, step=5.0, tooltip="On shakeout bars: enter at bar low + X% of bar range (captures turning point)", group="Trade")
+i_pmVolMinKill = input.float(0, "PM Vol Min Kill", minval=0, step=1000, tooltip="Hard kill if PM volume (9:25-9:29) < this. Set 0 to disable. Research (IB data): Q1=53k, but TV volume differs from IB — calibrate first.", group="Trade")
+i_showTable    = input.bool(true, "Show Info Table", group="Visuals")
+i_showBG       = input.bool(true, "Show Background Colors", group="Visuals")
+i_debugLog     = input.bool(false, "Log Signals (Pine Logs)", group="Debug")
 
 // ─── External Data ─────────────────────────────────────────
 vix_prev_close = request.security(i_vixSymbol, "D", close[1], lookahead=barmerge.lookahead_on)
 spy_close      = request.security("SPY", "1", close)
 qqq_close      = request.security("QQQ", "1", close)
+
+// 15s sub-bars for P9 hard kill (last 30s of 9:29 bar)
+sub15_close    = request.security_lower_tf(syminfo.tickerid, "15S", close)
+
+// 30s sub-bars for fakeout detection (real A6 patterns)
+sub30_open     = request.security_lower_tf(syminfo.tickerid, "30S", open)
+sub30_high     = request.security_lower_tf(syminfo.tickerid, "30S", high)
+sub30_low      = request.security_lower_tf(syminfo.tickerid, "30S", low)
+sub30_close    = request.security_lower_tf(syminfo.tickerid, "30S", close)
 
 // ─── Debug Helpers ─────────────────────────────────────────
 fmtTime(int t) =>
@@ -40,6 +54,7 @@ isRTH          = hm >= 930 and hm <= 1559
 newSession     = isPremarket and not isPremarket[1]
 is0920         = h == 9 and m == 20
 is0925         = h == 9 and m == 25
+is0927         = h == 9 and m == 27
 is0929         = h == 9 and m == 29
 is0930         = h == 9 and m == 30
 is0934         = h == 9 and m == 34
@@ -71,8 +86,11 @@ var float pm_position   = na
 var float pm_accel      = na
 var float pm_late_trend = na
 var float close_929     = na
-var float open_925      = na
+var float open_929      = na    // for P9 30s proxy (9:29 bar direction)
+var float open_927      = na    // for 2m accel (9:27→9:29)
+var float open_925      = na    // kept for PM volume window
 var float open_920_tsla = na
+var float pm_vol_5m     = 0.0   // PM volume 9:25-9:29
 
 // Cross-symbol PM
 var float spy_920       = na
@@ -90,6 +108,8 @@ var bool  is_hold        = false
 
 // SL tracking
 var bool  sl_hit         = false
+var float sl_level       = na     // v1.2: dynamic — fallback before ORB, orb_low after
+var bool  orb_narrow     = false  // v1.2: ORB too narrow to trade
 
 // ORB tracking
 var float orb_high       = na
@@ -104,6 +124,7 @@ var line  entryLine      = na
 var line  slLine         = na
 var line  orbHighLine    = na
 var line  orbLowLine     = na
+var label slPriceLabel   = na    // v1.2c: track SL price label for updates
 
 // ─── Daily Reset ───────────────────────────────────────────
 bool newRTH = isRTH and not isRTH[1]
@@ -120,8 +141,11 @@ if newSession or (newRTH and not pmSeen)
     pm_accel          := na
     pm_late_trend     := na
     close_929         := na
+    open_929          := na
+    open_927          := na
     open_925          := na
     open_920_tsla     := na
+    pm_vol_5m         := 0.0
     spy_920           := na
     qqq_920           := na
     spy_929           := na
@@ -140,8 +164,11 @@ if newSession or (newRTH and not pmSeen)
     entryLine         := na
     slLine            := na
     sl_hit            := false
+    sl_level          := na
+    orb_narrow        := false
     orbHighLine       := na
     orbLowLine        := na
+    slPriceLabel      := na
 
 // ─── Prev Day Close ───────────────────────────────────────
 if isRTH
@@ -162,69 +189,103 @@ if state == 1 and isPremarket
         spy_920 := spy_close
         qqq_920 := qqq_close
 
+    // Accumulate PM volume from 9:25 onward
+    if hm >= 925 and hm <= 929
+        pm_vol_5m += volume
+
     if is0925
         open_925 := open
 
+    if is0927
+        open_927 := open
+
     if is0929
         close_929 := close
+        open_929  := open
         float pm_range = pm_high - pm_low
         pm_position   := pm_range > 0 ? (close - pm_low) / pm_range : 0.5
-        pm_accel      := not na(open_925) ? close - open_925 : na
+        pm_accel      := not na(open_927) ? close - open_927 : na   // v1.2: 2m window (9:27→9:29)
         pm_late_trend := not na(open_920_tsla) ? close - open_920_tsla : na
         spy_929 := spy_close
         qqq_929 := qqq_close
 
-        // ── Confidence scoring ──
+        // ── P9 hard kill: 30s accel from 15s sub-bars ──
+        // On the 9:29 bar, sub15_close has 4 elements: [9:29:00, 9:29:15, 9:29:30, 9:29:45]
+        // Last 30s direction = sub[3] vs sub[1] (9:29:45 close vs 9:29:15 close)
+        bool p9_30s_down = false
+        if array.size(sub15_close) >= 4
+            float c_2945 = array.get(sub15_close, 3)
+            float c_2915 = array.get(sub15_close, 1)
+            p9_30s_down := c_2945 < c_2915
+        else
+            // Fallback: use 1m bar direction
+            p9_30s_down := close < open
+
+        // ── Confidence scoring (5 checks) ──
         confidence := 0
         hard_kill  := false
 
+        // Check 1: PM Position above Q1
         if not na(pm_position) and pm_position > 0.219
             confidence += 1
+        // Check 2: 2m acceleration positive (v1.2: was 4m)
         if not na(pm_accel) and pm_accel > 0
             confidence += 1
+        // Check 3: VIX sweet spot
         if not na(vix_prev_close) and vix_prev_close >= 18 and vix_prev_close <= 25
             confidence += 1
-
+        // Check 4: Triple PM alignment
         bool tsla_up = not na(pm_late_trend) and pm_late_trend > 0
         bool spy_up  = not na(spy_929) and not na(spy_920) and spy_929 > spy_920
         bool qqq_up  = not na(qqq_929) and not na(qqq_920) and qqq_929 > qqq_920
         if tsla_up and spy_up and qqq_up
             confidence += 1
-
+        // Check 5: No gap danger
         float est_gap = not na(prev_day_close) ? close - prev_day_close : 0
         bool gapDangerFlat = est_gap < -2 and not na(pm_late_trend) and math.abs(pm_late_trend) < 0.48
         if not gapDangerFlat
             confidence += 1
 
+        // ── Hard kills ──
+        // VIX too calm
         if not na(vix_prev_close) and vix_prev_close <= 15
             hard_kill := true
-        if not na(pm_position) and pm_position < 0.219 and not na(pm_accel) and pm_accel < 0
+        // P9 bear composite: low PM position + last 30s fading (v1.2: uses 15s sub-bars)
+        if not na(pm_position) and pm_position < 0.219 and p9_30s_down
             hard_kill := true
+        // Gap trap
         if gapDangerFlat
             hard_kill := true
+        // Low PM volume (v1.2: new hard kill)
+        if pm_vol_5m < i_pmVolMinKill and pm_vol_5m > 0
+            hard_kill := true
 
+        // ── Tier mapping ──
         tier := hard_kill ? "NO-GO" : confidence >= 5 ? "HIGH" : confidence >= 3 ? "MED" : confidence >= 2 ? "LOW" : "NO-GO"
 
         color tierColor = tier == "HIGH" ? color.green : tier == "MED" ? color.lime : tier == "LOW" ? color.gray : color.red
         label.new(bar_index, low, str.format("{0} ({1}/5)", tier, confidence),
              style=label.style_label_up, color=tierColor, textcolor=color.white, size=size.normal)
 
-        // Log: detailed pre-scan with individual check results
+        // Log: detailed pre-scan
         string chk1 = not na(pm_position) and pm_position > 0.219 ? "1" : "0"
         string chk2 = not na(pm_accel) and pm_accel > 0 ? "1" : "0"
         string chk3 = not na(vix_prev_close) and vix_prev_close >= 18 and vix_prev_close <= 25 ? "1" : "0"
         string chk4 = tsla_up and spy_up and qqq_up ? "1" : "0"
         string chk5 = not gapDangerFlat ? "1" : "0"
         string alignStr = str.format("T{0}S{1}Q{2}", tsla_up?"↑":"↓", spy_up?"↑":"↓", qqq_up?"↑":"↓")
-        logMsg(str.format("PRE-SCAN tier={0} conf={1}/5 checks={2}{3}{4}{5}{6} kill={7} vix={8} pm_pos={9} pm_acc={10} pm_trend={11} gap={12} align={13}",
+        string killReason = not hard_kill ? "none" : (not na(vix_prev_close) and vix_prev_close <= 15 ? "VIX" : pm_vol_5m < i_pmVolMinKill and pm_vol_5m > 0 ? "LOW_VOL" : gapDangerFlat ? "GAP" : "P9")
+        logMsg(str.format("PRE-SCAN tier={0} conf={1}/5 checks={2}{3}{4}{5}{6} kill={7}({8}) vix={9} pm_pos={10} pm_acc={11} pm_trend={12} gap={13} align={14} pm_vol={15} p9_30s={16}",
              tier, confidence, chk1, chk2, chk3, chk4, chk5,
-             hard_kill ? "Y" : "N",
+             hard_kill ? "Y" : "N", killReason,
              str.tostring(nz(vix_prev_close), "#.#"),
              str.tostring(nz(pm_position), "#.###"),
              str.tostring(nz(pm_accel), "#.##"),
              str.tostring(nz(pm_late_trend), "#.##"),
              str.tostring(nz(est_gap), "#.##"),
-             alignStr))
+             alignStr,
+             str.tostring(pm_vol_5m, "#"),
+             p9_30s_down ? "DN" : "UP"))
 
 // Extended Hours warning
 if is0930 and not pmSeen
@@ -246,49 +307,74 @@ if is0930 and state == 1
     logMsg(str.format("OPENING entry={0} gap={1} tier={2}",
          str.tostring(open_930, "#.##"), str.tostring(nz(gap), "#.##"), tier))
 
-    // Draw entry + SL lines (price labels deferred to State 3 — may adjust on shakeout)
+    // v1.2: initial SL uses fallback distance (before ORB freezes at 9:34)
+    sl_level := open_930 - i_slFallback
+
+    // Draw entry line (SL line drawn after ORB freeze at 9:34 — no fallback SL line)
     if tier == "HIGH" or tier == "MED"
         entryLine := line.new(bar_index, open_930, bar_index + 25, open_930,
                      color=#00BFFF, width=3, style=line.style_solid)
-        slLine    := line.new(bar_index, open_930 - i_slDistance, bar_index + 25, open_930 - i_slDistance,
-                     color=#FF4444, width=3, style=line.style_solid)
 
 // ─── STATE 3: FAKEOUT CHECK (9:30 bar close) ──────────────
 if is0930 and state == 2
     state := 3
-    float bar1_body = close - open
-    float bar1_range = high - low
-    float bar1_upper_wick = high - math.max(open, close)
-    float bar1_body_size = math.abs(bar1_body)
-    bool bar1_red = close < open
-    bool bar1_chaotic = bar1_range > 3.04
-    bool bar1_rejection = bar1_upper_wick > bar1_body_size and bar1_body_size > 0
 
-    // Detect bar pattern
-    if bar1_red and bar1_rejection
-        fakeout_fired := true
-    if bar1_red and not bar1_rejection and not bar1_chaotic
-        shakeout_detected := true
+    // v1.2: Use real 30s sub-bars if available (A6 patterns from research)
+    bool has30s = array.size(sub30_open) >= 2
+    bool bar1_red = close < open
+    float bar1_range = high - low
+    bool bar1_chaotic = bar1_range > 3.04
+
+    if has30s
+        float b1_open  = array.get(sub30_open, 0)
+        float b1_high  = array.get(sub30_high, 0)
+        float b1_low   = array.get(sub30_low, 0)
+        float b1_close = array.get(sub30_close, 0)
+        float b2_open  = array.get(sub30_open, 1)
+        float b2_low   = array.get(sub30_low, 1)
+        float b2_close = array.get(sub30_close, 1)
+        bool b1_up   = b1_close >= b1_open
+        bool b1_down = b1_close < b1_open
+        bool b2_down = b2_close < b2_open
+        float b1_rng = b1_high - b1_low
+
+        // v1.2c: Fakeout = UP→DOWN AND bar2 makes new low below bar1 low
+        // Research: bar2 breaks bar1 low → 27% win, 64% worst (real trap)
+        //           bar2 holds above → 48% win, 24% worst (normal pullback)
+        if b1_up and b2_down and b2_low < b1_low
+            fakeout_fired := true
+        // A6: bar1 DOWN → bar2 DOWN = shakeout (78.6% win if HOLD)
+        if b1_down and b2_down and not (b1_rng > 3.04)
+            shakeout_detected := true
+        // Chaotic: bar1 range > $3.04
+        bar1_chaotic := b1_rng > 3.04
+    else
+        // Fallback: 1m bar analysis (same as v1.1k)
+        float bar1_upper_wick = high - math.max(open, close)
+        float bar1_body_size = math.abs(close - open)
+        bool bar1_rejection = bar1_upper_wick > bar1_body_size and bar1_body_size > 0
+        if bar1_red and bar1_rejection
+            fakeout_fired := true
+        if bar1_red and not bar1_rejection and not bar1_chaotic
+            shakeout_detected := true
 
     // On shakeout: adjust entry to dip recovery level (low + X% of range)
     if shakeout_detected and (tier == "HIGH" or tier == "MED")
         float dip_entry = low + bar1_range * (i_dipRecovery / 100.0)
         float dip_sl = low - 0.50  // SL just below the turning point
-        // Redraw entry/SL lines at adjusted levels
+        sl_level := dip_sl
+        // Redraw entry line at adjusted level
         if not na(entryLine)
             line.set_y1(entryLine, dip_entry)
             line.set_y2(entryLine, dip_entry)
-        if not na(slLine)
-            line.set_y1(slLine, dip_sl)
-            line.set_y2(slLine, dip_sl)
         open_930 := dip_entry  // update stored entry price
 
     // Single combined label: entry status + bar pattern (below bar)
     if tier == "HIGH" or tier == "MED"
-        string entryTxt = fakeout_fired ? "ENTERED — FAKEOUT, EXIT" :
+        string entryTxt = fakeout_fired ? "ENTERED — fakeout" :
                           shakeout_detected ? str.format("DIP BUY {0,number,#.##}", open_930) :
-                          bar1_chaotic ? "ENTERED — CHAOTIC" : "ENTERED"
-        color entryCol = fakeout_fired ? color.red :
+                          bar1_chaotic ? "ENTERED — chaotic" : "ENTERED"
+        color entryCol = fakeout_fired ? color.orange :
                          shakeout_detected ? color.orange :
                          bar1_chaotic ? color.orange : #00BFFF
         label.new(bar_index, low, entryTxt,
@@ -297,22 +383,20 @@ if is0930 and state == 2
         label.new(bar_index, low, "WATCHING",
              style=label.style_label_up, color=color.gray, textcolor=color.white, size=size.normal)
 
-    // Fakeout gets an extra prominent label ABOVE (different position, no overlap)
+    // v1.2c: Fakeout = warning only (one label, not two). UP→DOWN is info, not a hard exit command.
+    // On MED/HIGH days the ORB breakout is the real decision — fakeout is context.
     if fakeout_fired
-        label.new(bar_index, high, "EXIT — FAKEOUT",
-             style=label.style_label_down, color=color.red, textcolor=color.white, size=size.large)
+        label.new(bar_index, high, "FAKEOUT — watch ORB",
+             style=label.style_label_down, color=color.orange, textcolor=color.white, size=size.normal)
 
     logMsg(str.format("FAKEOUT bar1_red={0} fakeout={1} shakeout={2} chaotic={3} range={4} entry={5}",
          bar1_red ? "Y" : "N", fakeout_fired ? "Y" : "N", shakeout_detected ? "Y" : "N",
          bar1_chaotic ? "Y" : "N", str.tostring(bar1_range, "#.##"), str.tostring(open_930, "#.##")))
 
-    // Price labels at line ends (after any shakeout adjustment)
+    // Price label at entry line end (SL label created at ORB freeze)
     if (tier == "HIGH" or tier == "MED") and not na(entryLine)
-        float sl_price = shakeout_detected ? (low - 0.50) : (open_930 - i_slDistance)
         label.new(bar_index + 25, open_930, str.format("entry {0,number,#.##}", open_930),
              style=label.style_label_left, color=#00BFFF, textcolor=color.white, size=size.small)
-        label.new(bar_index + 25, sl_price, str.format("SL {0,number,#.##}", sl_price),
-             style=label.style_label_left, color=#FF4444, textcolor=color.white, size=size.small)
 
 // ─── STATE 4: ORB BUILD (9:31–9:34) ───────────────────────
 // Track the 5-minute opening range high/low
@@ -341,38 +425,58 @@ if is0934 and (state == 3 or state == 4)
                  color=color.yellow, width=2, style=line.style_dashed)
     linefill.new(orbHighLine, orbLowLine, color=color.new(color.yellow, 90))
 
+    // v1.2c: Switch SL to ORB low — redraw line starting from this bar (not from 9:30)
+    sl_level := orb_low
+    if not na(slLine)
+        line.delete(slLine)
+    slLine := line.new(bar_index, sl_level, bar_index + 20, sl_level,
+                 color=#FF4444, width=3, style=line.style_solid)
+    if not na(slPriceLabel)
+        label.delete(slPriceLabel)
+    slPriceLabel := label.new(bar_index + 20, sl_level, str.format("SL {0,number,#.##} (ORB)", sl_level),
+         style=label.style_label_left, color=#FF4444, textcolor=color.white, size=size.small)
+
+    // v1.2: Check min ORB width
+    float orb_width = orb_high - orb_low
+    orb_narrow := orb_width < i_minOrbWidth
+
     // 5m rule: close of 9:34 bar vs original 9:30 open (5 minutes of trading)
     close_935 := close
     is_hold := not na(close_935) and not na(orig_open_930) and close_935 > orig_open_930
 
     // 5m info label at 9:34 bar
     string fiveMinTxt = is_hold ? "5m: above ✓" : "5m: below ✗"
+    if orb_narrow
+        fiveMinTxt += " | ORB narrow"
     color fiveMinCol = is_hold ? color.green : color.orange
     label.new(bar_index, high, fiveMinTxt,
          style=label.style_label_down, color=fiveMinCol, textcolor=color.white, size=size.small)
 
-    float orb_width = orb_high - orb_low
-    logMsg(str.format("ORB FROZEN H={0} L={1} width={2} 5m={3} close={4} orig_open={5}",
+    logMsg(str.format("ORB FROZEN H={0} L={1} width={2} 5m={3} close={4} orig_open={5} sl={6} narrow={7}",
          str.tostring(orb_high, "#.##"), str.tostring(orb_low, "#.##"),
          str.tostring(orb_width, "#.##"),
          is_hold ? "HOLD" : "BAIL", str.tostring(close_935, "#.##"),
-         str.tostring(orig_open_930, "#.##")))
+         str.tostring(orig_open_930, "#.##"),
+         str.tostring(sl_level, "#.##"),
+         orb_narrow ? "Y" : "N"))
 
     state := 5
 
 // ─── SL Hit Detection (states 3-5) ─────────────────────────
-// If price hits SL before ORB breakout, warn immediately — don't wait
-if (state >= 3 and state <= 5) and not sl_hit and not na(open_930) and low <= (open_930 - i_slDistance)
+// v1.2: uses dynamic sl_level (fallback before ORB, orb_low after)
+// Skip the ORB freeze bar (9:34) — ORB low may equal its own bar's low
+if (state >= 3 and state <= 5) and not sl_hit and not is0934 and not na(sl_level) and low <= sl_level
     sl_hit := true
-    label.new(bar_index, open_930 - i_slDistance, "SL HIT — EXIT",
+    label.new(bar_index, sl_level, "SL HIT — EXIT",
          style=label.style_label_up, color=#FF4444, textcolor=color.white, size=size.large)
-    alert(str.format("TSLA SL HIT at {0,number,#.##} — EXIT NOW", open_930 - i_slDistance), alert.freq_once_per_bar)
+    alert(str.format("TSLA SL HIT at {0,number,#.##} — EXIT NOW", sl_level), alert.freq_once_per_bar)
     logMsg(str.format("SL HIT low={0} sl_level={1} entry={2} loss={3}",
-         str.tostring(low, "#.##"), str.tostring(open_930 - i_slDistance, "#.##"),
-         str.tostring(open_930, "#.##"), str.tostring(open_930 - i_slDistance - open_930, "#.##")))
+         str.tostring(low, "#.##"), str.tostring(sl_level, "#.##"),
+         str.tostring(open_930, "#.##"), str.tostring(sl_level - open_930, "#.##")))
 
 // ─── Breakout detection (state 5, each bar after 9:35) ────
-if state == 5 and hm >= 935 and hm <= 955
+// v1.2: skip breakout if ORB too narrow (noise filter)
+if state == 5 and hm >= 935 and hm <= 955 and not orb_narrow
     // Bull breakout: close above ORB high
     if not orb_bull and not orb_bear and close > orb_high
         orb_bull := true
@@ -456,7 +560,7 @@ var table infoTable = table.new(position.top_right, 2, 5,
 
 if i_showTable and isRTH
     table.cell(infoTable, 0, 0, "TSLA OPEN SCALP", text_color=color.white, text_size=size.small)
-    table.cell(infoTable, 1, 0, "v1.1k", text_color=color.gray, text_size=size.tiny)
+    table.cell(infoTable, 1, 0, "v1.2c", text_color=color.gray, text_size=size.tiny)
 
     string stateStr = state == 0 ? "SLEEP" : state == 1 ? "PRE-SCAN" :
                       state == 2 ? "OPENING" : state == 3 ? "FAKEOUT" :
@@ -490,8 +594,9 @@ if i_showTable and isRTH
              tsla_up_t ? "↑" : "↓", spy_up_t ? "↑" : "↓", qqq_up_t ? "↑" : "↓"),
              text_color=color.white, text_size=size.small)
     else if state >= 2 and state <= 5 and not na(open_930)
-        table.cell(infoTable, 0, 4, str.format("Entry: {0,number,#.##}  SL: {1,number,#.##}",
-             open_930, open_930 - i_slDistance),
+        string slSource = state >= 5 ? " (ORB)" : " (fallback)"
+        table.cell(infoTable, 0, 4, str.format("Entry: {0,number,#.##}  SL: {1,number,#.##}{2}",
+             open_930, nz(sl_level), slSource),
              text_color=color.white, text_size=size.small)
     else if state == 6 and orb_bull and not na(breakout_bar)
         int barsLeft = 10 - (bar_index - breakout_bar)
@@ -507,6 +612,7 @@ if is0929 and state == 1
         alert(str.format("TSLA GO: confidence {0} ({1}/5) — enter small at open", tier, confidence), alert.freq_once_per_bar)
     if hard_kill or confidence < 2
         string reason = hard_kill ? (not na(vix_prev_close) and vix_prev_close <= 15 ? "VIX <= 15" :
-                       (not na(pm_position) and pm_position < 0.219 and not na(pm_accel) and pm_accel < 0 ? "P9 bear" : "gap trap")) : "low score"
+                       (pm_vol_5m < i_pmVolMinKill and pm_vol_5m > 0 ? "low PM vol" :
+                       (not na(pm_position) and pm_position < 0.219 ? "P9 bear" : "gap trap"))) : "low score"
         alert(str.format("TSLA NO-GO: {0} — skip today", reason), alert.freq_once_per_bar)
 // ORB breakout alerts are inline above (state 5→6 transition)

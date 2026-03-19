@@ -22,3 +22,5 @@ a60913f	1797.5	811.1	4953	2242	discard	add Today Open+PD Close to BRK_BEAR (no-o
 9335051	1810.8	817.5	5004	2265				keep	add PD Mid to BRK_BULL_LEVELS
 478716b	540.8	295.7	1652	944	761.9	456.7	6655	3036	keep	v3.7 dual-eval baseline (big-candle bypass + VRC + SPY reclaim DIM)
 —	—	—	—	—	83.1	620.4	16210	3068	keep	v3.8 baseline: native 5m signals (2yr), 15sec val MFE/MAE — branch autoklb/v38-realdata
+02857df	—	—	—	—	1145.7	2051.3	23258	4664	discard	Phase AT2: Remove PD Mid from REV_BEAR_LEVELS individually (AG3 removed all 3=DISCARD, test PD Mid alone)
+00391bf	—	—	—	—	1193.3	2104.3	23276	4665	keep	Phase AT5: FRESHNESS_MAX_TESTS 3 → 0 (disable gate — AQ2 0→2=+1.7, confirm gate still adds value at 2104.3 composition)

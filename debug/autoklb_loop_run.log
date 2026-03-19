@@ -1,0 +1,24 @@
+[notify] AutoKLB Batch AU starting: 5 exps/round, up to 6 rounds. Baseline=2104.3. AU1=VOL_EXHAUST→2, AU2=COIL_VOL_RAMP→0.5, AU3=rm Yest Low BRK_BULL, AU4=rm PD High GATED (was +1.8), AU5=rm Yest High GATED.
+
+
+############################################################
+ROUND 1/6 — baseline=2104.3
+############################################################
+
+============================================================
+[Round 1] Exp 1/5: Phase AU1: VOL_EXHAUSTION_MAX 0.0 → 2.0 (re-enable moderate vol exhaustion — disabled at 1569, test at 2104.3 tight composition)
+
+============================================================
+[Round 1] Exp 2/5: Phase AU2: QUIET_COIL_VOL_RAMP 0.0 → 0.5 (re-enable light coil vol ramp — D7 disabled at early baseline, test at 2104.3)
+
+============================================================
+[Round 1] Exp 3/5: Phase AU3: Remove Yest Low from BRK_BULL (AH3 re-added neutral at 2089 — floor reclaim pattern, test removal at 2104.3)
+
+============================================================
+[Round 1] Exp 4/5: Phase AU4: Remove PD High from REV_LEVELS_GATED (AK4 re-added neutral; AE4 removal was +1.8 — test at 2104.3)
+
+============================================================
+[Round 1] Exp 5/5: Phase AU5: Remove Yest High from REV_LEVELS_GATED (AJ2 re-added neutral at 2089 — test removal at 2104.3)
+
+Round 1 done. +0.0  Kept:0  Discarded:0
+[notify] AutoKLB Batch AU converged after round 1. Final=2104.3 (+0.0). Kept:0. Continuing autonomously...

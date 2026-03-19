@@ -1,0 +1,383 @@
+Date,Message
+2026-01-12T09:35:00.000-05:00,[KLB] 9:35 ▼ RNG range break vol=17.2x
+2026-01-12T09:45:00.000-05:00,[KLB] 9:45 ▼ BRK ORB L vol=4.9x pos=v97 vwap=below ema=bear rs=-1.3% adx=21 body=76% ramp=140.1x rangeATR=2.6 ⚡ O46.42 H46.46 L46.28 C46.28 ATR=0.84 SL=46.35/46.36 rawVol=78505 volSMA=15870 buf=0.042 prices=46.39
+2026-01-12T09:45:00.000-05:00,[KLB] 9:45 ▼ ~ ~ VWAP vol=4.9x pos=v97 vwap=below ema=bear rs=-1.3% adx=21 body=76% ramp=140.1x rangeATR=2.6 ⚡ O46.42 H46.46 L46.28 C46.28 ATR=0.84 SL=46.35/46.36 rawVol=78505 volSMA=15870 buf=0.042 prices=
+2026-01-12T09:45:00.000-05:00,[KLB] CONF 9:45 ▼ BRK → ✓ (auto-R1: EMA)
+2026-01-12T09:50:00.000-05:00,[KLB] 5m CHECK 9:50 ▼ pnl=0.13 SPY✗ → HOLD
+2026-01-12T11:35:00.000-05:00,[KLB] 11:35 ▲ ~ ~ ORB L vol=0.7x pos=^100 vwap=above ema=bear rs=-1.2% adx=25 body=80% ramp=0.8x rangeATR=0.7 ⚠ O46.38 H46.42 L46.37 C46.42 ATR=0.84 SL=46.25/46.21 rawVol=30330 volSMA=44383 buf=0.042 prices=46.39
+2026-01-12T11:40:00.000-05:00,[KLB] 11:40 ▲ ~ ~ ORB L vol=0.7x pos=^89 vwap=above ema=bear rs=-1.2% adx=23 body=56% ramp=0.7x rangeATR=0.7 O46.43 H46.46 L46.42 C46.46 ATR=0.84 SL=46.29/46.25 rawVol=22646 volSMA=42785 buf=0.042 prices=46.39
+2026-01-13T09:35:00.000-05:00,[KLB] 9:35 ▲ RNG range break vol=18.9x
+2026-01-13T09:40:00.000-05:00,[KLB] 9:40 ▼ ~ ~ PM H + ~ Yest H vol=6.5x pos=v100 vwap=below ema=bull rs=-0.1% adx=21 body=91% ramp=251.6x rangeATR=2 ⚡ ⚠ O46.8 H46.81 L46.7 C46.7 ATR=0.83 SL=46.77/46.78 rawVol=109676 volSMA=16826 buf=0.041 prices=46.75/46.81
+2026-01-13T09:45:00.000-05:00,[KLB] 9:45 ▲ FADE at 46.75
+2026-01-13T09:45:00.000-05:00,[KLB] 9:45 ▲ ~ ~ VWAP vol=7.2x pos=^93 vwap=above ema=bull rs=+0.5% adx=24 body=87% ramp=1159.3x rangeATR=3.9 ⚡ ⚠ O46.7 H46.96 L46.69 C46.94 ATR=0.83 SL=46.87/46.86 rawVol=189250 volSMA=26252 buf=0.041 prices=
+2026-01-13T09:50:00.000-05:00,[KLB] 9:50 ▲ BRK Week O vol=5.7x pos=^95 vwap=above ema=bull rs=+1.1% adx=27 body=85% ramp=2.1x rangeATR=3.4 ⚡ ⚠ O46.94 H47.21 L46.91 C47.19 ATR=0.83 SL=47.12/47.11 rawVol=143028 volSMA=33378 buf=0.041 prices=
+2026-01-13T09:50:00.000-05:00,[KLB] CONF 9:50 ▲ BRK → ✓ (auto-R1: EMA)
+2026-01-13T09:55:00.000-05:00,[KLB] 5m CHECK 9:55 ▲ pnl=-0.02 SPY~ → HOLD
+2026-01-13T15:50:00.000-05:00,[KLB] 15:50 ▼ ~ ~ VWAP vol=1.8x pos=v100 vwap=below ema=bear rs=+0.9% adx=20 body=100% ramp=1.6x rangeATR=1.4 ⚠ O47 H47 L46.92 C46.92 ATR=0.83 SL=47/47.04 rawVol=132560 volSMA=72571 buf=0.041 prices=
+2026-01-14T09:30:00.000-05:00,[KLB] 9:30 ▼ RNG range break vol=4.3x
+2026-01-14T09:35:00.000-05:00,[KLB] 9:35 ▲ RNG range break vol=18.9x
+2026-01-14T09:45:00.000-05:00,[KLB] 9:45 ▲ ~ ~ VWAP vol=7.7x pos=^86 vwap=above ema=bull rs=+1.8% adx=23 body=75% ramp=195x rangeATR=3.4 ⚡ O47.79 H48.04 L47.76 C48 ATR=0.84 SL=47.93/47.92 rawVol=188578 volSMA=24455 buf=0.042 prices=
+2026-01-15T09:35:00.000-05:00,[KLB] 9:35 ▼ RNG range break vol=18.2x
+2026-01-15T09:35:00.000-05:00,[KLB] 9:35 ▼ BRK PM L vol=18.2x pos=v88 vwap=below ema=bear rs=-0.3% adx=23 body=62% ramp=44.5x rangeATR=4.1 ⚡ O47.61 H47.68 L47.42 C47.45 ATR=0.9 SL=47.52/47.54 rawVol=299938 volSMA=16482 buf=0.045 prices=47.5
+2026-01-15T09:35:00.000-05:00,[KLB] 9:35 ▼ ~ ~ Today O vol=18.2x pos=v88 vwap=below ema=bear rs=-0.3% adx=23 body=62% ramp=44.5x rangeATR=4.1 ⚡ O47.61 H47.68 L47.42 C47.45 ATR=0.9 SL=47.52/47.54 rawVol=299938 volSMA=16482 buf=0.045 prices=
+2026-01-15T09:35:00.000-05:00,[KLB] CONF 9:35 ▼ BRK → ✓ (auto-R1: EMA)
+2026-01-15T09:40:00.000-05:00,[KLB] 5m CHECK 9:40 ▼ pnl=-0.04 SPY~ → HOLD
+2026-01-15T12:00:00.000-05:00,[KLB] 12:00 ▼ ~ ~ PD Cls vol=0.8x pos=v60 vwap=above ema=bull rs=+0.8% adx=27 body=60% ramp=0.5x rangeATR=0.7 🔇 O48.06 H48.06 L48.01 C48.03 ATR=0.9 SL=48.21/48.26 rawVol=52994 volSMA=66953 buf=0.045 prices=
+2026-01-15T14:35:00.000-05:00,[KLB] 14:35 ▼ ~ ~ VWAP vol=1x pos=v75 vwap=below ema=bear rs=+0.3% adx=21 body=75% ramp=1.5x rangeATR=1.6 O47.77 H47.77 L47.67 C47.7 ATR=0.9 SL=47.79/47.83 rawVol=45548 volSMA=47605 buf=0.045 prices=
+2026-01-15T14:40:00.000-05:00,[KLB] 14:40 ▼ ~ ~ ORB H vol=1x pos=v75 vwap=below ema=bear rs=+0.2% adx=23 body=75% ramp=1.9x rangeATR=1.2 O47.7 H47.7 L47.62 C47.64 ATR=0.9 SL=47.73/47.78 rawVol=47617 volSMA=46317 buf=0.045 prices=47.68
+2026-01-15T15:30:00.000-05:00,[KLB] 15:30 ▼ ~ ~ ORB H vol=2.1x pos=v86 vwap=below ema=bear rs=+0.3% adx=26 body=86% ramp=1.7x rangeATR=1.2 ⚠ O47.65 H47.65 L47.58 C47.59 ATR=0.9 SL=47.68/47.73 rawVol=83634 volSMA=40411 buf=0.045 prices=47.68
+2026-01-15T15:55:00.000-05:00,[KLB] 15:55 ▼ ~ ~ ORB H vol=6.1x pos=v90 vwap=below ema=bear rs=+0.3% adx=25 body=48% ramp=2.8x rangeATR=2.3 ⚡ O47.67 H47.73 L47.59 C47.6 ATR=0.9 SL=47.69/47.74 rawVol=416671 volSMA=68350 buf=0.045 prices=47.68
+2026-01-16T09:30:00.000-05:00,[KLB] 9:30 ▼ RNG range break vol=6.6x
+2026-01-16T09:35:00.000-05:00,[KLB] 9:35 ▲ ~ ~ PM L + ~ Yest L + ~ PD LH L vol=18.5x pos=^71 vwap=above ema=bear rs=+0.2% adx=20 body=65% ramp=88.3x rangeATR=4.7 ⚡ O47.51 H47.73 L47.49 C47.66 ATR=0.89 SL=47.59/47.57 rawVol=177198 volSMA=9578 buf=0.045 prices=47.51/47.27
+2026-01-16T09:40:00.000-05:00,[KLB] 9:40 ▼ ~ ~ Yest H vol=6.3x pos=v67 vwap=below ema=bear rs=+0.1% adx=22 body=33% ramp=144.8x rangeATR=2.2 ⚡ O47.63 H47.67 L47.55 C47.59 ATR=0.89 SL=47.66/47.68 rawVol=87383 volSMA=13892 buf=0.045 prices=48.07
+2026-01-16T09:55:00.000-05:00,[KLB] 9:55 ▼ ~ ~ Yest H vol=3.7x pos=v81 vwap=below ema=bear rs=+0.2% adx=22 body=50% ramp=1.1x rangeATR=1.2 O47.63 H47.65 L47.57 C47.59 ATR=0.89 SL=47.66/47.67 rawVol=106193 volSMA=28777 buf=0.045 prices=48.07
+2026-01-16T10:10:00.000-05:00,[KLB] 10:10 ▼ ~ ~ Yest H + ~ ORB H vol=1.9x pos=v77 vwap=below ema=bear rs=+0.2% adx=20 body=54% ramp=0.8x rangeATR=1.7 O47.68 H47.71 L47.58 C47.61 ATR=0.89 SL=47.68/47.7 rawVol=76733 volSMA=40849 buf=0.045 prices=48.07/47.73
+2026-01-16T10:45:00.000-05:00,[KLB] 10:45 ▼ ~ x~ Yest H vol=0.7x pos=v60 vwap=below ema=bear rs=+0.5% adx=19 body=20% ramp=0.9x rangeATR=0.7 O47.62 H47.64 L47.59 C47.61 ATR=0.89 SL=47.68/47.7 rawVol=43441 volSMA=60689 buf=0.045 prices=48.07
+2026-01-16T10:55:00.000-05:00,[KLB] 10:55 ▼ ~ x~ ORB H vol=0.8x pos=v80 vwap=below ema=bear rs=+0.5% adx=19 body=20% ramp=1x rangeATR=0.7 O47.65 H47.68 L47.63 C47.64 ATR=0.89 SL=47.71/47.73 rawVol=52967 volSMA=68167 buf=0.045 prices=47.73
+2026-01-20T09:30:00.000-05:00,[KLB] 9:30 ▼ ~ x~ PM H vol=2.1x pos=v90 vwap=below ema=bull rs=-1.8% adx=22 body=20% ramp=2.8x rangeATR=2.6 ⚡ O47.95 H48.02 L47.92 C47.93 ATR=0.85 SL=48/48.02 rawVol=1788 volSMA=869 buf=0.043 prices=48.02
+2026-01-20T09:35:00.000-05:00,[KLB] 9:35 ▼ RNG range break vol=19.1x
+2026-01-20T09:35:00.000-05:00,"[KLB] 9:35 ▼ ~ ~ PM H
+~ VWAP + ~ Today O vol=19.1x pos=v100 vwap=below ema=bull rs=-0.8% adx=25 body=58% ramp=199.2x rangeATR=7.2 ⚡ O48.09 H48.31 L47.78 C47.78 ATR=0.85 SL=47.85/47.87 rawVol=352954 volSMA=18501 buf=0.043 prices=48.02"
+2026-01-20T09:40:00.000-05:00,[KLB] 9:40 ▲ ~ ~ PD Cls vol=8.9x pos=^90 vwap=below ema=bull rs=-0.6% adx=27 body=41% ramp=340x rangeATR=2.4 ⚡ O47.78 H47.88 L47.69 C47.86 ATR=0.85 SL=47.79/47.77 rawVol=293885 volSMA=33187 buf=0.043 prices=
+2026-01-20T09:50:00.000-05:00,[KLB] 9:50 ▼ ~ x~ PM H vol=3.7x pos=v86 vwap=below ema=bull rs=-0.6% adx=30 body=29% ramp=1.8x rangeATR=2.2 ⚡ O47.94 H48.06 L47.85 C47.88 ATR=0.85 SL=47.95/47.97 rawVol=184067 volSMA=50184 buf=0.043 prices=48.02
+2026-01-20T10:35:00.000-05:00,[KLB] 10:35 ▲ ~ ~ VWAP vol=1x pos=^56 vwap=above ema=bull rs=-0.6% adx=36 body=44% ramp=0.9x rangeATR=0.9 O47.99 H48.07 L47.98 C48.03 ATR=0.85 SL=47.96/47.94 rawVol=91555 volSMA=95237 buf=0.043 prices=
+2026-01-20T13:55:00.000-05:00,[KLB] 13:55 ▼ BRK PD LH L vol=1.9x pos=v100 vwap=below ema=bear rs=-0.6% adx=21 body=87% ramp=2.4x rangeATR=1.3 ⚠ O47.61 H47.62 L47.55 C47.55 ATR=0.85 SL=47.72/47.76 rawVol=54645 volSMA=45488 buf=0.043 prices=
+2026-01-20T13:55:00.000-05:00,[KLB] CONF 13:55 ▼ BRK → ✓ (auto-R1: EMA)
+2026-01-20T14:00:00.000-05:00,[KLB] 5m CHECK 14:00 ▼ pnl=-0.04 SPY✓ → HOLD
+2026-01-20T14:35:00.000-05:00,[KLB] 14:35 ▼ BRK PD LH L vol=3.4x pos=v97 vwap=below ema=bear rs=-0.6% adx=30 body=97% ramp=2.5x rangeATR=2.4 ⚡ ⚠ O47.68 H47.68 L47.53 C47.54 ATR=0.85 SL=47.62/47.66 rawVol=148544 volSMA=43352 buf=0.043 prices=
+2026-01-20T14:35:00.000-05:00,[KLB] 14:35 ▼ ~ ~ Yest H vol=3.4x pos=v97 vwap=below ema=bear rs=-0.6% adx=30 body=97% ramp=2.5x rangeATR=2.4 ⚡ ⚠ O47.68 H47.68 L47.53 C47.54 ATR=0.85 SL=47.62/47.66 rawVol=148544 volSMA=43352 buf=0.043 prices=47.81
+2026-01-20T14:35:00.000-05:00,[KLB] CONF 14:35 ▼ BRK → ✓ (auto-R1: EMA)
+2026-01-20T14:40:00.000-05:00,[KLB] 5m CHECK 14:40 ▼ pnl=-0.01 SPY✓ → HOLD
+2026-01-21T09:30:00.000-05:00,[KLB] 9:30 ▲ RNG range break vol=7.2x
+2026-01-21T09:30:00.000-05:00,[KLB] 9:30 ▲ ~ ~ Today O vol=7.2x pos=^100 vwap=below ema=bull rs=+0.4% adx=46 body=78% ramp=2.6x rangeATR=2.1 ⚡ O48.27 H48.34 L48.25 C48.34 ATR=0.85 SL=48.27/48.25 rawVol=5619 volSMA=782 buf=0.043 prices=
+2026-01-21T09:35:00.000-05:00,[KLB] 9:35 ▲ ~ ~ VWAP vol=19.1x pos=^100 vwap=above ema=bull rs=+1% adx=49 body=100% ramp=148.4x rangeATR=6.4 ⚡ ⚠ O48.29 H48.76 L48.29 C48.76 ATR=0.85 SL=48.69/48.67 rawVol=340805 volSMA=17822 buf=0.043 prices=
+2026-01-21T10:15:00.000-05:00,[KLB] 10:15 ▼ ~ x~ ORB H vol=1.4x pos=v95 vwap=below ema=bull rs=+0.5% adx=65 body=25% ramp=0.7x rangeATR=0.9 O48.75 H48.82 L48.72 C48.73 ATR=0.85 SL=48.79/48.81 rawVol=116660 volSMA=85808 buf=0.043 prices=48.76
+2026-01-21T10:20:00.000-05:00,[KLB] 10:20 ▲ FADE at 48.76
+2026-01-21T10:30:00.000-05:00,[KLB] 10:30 ▼ ~ x~ Week H vol=0.9x pos=v17 vwap=below ema=bull rs=+0.1% adx=63 body=17% ramp=0.7x rangeATR=1.1 O48.61 H48.61 L48.49 C48.59 ATR=0.85 SL=48.66/48.68 rawVol=87445 volSMA=97572 buf=0.043 prices=48.65
+2026-01-21T10:35:00.000-05:00,[KLB] 10:35 ▲ FADE at 48.65
+2026-01-21T14:40:00.000-05:00,[KLB] 14:40 ▼ ~ x~ ORB H vol=4.5x pos=v30 vwap=below ema=bull rs=-0.2% adx=18 body=13% ramp=2.9x rangeATR=3.3 ⚡ O48.72 H48.77 L48.47 C48.68 ATR=0.85 SL=48.77/48.81 rawVol=299121 volSMA=66794 buf=0.043 prices=48.76
+2026-01-22T09:35:00.000-05:00,[KLB] 9:35 ▲ RNG range break vol=17.9x
+2026-01-22T09:40:00.000-05:00,[KLB] 9:40 ▼ ~ x~ Yest H + x~ ORB H vol=5.6x pos=v77 vwap=below ema=bear rs=+0.1% adx=25 body=22% ramp=140.7x rangeATR=2.5 ⚡ O48.73 H48.84 L48.64 C48.69 ATR=0.89 SL=48.76/48.77 rawVol=180224 volSMA=32146 buf=0.045 prices=49.05/48.88
+2026-01-22T09:45:00.000-05:00,[KLB] 9:45 ▼ BRK ORB L + PD LH L vol=5.9x pos=v68 vwap=below ema=bear rs=-0.2% adx=24 body=57% ramp=267.9x rangeATR=3 ⚡ O48.67 H48.7 L48.42 C48.51 ATR=0.89 SL=48.58/48.6 rawVol=270154 volSMA=45639 buf=0.045 prices=48.54
+2026-01-22T09:45:00.000-05:00,"[KLB] 9:45 ▼ ~ ~ Week H
+~ VWAP vol=5.9x pos=v68 vwap=below ema=bear rs=-0.2% adx=24 body=57% ramp=267.9x rangeATR=3 ⚡ O48.67 H48.7 L48.42 C48.51 ATR=0.89 SL=48.58/48.6 rawVol=270154 volSMA=45639 buf=0.045 prices=48.65"
+2026-01-22T09:45:00.000-05:00,[KLB] CONF 9:45 ▼ BRK → ✓ (auto-R1: EMA)
+2026-01-22T09:50:00.000-05:00,[KLB] 5m CHECK 9:50 ▼ pnl=-0.1 SPY~ → BAIL
+2026-01-22T09:55:00.000-05:00,[KLB] 9:55 ▼ ~ x~ Week H vol=2x pos=v53 vwap=below ema=bull rs=+0.1% adx=23 body=21% ramp=1x rangeATR=0.9 O48.61 H48.64 L48.55 C48.59 ATR=0.89 SL=48.66/48.68 rawVol=127326 volSMA=62851 buf=0.045 prices=48.65
+2026-01-22T10:00:00.000-05:00,[KLB] 10:00 ▼ ~ x~ Week H vol=1.9x pos=v62 vwap=below ema=bull rs=+0.2% adx=22 body=10% ramp=0.5x rangeATR=1 O48.59 H48.65 L48.54 C48.58 ATR=0.89 SL=48.65/48.67 rawVol=93930 volSMA=67538 buf=0.045 prices=48.65
+2026-01-22T11:55:00.000-05:00,[KLB] 11:55 ▲ ~ ~ VWAP vol=0.8x pos=^100 vwap=above ema=bull rs=+0.2% adx=22 body=83% ramp=1.1x rangeATR=0.8 ⚠ O48.67 H48.72 L48.66 C48.72 ATR=0.89 SL=48.54/48.5 rawVol=45256 volSMA=57763 buf=0.045 prices=
+2026-01-22T13:50:00.000-05:00,[KLB] 13:50 ▲ BRK PD LH H vol=1.1x pos=^86 vwap=above ema=bull rs=+0.5% adx=22 body=71% ramp=1.4x rangeATR=1.3 O48.84 H48.9 L48.83 C48.89 ATR=0.89 SL=48.71/48.67 rawVol=55413 volSMA=52591 buf=0.045 prices=
+2026-01-22T13:50:00.000-05:00,[KLB] CONF 13:50 ▲ BRK → ✓ (auto-R1: EMA)
+2026-01-22T13:55:00.000-05:00,[KLB] 5m CHECK 13:55 ▲ pnl=0 SPY~ → HOLD
+2026-01-23T09:30:00.000-05:00,[KLB] 9:30 ▲ ~ ~ VWAP vol=0.5x pos=^100 vwap=above ema=bull rs=-0.2% adx=35 body=100% ramp=0.5x rangeATR=1.4 ⚠ O49.44 H49.5 L49.44 C49.5 ATR=0.87 SL=49.43/49.41 rawVol=1317 volSMA=2417 buf=0.044 prices=
+2026-01-23T09:35:00.000-05:00,[KLB] 9:35 ▲ RNG range break vol=17.6x
+2026-01-23T09:35:00.000-05:00,[KLB] 9:35 ▲ ~ ~ Today O vol=17.6x pos=^66 vwap=above ema=bull rs=+0.5% adx=38 body=58% ramp=100.2x rangeATR=6.3 ⚡ O49.47 H49.88 L49.44 C49.73 ATR=0.87 SL=49.66/49.64 rawVol=328725 volSMA=18662 buf=0.044 prices=
+2026-01-23T09:45:00.000-05:00,[KLB] 9:45 ▼ ~ ~ ORB H vol=4.6x pos=v93 vwap=below ema=bull rs=+0.2% adx=42 body=66% ramp=209.3x rangeATR=3.1 ⚡ O49.79 H49.87 L49.58 C49.6 ATR=0.87 SL=49.67/49.69 rawVol=173764 volSMA=37765 buf=0.044 prices=49.88
+2026-01-23T11:40:00.000-05:00,[KLB] 11:40 ▼ ~ x~ PM H vol=0.5x pos=v67 vwap=below ema=bull rs=-0.5% adx=19 body=11% ramp=0.6x rangeATR=0.5 O49.44 H49.46 L49.42 C49.43 ATR=0.87 SL=49.6/49.65 rawVol=39263 volSMA=74533 buf=0.044 prices=49.5
+2026-01-23T12:10:00.000-05:00,[KLB] 12:10 ▼ ~ x~ PM H vol=0.6x pos=v50 vwap=below ema=bull rs=-0.4% adx=14 body=25% ramp=0.4x rangeATR=0.6 🔇 O49.45 H49.46 L49.42 C49.44 ATR=0.87 SL=49.61/49.66 rawVol=39845 volSMA=68020 buf=0.044 prices=49.5
+2026-01-26T09:35:00.000-05:00,[KLB] 9:35 ▼ RNG range break vol=19.1x
+2026-01-26T09:35:00.000-05:00,"[KLB] 9:35 ▼ ~ ~ Yest H + ~ Week H
+~ VWAP vol=19.1x pos=v99 vwap=below ema=bull rs=-1.1% adx=24 body=99% ramp=92.4x rangeATR=6.9 ⚡ ⚠ O49.85 H49.85 L49.36 C49.37 ATR=0.88 SL=49.44/49.45 rawVol=303118 volSMA=15867 buf=0.044 prices=49.89/49.89"
+2026-01-26T09:50:00.000-05:00,[KLB] 9:50 ▼ BRK PM L vol=3.2x pos=v80 vwap=below ema=bear rs=-1.2% adx=30 body=80% ramp=1.3x rangeATR=1.7 ⚠ O49.5 H49.5 L49.35 C49.38 ATR=0.88 SL=49.45/49.47 rawVol=114569 volSMA=35686 buf=0.044 prices=49.45
+2026-01-26T09:50:00.000-05:00,[KLB] 9:50 ▼ ~ ~ Yest H vol=3.2x pos=v80 vwap=below ema=bear rs=-1.2% adx=30 body=80% ramp=1.3x rangeATR=1.7 ⚠ O49.5 H49.5 L49.35 C49.38 ATR=0.88 SL=49.45/49.47 rawVol=114569 volSMA=35686 buf=0.044 prices=49.89
+2026-01-26T09:50:00.000-05:00,[KLB] CONF 9:50 ▼ BRK → ✓ (auto-R1: EMA)
+2026-01-26T09:55:00.000-05:00,[KLB] 9:55 ▼ BRK ORB L vol=2.9x pos=v87 vwap=below ema=bear rs=-1.5% adx=32 body=75% ramp=0.6x rangeATR=1.7 O49.37 H49.39 L49.23 C49.25 ATR=0.88 SL=49.32/49.34 rawVol=72911 volSMA=39328 buf=0.044 prices=49.36
+2026-01-26T09:55:00.000-05:00,[KLB] CONF 9:55 ▼ BRK → ✓ (auto-R1: EMA)
+2026-01-26T10:00:00.000-05:00,[KLB] 10:00 ▼ 🔇 QBS ramp=0.5x vol=1.9x pos=v81 vwap=below ema=bear adx=35 body=77% rangeATR=1.6 O49.24 H49.25 L49.09 C49.12 ATR=0.88
+2026-01-26T10:00:00.000-05:00,[KLB] 10:00 ▼ ~ ~ PD Cls vol=1.9x pos=v81 vwap=below ema=bear rs=-1.8% adx=35 body=77% ramp=0.5x rangeATR=1.6 🔇 O49.24 H49.25 L49.09 C49.12 ATR=0.88 SL=49.19/49.21 rawVol=81822 volSMA=43419 buf=0.044 prices=
+2026-01-26T10:00:00.000-05:00,[KLB] 5m CHECK 10:00 ▼ pnl=0.15 SPY~ → HOLD
+2026-01-26T10:15:00.000-05:00,[KLB] CONF 10:15 ▼ QBS → ✗ (failed)
+2026-01-27T09:30:00.000-05:00,[KLB] 9:30 ▲ ~ ~ Today O vol=1x pos=^100 vwap=above ema=bull rs=+0.2% adx=33 body=50% ramp=2x rangeATR=2.2 ⚡ O49.36 H49.4 L49.32 C49.4 ATR=0.88 SL=49.33/49.31 rawVol=1427 volSMA=1405 buf=0.044 prices=
+2026-01-27T09:35:00.000-05:00,[KLB] 9:35 ▼ ~ x~ PM H vol=18x pos=v54 vwap=below ema=bull rs=-0.2% adx=33 body=23% ramp=47.3x rangeATR=5.2 ⚡ O49.37 H49.45 L49.17 C49.3 ATR=0.88 SL=49.37/49.39 rawVol=255383 volSMA=14168 buf=0.044 prices=49.42
+2026-01-27T09:40:00.000-05:00,[KLB] 9:40 ▲ FADE at 49.42
+2026-01-27T09:40:00.000-05:00,[KLB] 9:40 ▲ RNG range break vol=6.8x
+2026-01-27T09:40:00.000-05:00,[KLB] 9:40 ▲ BRK PD LH H vol=6.8x pos=^92 vwap=above ema=bull rs=+0.4% adx=30 body=92% ramp=76.5x rangeATR=3.5 ⚡ ⚠ O49.31 H49.55 L49.31 C49.53 ATR=0.88 SL=49.46/49.44 rawVol=146276 volSMA=21465 buf=0.044 prices=
+2026-01-27T09:40:00.000-05:00,[KLB] 9:40 ▲ ~ ~ VWAP vol=6.8x pos=^92 vwap=above ema=bull rs=+0.4% adx=30 body=92% ramp=76.5x rangeATR=3.5 ⚡ ⚠ O49.31 H49.55 L49.31 C49.53 ATR=0.88 SL=49.46/49.44 rawVol=146276 volSMA=21465 buf=0.044 prices=
+2026-01-27T09:40:00.000-05:00,[KLB] CONF 9:40 ▲ BRK → ✓ (auto-R1: EMA)
+2026-01-27T09:45:00.000-05:00,[KLB] 5m CHECK 9:45 ▲ pnl=0.28 SPY~ → HOLD
+2026-01-27T11:00:00.000-05:00,[KLB] 11:00 ▼ ~ x~ PM H vol=0.8x pos=v50 vwap=below ema=bull rs=-0.4% adx=23 body=12% ramp=1.1x rangeATR=0.9 O49.35 H49.38 L49.3 C49.34 ATR=0.88 SL=49.52/49.56 rawVol=59768 volSMA=77101 buf=0.044 prices=49.42
+2026-01-27T11:20:00.000-05:00,[KLB] 11:20 ▲ ~ ~ PD Cls vol=0.9x pos=^100 vwap=below ema=bull rs=-0.5% adx=25 body=62% ramp=0.8x rangeATR=0.8 O49.24 H49.28 L49.22 C49.28 ATR=0.88 SL=49.1/49.06 rawVol=61078 volSMA=64899 buf=0.044 prices=
+2026-01-27T12:15:00.000-05:00,[KLB] 12:15 ▼ ~ x~ ORB H vol=1.1x pos=v80 vwap=below ema=bull rs=-0.2% adx=15 body=20% ramp=0.8x rangeATR=0.7 O49.41 H49.44 L49.39 C49.4 ATR=0.88 SL=49.58/49.62 rawVol=58524 volSMA=55307 buf=0.044 prices=49.45
+2026-01-28T09:30:00.000-05:00,[KLB] 9:30 ▲ ~ ~ VWAP vol=0.5x pos=^100 vwap=above ema=bull rs=+0.2% adx=43 body=100% ramp=1.9x rangeATR=1.4 ⚠ O49.9 H49.95 L49.9 C49.95 ATR=0.87 SL=49.88/49.86 rawVol=473 volSMA=1026 buf=0.043 prices=
+2026-01-28T09:35:00.000-05:00,[KLB] 9:35 ▲ RNG range break vol=17.8x
+2026-01-28T10:35:00.000-05:00,[KLB] 10:35 ▼ ~ x~ PM H + x~ Week H vol=0.8x pos=v73 vwap=below ema=bull rs=-0.1% adx=35 body=5% ramp=0.7x rangeATR=1.3 O49.86 H49.93 L49.82 C49.85 ATR=0.87 SL=49.92/49.94 rawVol=36694 volSMA=48913 buf=0.043 prices=49.96/49.89
+2026-01-28T11:20:00.000-05:00,[KLB] 11:20 ▼ ~ x~ PM H vol=0.9x pos=v100 vwap=below ema=bull rs=+0.1% adx=26 body=17% ramp=0.9x rangeATR=0.9 O49.93 H49.98 L49.92 C49.92 ATR=0.87 SL=50.09/50.14 rawVol=46963 volSMA=52661 buf=0.043 prices=49.96
+2026-01-28T11:25:00.000-05:00,[KLB] 11:25 ▲ FADE at 49.96
+2026-01-28T13:05:00.000-05:00,[KLB] 13:05 ▲ BRK PD LH H vol=2.3x pos=^88 vwap=below ema=bull rs=+0.2% adx=21 body=81% ramp=4.6x rangeATR=3.1 ⚡ ⚠ O49.73 H49.97 L49.71 C49.94 ATR=0.87 SL=49.76/49.72 rawVol=91082 volSMA=39829 buf=0.043 prices=
+2026-01-28T13:05:00.000-05:00,[KLB] CONF 13:05 ▲ BRK → ✓ (auto-R1: EMA)
+2026-01-28T13:10:00.000-05:00,[KLB] 5m CHECK 13:10 ▲ pnl=0.05 SPY~ → HOLD
+2026-01-28T13:30:00.000-05:00,[KLB] 13:30 ▼ ~ x~ PM H vol=0.4x pos=v87 vwap=below ema=bull rs=+0.1% adx=28 body=13% ramp=0.4x rangeATR=0.5 🔇 O49.88 H49.91 L49.87 C49.88 ATR=0.87 SL=50.05/50.09 rawVol=18218 volSMA=40905 buf=0.043 prices=49.96
+2026-01-28T13:55:00.000-05:00,"[KLB] 13:55 ▼ ~ ~ Week H
+~ VWAP vol=0.7x pos=v100 vwap=below ema=bear rs=-0.1% adx=34 body=100% ramp=1.1x rangeATR=1.2 ⚠ O49.86 H49.86 L49.78 C49.78 ATR=0.87 SL=49.95/49.99 rawVol=28153 volSMA=37928 buf=0.043 prices=49.89"
+2026-01-28T14:20:00.000-05:00,[KLB] 14:20 ▼ ~ ~ PM H vol=0.7x pos=v100 vwap=below ema=bear rs=+0.2% adx=33 body=75% ramp=1.5x rangeATR=0.6 O49.93 H49.94 L49.9 C49.9 ATR=0.87 SL=49.99/50.03 rawVol=28581 volSMA=41284 buf=0.043 prices=49.96
+2026-01-28T14:30:00.000-05:00,[KLB] 14:30 ▼ BRK ORB L vol=1.9x pos=v95 vwap=below ema=bear rs=-0.1% adx=34 body=91% ramp=1x rangeATR=2.9 ⚡ ⚠ O49.93 H49.94 L49.72 C49.73 ATR=0.87 SL=49.82/49.86 rawVol=85947 volSMA=44367 buf=0.043 prices=49.85
+2026-01-28T14:30:00.000-05:00,[KLB] 14:30 ▼ ~ ~ PM H + ~ Week H vol=1.9x pos=v95 vwap=below ema=bear rs=-0.1% adx=34 body=91% ramp=1x rangeATR=2.9 ⚡ ⚠ O49.93 H49.94 L49.72 C49.73 ATR=0.87 SL=49.82/49.86 rawVol=85947 volSMA=44367 buf=0.043 prices=49.96/49.89
+2026-01-28T14:30:00.000-05:00,[KLB] CONF 14:30 ▼ BRK → ✓ (auto-R1: EMA)
+2026-01-28T14:35:00.000-05:00,[KLB] 14:35 ▲ ~ ~ PD Cls vol=5.8x pos=^96 vwap=below ema=bear rs=0% adx=36 body=33% ramp=3.3x rangeATR=3 ⚡ O49.73 H49.83 L49.56 C49.82 ATR=0.87 SL=49.73/49.69 rawVol=353608 volSMA=60975 buf=0.043 prices=
+2026-01-28T14:35:00.000-05:00,[KLB] 5m CHECK 14:35 ▼ pnl=-0.1 SPY~ → BAIL
+2026-01-28T14:40:00.000-05:00,[KLB] 14:40 ▼ ~ x~ Week H vol=2.3x pos=v40 vwap=below ema=bear rs=0% adx=37 body=15% ramp=7.5x rangeATR=1.1 O49.82 H49.84 L49.74 C49.8 ATR=0.87 SL=49.89/49.93 rawVol=129311 volSMA=56876 buf=0.043 prices=49.89
+2026-01-28T15:00:00.000-05:00,[KLB] 15:00 ▼ ~ ~ PM H + ~ Week H vol=1.3x pos=v100 vwap=below ema=bear rs=+0.1% adx=37 body=86% ramp=0.3x rangeATR=0.8 ⚠ 🔇 O49.91 H49.92 L49.85 C49.85 ATR=0.87 SL=49.94/49.98 rawVol=80706 volSMA=59962 buf=0.043 prices=49.96/49.89
+2026-01-28T15:20:00.000-05:00,[KLB] 15:20 ▼ ~ ~ PM H vol=1x pos=v94 vwap=below ema=bear rs=+0% adx=32 body=71% ramp=1.1x rangeATR=1 O49.96 H49.98 L49.9 C49.9 ATR=0.87 SL=49.99/50.03 rawVol=52330 volSMA=66575 buf=0.043 prices=49.96
+2026-01-28T15:50:00.000-05:00,[KLB] 15:50 ▼ ~ x~ PM H vol=1.4x pos=v82 vwap=below ema=bull rs=+0.2% adx=26 body=12% ramp=1.7x rangeATR=1.1 O49.92 H49.98 L49.89 C49.91 ATR=0.87 SL=49.99/50.03 rawVol=111870 volSMA=79245 buf=0.043 prices=49.96
+2026-01-28T15:55:00.000-05:00,[KLB] 15:55 ▲ FADE at 49.96
+2026-01-29T09:30:00.000-05:00,[KLB] 9:30 ▼ ~ ~ PM H + ~ Today O vol=13x pos=v100 vwap=below ema=bull rs=+0% adx=45 body=50% ramp=16.2x rangeATR=2.4 ⚡ O51.15 H51.22 L51.08 C51.08 ATR=0.85 SL=51.15/51.16 rawVol=46938 volSMA=3613 buf=0.042 prices=51.22
+2026-01-29T09:35:00.000-05:00,[KLB] 9:35 ▲ FADE at 51.22
+2026-01-29T09:35:00.000-05:00,[KLB] 9:35 ▲ RNG range break vol=17.9x
+2026-01-29T09:35:00.000-05:00,[KLB] 9:35 ▲ ~ ~ VWAP vol=17.9x pos=^98 vwap=above ema=bull rs=+0.6% adx=47 body=78% ramp=183.1x rangeATR=4 ⚡ O51.17 H51.42 L51.1 C51.42 ATR=0.85 SL=51.35/51.33 rawVol=618690 volSMA=34542 buf=0.042 prices=
+2026-01-29T09:45:00.000-05:00,[KLB] 9:45 ▼ ~ ~ ORB H vol=5.9x pos=v91 vwap=below ema=bull rs=+0.8% adx=50 body=66% ramp=26.1x rangeATR=3.9 ⚡ O51.61 H51.73 L51.27 C51.31 ATR=0.85 SL=51.38/51.39 rawVol=415792 volSMA=70256 buf=0.042 prices=51.42
+2026-01-30T09:35:00.000-05:00,[KLB] 9:35 ▼ ~ x~ PM H vol=19.5x pos=v68 vwap=below ema=bull rs=-0.3% adx=24 body=16% ramp=495.6x rangeATR=4.5 ⚡ O50.37 H50.56 L50.19 C50.31 ATR=0.91 SL=50.38/50.4 rawVol=374413 volSMA=19178 buf=0.045 prices=50.36
+2026-01-30T09:45:00.000-05:00,"[KLB] 9:45 ▲ ~ ~ Yest L
+~ VWAP + ~ PD LH L vol=5.8x pos=^90 vwap=above ema=bull rs=+0.3% adx=28 body=79% ramp=758.7x rangeATR=2.7 ⚡ O50.33 H50.59 L50.3 C50.56 ATR=0.91 SL=50.49/50.47 rawVol=135508 volSMA=36415 buf=0.045 prices=50.48"
+2026-01-30T09:55:00.000-05:00,[KLB] 9:55 ▼ ~ x~ PM H vol=3.4x pos=v50 vwap=below ema=bull rs=-0.3% adx=30 body=17% ramp=0.8x rangeATR=1.8 O50.3 H50.38 L50.14 C50.26 ATR=0.91 SL=50.33/50.35 rawVol=158367 volSMA=53341 buf=0.045 prices=50.36
+2026-01-30T10:40:00.000-05:00,[KLB] 10:40 ▲ ~ ~ PD LH L vol=1.4x pos=^79 vwap=above ema=bull rs=+0.1% adx=28 body=68% ramp=1.1x rangeATR=1.4 O50.38 H50.55 L50.36 C50.51 ATR=0.91 SL=50.44/50.42 rawVol=136700 volSMA=96078 buf=0.045 prices=
+2026-01-30T11:30:00.000-05:00,[KLB] 11:30 ▲ ~ ~ Yest L vol=1x pos=^89 vwap=above ema=bull rs=+0.7% adx=29 body=72% ramp=0.9x rangeATR=1.6 O50.54 H50.69 L50.51 C50.67 ATR=0.91 SL=50.49/50.44 rawVol=86475 volSMA=89106 buf=0.045 prices=50.48
+2026-01-30T14:00:00.000-05:00,[KLB] 14:00 ▼ ~ ~ PM H vol=1x pos=v84 vwap=below ema=bear rs=-0.1% adx=31 body=48% ramp=0.8x rangeATR=1.8 O50.39 H50.48 L50.23 C50.27 ATR=0.91 SL=50.36/50.41 rawVol=149719 volSMA=154554 buf=0.045 prices=50.36
+2026-01-30T14:35:00.000-05:00,[KLB] 14:35 ▲ ~ ~ Yest L vol=1.8x pos=^68 vwap=above ema=bull rs=+0.4% adx=26 body=65% ramp=2.3x rangeATR=1.3 O50.46 H50.64 L50.46 C50.58 ATR=0.91 SL=50.49/50.44 rawVol=218741 volSMA=119565 buf=0.045 prices=50.48
+2026-02-02T09:30:00.000-05:00,[KLB] 9:30 ▼ RNG range break vol=3.9x
+2026-02-02T09:35:00.000-05:00,[KLB] 9:35 ▼ BRK Month O vol=18.3x pos=v76 vwap=below ema=bear rs=-0.5% adx=21 body=34% ramp=126.4x rangeATR=5 ⚡ O50.1 H50.27 L49.86 C49.96 ATR=0.93 SL=50.03/50.05 rawVol=392312 volSMA=21384 buf=0.046 prices=
+2026-02-02T09:35:00.000-05:00,[KLB] 9:35 ▼ ~ ~ VWAP + ~ Today O vol=18.3x pos=v76 vwap=below ema=bear rs=-0.5% adx=21 body=34% ramp=126.4x rangeATR=5 ⚡ O50.1 H50.27 L49.86 C49.96 ATR=0.93 SL=50.03/50.05 rawVol=392312 volSMA=21384 buf=0.046 prices=
+2026-02-02T09:35:00.000-05:00,[KLB] CONF 9:35 ▼ BRK → ✓ (auto-R1: EMA)
+2026-02-02T09:40:00.000-05:00,[KLB] 5m CHECK 9:40 ▼ pnl=-0.19 SPY✗ → BAIL
+2026-02-02T09:45:00.000-05:00,[KLB] 9:45 ▲ ~ ~ VWAP vol=5.6x pos=^96 vwap=above ema=bear rs=-0.1% adx=24 body=50% ramp=67.5x rangeATR=2.3 ⚡ O50.15 H50.29 L50.03 C50.28 ATR=0.93 SL=50.21/50.19 rawVol=166429 volSMA=41250 buf=0.046 prices=
+2026-02-02T09:50:00.000-05:00,[KLB] 9:50 ▼ ~ ~ ORB H vol=3.1x pos=v92 vwap=below ema=bear rs=-0.5% adx=25 body=84% ramp=1.4x rangeATR=2.1 ⚡ ⚠ O50.28 H50.3 L50.05 C50.07 ATR=0.93 SL=50.14/50.16 rawVol=150434 volSMA=48702 buf=0.046 prices=50.27
+2026-02-02T10:00:00.000-05:00,[KLB] 10:00 ▼ 🔇 QBS ramp=0.5x vol=2.2x pos=v77 vwap=below ema=bear adx=28 body=77% rangeATR=2.1 ⚡ O50.04 H50.04 L49.77 C49.83 ATR=0.93
+2026-02-02T10:00:00.000-05:00,[KLB] 10:00 ▼ BRK Yest L + ORB L + Week O vol=2.2x pos=v77 vwap=below ema=bear rs=-1% adx=28 body=77% ramp=0.5x rangeATR=2.1 ⚡ 🔇 O50.04 H50.04 L49.77 C49.83 ATR=0.93 SL=49.9/49.92 rawVol=108290 volSMA=60622 buf=0.046 prices=49.88/49.86
+2026-02-02T10:00:00.000-05:00,[KLB] CONF 10:00 ▼ BRK → ✓ (auto-R1: EMA)
+2026-02-02T10:05:00.000-05:00,[KLB] 5m CHECK 10:05 ▼ pnl=-0.25 SPY✗ → BAIL
+2026-02-02T10:15:00.000-05:00,[KLB] CONF 10:15 ▼ QBS → ✗ (failed)
+2026-02-02T15:25:00.000-05:00,[KLB] 15:25 ▼ ~ x~ ORB H vol=0.7x pos=v67 vwap=below ema=bear rs=-0.8% adx=16 body=11% ramp=0.1x rangeATR=0.5 🔇 O50.2 H50.22 L50.18 C50.19 ATR=0.93 SL=50.28/50.33 rawVol=48389 volSMA=74267 buf=0.046 prices=50.27
+2026-02-03T09:30:00.000-05:00,[KLB] 9:30 ▼ ~ ~ PM H vol=2.7x pos=v82 vwap=below ema=bull rs=-0.1% adx=38 body=82% ramp=9.2x rangeATR=2.7 ⚡ ⚠ O50.22 H50.22 L50.11 C50.13 ATR=0.95 SL=50.21/50.23 rawVol=1823 volSMA=686 buf=0.048 prices=50.26
+2026-02-03T09:35:00.000-05:00,[KLB] 9:35 ▲ FADE at 50.26
+2026-02-03T09:35:00.000-05:00,[KLB] 9:35 ▲ RNG range break vol=19.2x
+2026-02-03T09:35:00.000-05:00,[KLB] 9:35 ▲ BRK PD LH H vol=19.2x pos=^78 vwap=above ema=bull rs=+0.2% adx=39 body=42% ramp=314.9x rangeATR=5.9 ⚡ O50.16 H50.41 L50.02 C50.32 ATR=0.95 SL=50.24/50.22 rawVol=326559 volSMA=17000 buf=0.048 prices=
+2026-02-03T09:35:00.000-05:00,[KLB] 9:35 ▲ ~ ~ Yest L + ~ PD LH L + ~ Today O + ~ PD Cls vol=19.2x pos=^78 vwap=above ema=bull rs=+0.2% adx=39 body=42% ramp=314.9x rangeATR=5.9 ⚡ O50.16 H50.41 L50.02 C50.32 ATR=0.95 SL=50.24/50.22 rawVol=326559 volSMA=17000 buf=0.048 prices=49.77
+2026-02-03T09:35:00.000-05:00,[KLB] CONF 9:35 ▲ BRK → ✓ (auto-R1: EMA)
+2026-02-03T09:40:00.000-05:00,[KLB] 9:40 ▲ BRK PD LH H vol=11.7x pos=^74 vwap=above ema=bull rs=+0.5% adx=40 body=52% ramp=93.9x rangeATR=3.7 ⚡ O50.32 H50.56 L50.25 C50.48 ATR=0.95 SL=50.4/50.38 rawVol=220238 volSMA=27973 buf=0.048 prices=
+2026-02-03T09:40:00.000-05:00,[KLB] 9:40 ▲ ~ ~ VWAP vol=11.7x pos=^74 vwap=above ema=bull rs=+0.5% adx=40 body=52% ramp=93.9x rangeATR=3.7 ⚡ O50.32 H50.56 L50.25 C50.48 ATR=0.95 SL=50.4/50.38 rawVol=220238 volSMA=27973 buf=0.048 prices=
+2026-02-03T09:40:00.000-05:00,[KLB] CONF 9:40 ▲ BRK → ✓ (auto-R1: EMA)
+2026-02-03T09:45:00.000-05:00,[KLB] 5m CHECK 9:45 ▲ pnl=-0.01 SPY~ → HOLD
+2026-02-04T09:35:00.000-05:00,[KLB] 9:35 ▲ RNG range break vol=19x
+2026-02-04T09:35:00.000-05:00,[KLB] 9:35 ▲ ~ ~ VWAP vol=19x pos=^98 vwap=above ema=bull rs=+1.3% adx=23 body=96% ramp=581.2x rangeATR=6.7 ⚡ ⚠ O51.89 H52.44 L51.88 C52.43 ATR=1.01 SL=52.35/52.33 rawVol=347887 volSMA=18301 buf=0.051 prices=
+2026-02-05T09:35:00.000-05:00,[KLB] 9:35 ▼ RNG range break vol=18.4x
+2026-02-05T09:35:00.000-05:00,[KLB] 9:35 ▼ BRK PM L vol=18.4x pos=v98 vwap=below ema=bear rs=-0.8% adx=37 body=70% ramp=17.1x rangeATR=6.1 ⚡ O52.3 H52.49 L51.83 C51.84 ATR=1.03 SL=51.92/51.94 rawVol=476507 volSMA=25950 buf=0.052 prices=52.27
+2026-02-05T09:35:00.000-05:00,[KLB] 9:35 ▼ ~ ~ VWAP + ~ Today O vol=18.4x pos=v98 vwap=below ema=bear rs=-0.8% adx=37 body=70% ramp=17.1x rangeATR=6.1 ⚡ O52.3 H52.49 L51.83 C51.84 ATR=1.03 SL=51.92/51.94 rawVol=476507 volSMA=25950 buf=0.052 prices=
+2026-02-05T09:35:00.000-05:00,[KLB] CONF 9:35 ▼ BRK → ✓ (auto-R1: EMA)
+2026-02-05T09:40:00.000-05:00,[KLB] 5m CHECK 9:40 ▼ pnl=-0.11 SPY~ → BAIL
+2026-02-05T10:35:00.000-05:00,[KLB] 10:35 ▼ BRK Yest L + ORB L vol=1.4x pos=v100 vwap=below ema=bear rs=-0.6% adx=48 body=96% ramp=1.1x rangeATR=2.1 ⚡ ⚠ O51.94 H51.96 L51.59 C51.59 ATR=1.03 SL=51.67/51.69 rawVol=155074 volSMA=110007 buf=0.052 prices=51.82/51.83
+2026-02-05T10:35:00.000-05:00,[KLB] 10:35 ▼ ~ ~ Week H vol=1.4x pos=v100 vwap=below ema=bear rs=-0.6% adx=48 body=96% ramp=1.1x rangeATR=2.1 ⚡ ⚠ O51.94 H51.96 L51.59 C51.59 ATR=1.03 SL=51.67/51.69 rawVol=155074 volSMA=110007 buf=0.052 prices=51.73
+2026-02-05T10:35:00.000-05:00,[KLB] CONF 10:35 ▼ BRK → ✓ (auto-R1: EMA)
+2026-02-05T10:40:00.000-05:00,[KLB] 5m CHECK 10:40 ▼ pnl=-0.13 SPY✓ → HOLD
+2026-02-05T11:00:00.000-05:00,[KLB] 11:00 ▼ ~ ~ Week H vol=0.5x pos=v79 vwap=below ema=bear rs=-0.6% adx=52 body=63% ramp=0.5x rangeATR=0.7 🔇 O51.75 H51.77 L51.65 C51.68 ATR=1.03 SL=51.88/51.93 rawVol=58324 volSMA=133639 buf=0.052 prices=51.73
+2026-02-05T11:05:00.000-05:00,[KLB] 11:05 ▼ ~ ~ Week H vol=0.6x pos=v70 vwap=below ema=bear rs=-0.5% adx=53 body=35% ramp=0.6x rangeATR=0.6 O51.68 H51.71 L51.61 C51.64 ATR=1.03 SL=51.85/51.9 rawVol=78036 volSMA=137497 buf=0.052 prices=51.73
+2026-02-05T11:15:00.000-05:00,[KLB] 11:15 ▼ ~ ~ Week H vol=0.5x pos=v100 vwap=below ema=bear rs=-0.7% adx=54 body=68% ramp=0.9x rangeATR=1.2 O51.65 H51.71 L51.52 C51.52 ATR=1.03 SL=51.73/51.78 rawVol=65694 volSMA=119967 buf=0.052 prices=51.73
+2026-02-05T11:30:00.000-05:00,[KLB] 11:30 ▼ ~ ~ Week H vol=1.5x pos=v94 vwap=below ema=bear rs=-1.1% adx=53 body=89% ramp=1.5x rangeATR=1.1 ⚠ O51.77 H51.78 L51.6 C51.61 ATR=1.03 SL=51.82/51.87 rawVol=153925 volSMA=104184 buf=0.052 prices=51.73
+2026-02-05T11:35:00.000-05:00,[KLB] 11:35 ▼ ~ x~ Week H vol=1.5x pos=v52 vwap=below ema=bear rs=-1.2% adx=52 body=19% ramp=1.6x rangeATR=1 O51.62 H51.67 L51.52 C51.59 ATR=1.03 SL=51.8/51.85 rawVol=70351 volSMA=101850 buf=0.052 prices=51.73
+2026-02-05T11:40:00.000-05:00,[KLB] 11:40 ▼ ~ x~ Week H vol=1x pos=v100 vwap=below ema=bear rs=-1.2% adx=52 body=6% ramp=1.5x rangeATR=0.5 O51.6 H51.67 L51.59 C51.59 ATR=1.03 SL=51.8/51.85 rawVol=103082 volSMA=101181 buf=0.052 prices=51.73
+2026-02-05T14:50:00.000-05:00,[KLB] 14:50 ▲ ~ ~ PM L vol=0.8x pos=^78 vwap=above ema=bull rs=+0.4% adx=26 body=78% ramp=0.9x rangeATR=0.7 O52.28 H52.33 L52.28 C52.32 ATR=1.03 SL=52.21/52.16 rawVol=29017 volSMA=36083 buf=0.052 prices=52.27
+2026-02-05T14:55:00.000-05:00,[KLB] 14:55 ▲ ~ ~ PM L vol=1x pos=^90 vwap=above ema=bull rs=+0.5% adx=27 body=50% ramp=0.5x rangeATR=0.7 O52.31 H52.34 L52.29 C52.34 ATR=1.03 SL=52.23/52.18 rawVol=37497 volSMA=36303 buf=0.052 prices=52.27
+2026-02-06T09:30:00.000-05:00,[KLB] 9:30 ▼ 🔇 QBS ramp=0.2x vol=0.4x pos=v100 vwap=below ema=bull adx=22 body=100% rangeATR=1.9 O52.59 H52.59 L52.5 C52.5 ATR=1.06
+2026-02-06T09:35:00.000-05:00,[KLB] 9:35 ▲ ~ ~ VWAP + ~ Today O vol=18.8x pos=^100 vwap=above ema=bull rs=+0.1% adx=21 body=76% ramp=86.3x rangeATR=5.1 ⚡ O52.45 H52.71 L52.37 C52.71 ATR=1.06 SL=52.63/52.6 rawVol=243641 volSMA=12993 buf=0.053 prices=
+2026-02-06T09:40:00.000-05:00,[KLB] 9:40 ▼ ~ ~ PM H + ~ ORB H vol=5.7x pos=v93 vwap=below ema=bull rs=-0.3% adx=20 body=48% ramp=865.2x rangeATR=3.3 ⚡ O52.71 H52.83 L52.56 C52.58 ATR=1.06 SL=52.66/52.69 rawVol=103853 volSMA=18185 buf=0.053 prices=52.79/52.71
+2026-02-06T09:45:00.000-05:00,[KLB] CONF 9:45 ▼ QBS → ✗ (failed)
+2026-02-09T09:30:00.000-05:00,[KLB] 9:30 ▼ 🔇 QBS ramp=0.3x vol=0.2x pos=v90 vwap=below ema=bear adx=28 body=90% rangeATR=2.6 ⚡ O53.26 H53.26 L53.16 C53.17 ATR=1.07
+2026-02-09T09:30:00.000-05:00,[KLB] 9:30 ▼ ~ ~ Yest H + ~ Today O + ~ PD Cls vol=0.2x pos=v90 vwap=below ema=bear rs=-0.2% adx=28 body=90% ramp=0.3x rangeATR=2.6 ⚡ ⚠ 🔇 O53.26 H53.26 L53.16 C53.17 ATR=1.07 SL=53.26/53.28 rawVol=130 volSMA=750 buf=0.053 prices=53.42
+2026-02-09T09:40:00.000-05:00,[KLB] 9:40 ▼ ~ ~ PM H + ~ Yest H + ~ Week H vol=6.1x pos=v94 vwap=below ema=bear rs=-0.2% adx=26 body=57% ramp=226.1x rangeATR=2.6 ⚡ O53.32 H53.39 L53.21 C53.22 ATR=1.07 SL=53.31/53.33 rawVol=173015 volSMA=28442 buf=0.053 prices=53.45/53.42/53.42
+2026-02-09T09:45:00.000-05:00,[KLB] 9:45 ▼ RNG range break vol=4.9x
+2026-02-09T09:45:00.000-05:00,[KLB] 9:45 ▼ BRK ORB L + PD LH L vol=4.9x pos=v69 vwap=below ema=bear rs=-0.4% adx=25 body=69% ramp=907.4x rangeATR=2 O53.22 H53.22 L53.07 C53.12 ATR=1.07 SL=53.2/53.22 rawVol=137029 volSMA=35293 buf=0.053 prices=53.15
+2026-02-09T09:45:00.000-05:00,[KLB] 9:45 ▼ ~ ~ VWAP vol=4.9x pos=v69 vwap=below ema=bear rs=-0.4% adx=25 body=69% ramp=907.4x rangeATR=2 O53.22 H53.22 L53.07 C53.12 ATR=1.07 SL=53.2/53.22 rawVol=137029 volSMA=35293 buf=0.053 prices=
+2026-02-09T09:45:00.000-05:00,[KLB] CONF 9:45 ▼ BRK → ✓ (auto-R1: EMA)
+2026-02-09T09:45:00.000-05:00,[KLB] CONF 9:45 ▼ QBS → ✓ (auto-promote)
+2026-02-09T09:50:00.000-05:00,[KLB] 5m CHECK 9:50 ▼ pnl=0.08 SPY~ → HOLD
+2026-02-10T09:35:00.000-05:00,[KLB] 9:35 ▼ RNG range break vol=18.8x
+2026-02-10T09:35:00.000-05:00,[KLB] 9:35 ▼ ~ ~ Yest H + ~ Today O + ~ PD Cls vol=18.8x pos=v92 vwap=below ema=bull rs=-0.4% adx=27 body=92% ramp=70.1x rangeATR=4.7 ⚡ ⚠ O53.79 H53.79 L53.53 C53.55 ATR=1.04 SL=53.63/53.65 rawVol=213100 volSMA=11364 buf=0.052 prices=53.72
+2026-02-10T09:45:00.000-05:00,[KLB] 9:45 ▼ BRK PM L + ORB L + PD LH L vol=5.3x pos=v75 vwap=below ema=bear rs=-0.4% adx=30 body=50% ramp=179.6x rangeATR=2.2 ⚡ O53.57 H53.61 L53.45 C53.49 ATR=1.04 SL=53.57/53.59 rawVol=143317 volSMA=27161 buf=0.052 prices=53.58/53.53
+2026-02-10T09:45:00.000-05:00,[KLB] 9:45 ▼ ~ ~ Yest H vol=5.3x pos=v75 vwap=below ema=bear rs=-0.4% adx=30 body=50% ramp=179.6x rangeATR=2.2 ⚡ O53.57 H53.61 L53.45 C53.49 ATR=1.04 SL=53.57/53.59 rawVol=143317 volSMA=27161 buf=0.052 prices=53.72
+2026-02-10T09:45:00.000-05:00,[KLB] CONF 9:45 ▼ BRK → ✓ (auto-R1: EMA)
+2026-02-10T09:50:00.000-05:00,[KLB] 5m CHECK 9:50 ▼ pnl=-0.04 SPY~ → HOLD
+2026-02-10T09:55:00.000-05:00,[KLB] 9:55 ▼ ~ ~ VWAP vol=2.2x pos=v75 vwap=below ema=bear rs=-0.7% adx=33 body=67% ramp=0.8x rangeATR=1.5 O53.53 H53.54 L53.42 C53.45 ATR=1.04 SL=53.53/53.55 rawVol=78913 volSMA=36248 buf=0.052 prices=
+2026-02-10T10:05:00.000-05:00,[KLB] 10:05 ▼ ~ ~ Week H vol=1.8x pos=v88 vwap=below ema=bear rs=-0.9% adx=37 body=72% ramp=0.6x rangeATR=1.5 O53.45 H53.47 L53.35 C53.36 ATR=1.04 SL=53.44/53.46 rawVol=81069 volSMA=44259 buf=0.052 prices=53.42
+2026-02-10T10:10:00.000-05:00,[KLB] 10:10 ▼ ~ ~ Week H vol=1.7x pos=v75 vwap=below ema=bear rs=-1.1% adx=39 body=75% ramp=0.7x rangeATR=1 O53.36 H53.36 L53.28 C53.3 ATR=1.04 SL=53.38/53.4 rawVol=77122 volSMA=48077 buf=0.052 prices=53.42
+2026-02-10T10:25:00.000-05:00,[KLB] 10:25 ▼ ~ ~ Week H vol=0.7x pos=v93 vwap=below ema=bear rs=-0.8% adx=40 body=53% ramp=0.7x rangeATR=0.9 O53.42 H53.45 L53.38 C53.38 ATR=1.04 SL=53.46/53.48 rawVol=42278 volSMA=56657 buf=0.052 prices=53.42
+2026-02-10T10:30:00.000-05:00,[KLB] 10:30 ▼ ~ x~ Week H vol=0.8x pos=v22 vwap=below ema=bear rs=-0.9% adx=40 body=22% ramp=0.6x rangeATR=1 O53.38 H53.38 L53.29 C53.36 ATR=1.04 SL=53.44/53.46 rawVol=45062 volSMA=58910 buf=0.052 prices=53.42
+2026-02-10T10:35:00.000-05:00,[KLB] 10:35 ▼ ~ x~ Week H vol=1.1x pos=v33 vwap=below ema=bear rs=-0.9% adx=40 body=17% ramp=0.7x rangeATR=0.7 O53.36 H53.37 L53.31 C53.35 ATR=1.04 SL=53.43/53.45 rawVol=67850 volSMA=62251 buf=0.052 prices=53.42
+2026-02-11T09:35:00.000-05:00,[KLB] 9:35 ▲ RNG range break vol=18.1x
+2026-02-11T09:35:00.000-05:00,[KLB] 9:35 ▲ ~ ~ VWAP + ~ Today O vol=18.1x pos=^74 vwap=above ema=bull rs=+0.6% adx=40 body=64% ramp=42x rangeATR=5.8 ⚡ O54.3 H54.71 L54.25 C54.59 ATR=1.01 SL=54.51/54.49 rawVol=290004 volSMA=16003 buf=0.05 prices=
+2026-02-12T09:30:00.000-05:00,[KLB] 9:30 ▼ ~ x~ Yest H vol=0.9x pos=v80 vwap=below ema=bear rs=+0.3% adx=34 body=20% ramp=0.5x rangeATR=1.4 O54.93 H54.96 L54.91 C54.92 ATR=1.05 SL=55/55.02 rawVol=56 volSMA=659 buf=0.052 prices=55.11
+2026-02-12T09:35:00.000-05:00,[KLB] 9:35 ▲ ~ ~ PM L + ~ PD LH L + ~ PD Cls vol=19.3x pos=^90 vwap=above ema=bear rs=+0% adx=36 body=41% ramp=102.7x rangeATR=5.9 ⚡ O54.88 H55.06 L54.71 C55.02 ATR=1.05 SL=54.94/54.92 rawVol=374795 volSMA=19396 buf=0.052 prices=54.88
+2026-02-12T09:40:00.000-05:00,[KLB] 9:40 ▼ ~ ~ Yest H + ~ ORB H vol=7.4x pos=v77 vwap=below ema=bear rs=-0.1% adx=37 body=31% ramp=213.3x rangeATR=3.6 ⚡ O55.01 H55.13 L54.87 C54.93 ATR=1.05 SL=55.01/55.03 rawVol=229871 volSMA=30887 buf=0.052 prices=55.11/55.06
+2026-02-12T10:10:00.000-05:00,[KLB] 10:10 ▲ BRK PD LH H vol=1.5x pos=^59 vwap=above ema=bull rs=+0.7% adx=27 body=38% ramp=0.8x rangeATR=1.4 O55.1 H55.22 L55.07 C55.16 ATR=1.05 SL=55.07/55.05 rawVol=67482 volSMA=62757 buf=0.052 prices=
+2026-02-12T10:10:00.000-05:00,[KLB] 10:10 ▲ ~ ~ VWAP vol=1.5x pos=^59 vwap=above ema=bull rs=+0.7% adx=27 body=38% ramp=0.8x rangeATR=1.4 O55.1 H55.22 L55.07 C55.16 ATR=1.05 SL=55.07/55.05 rawVol=67482 volSMA=62757 buf=0.052 prices=
+2026-02-12T10:10:00.000-05:00,[KLB] CONF 10:10 ▲ BRK → ✓ (auto-R1: EMA)
+2026-02-12T10:15:00.000-05:00,[KLB] 5m CHECK 10:15 ▲ pnl=-0.07 SPY~ → HOLD
+2026-02-12T10:30:00.000-05:00,"[KLB] 10:30 ▼ ~ ~ Yest H
+~ VWAP vol=1x pos=v65 vwap=below ema=bear rs=+0.1% adx=23 body=52% ramp=1x rangeATR=1.4 O54.97 H54.99 L54.84 C54.89 ATR=1.05 SL=54.97/54.99 rawVol=71689 volSMA=77169 buf=0.052 prices=55.11"
+2026-02-12T10:50:00.000-05:00,[KLB] 10:50 ▼ ~ ~ ORB H vol=0.6x pos=v100 vwap=below ema=bear rs=+0.6% adx=21 body=58% ramp=1x rangeATR=1.1 O55.06 H55.11 L54.99 C54.99 ATR=1.05 SL=55.07/55.09 rawVol=51600 volSMA=90925 buf=0.052 prices=55.06
+2026-02-12T11:00:00.000-05:00,[KLB] 11:00 ▼ ~ x~ Yest H + x~ ORB H vol=0.8x pos=v50 vwap=below ema=bear rs=+0.8% adx=18 body=12% ramp=0.8x rangeATR=0.7 O54.97 H55 L54.92 C54.96 ATR=1.05 SL=55.17/55.22 rawVol=81479 volSMA=97592 buf=0.052 prices=55.11/55.06
+2026-02-13T09:35:00.000-05:00,[KLB] 9:35 ▲ RNG range break vol=18.9x
+2026-02-13T09:35:00.000-05:00,"[KLB] 9:35 ▲ ~ ~ Yest L
+~ VWAP + ~ PD LH L + ~ PD Cls vol=18.9x pos=^96 vwap=above ema=bear rs=+0.8% adx=20 body=83% ramp=184.5x rangeATR=5 ⚡ ⚠ O54 H54.33 L53.95 C54.32 ATR=1.08 SL=54.23/54.21 rawVol=295968 volSMA=15663 buf=0.054 prices=53.76"
+2026-02-13T09:40:00.000-05:00,[KLB] 9:40 ▼ ~ ~ ORB H vol=7.8x pos=v94 vwap=below ema=bull rs=+0.5% adx=23 body=70% ramp=179.1x rangeATR=3.5 ⚡ O54.31 H54.39 L54.06 C54.08 ATR=1.08 SL=54.17/54.19 rawVol=201685 volSMA=25745 buf=0.054 prices=54.33
+2026-02-13T09:45:00.000-05:00,[KLB] 9:45 ▼ ~ x~ PM H vol=5.8x pos=v24 vwap=below ema=bull rs=+0.3% adx=22 body=18% ramp=204.6x rangeATR=2.6 ⚡ O54.07 H54.09 L53.81 C54.02 ATR=1.08 SL=54.11/54.13 rawVol=184014 volSMA=34915 buf=0.054 prices=54.06
+2026-02-13T09:50:00.000-05:00,[KLB] 9:50 ▼ ~ ~ Today O vol=4.2x pos=v94 vwap=below ema=bull rs=+0% adx=22 body=43% ramp=1.8x rangeATR=2 ⚡ O54.02 H54.14 L53.91 C53.92 ATR=1.08 SL=54.01/54.03 rawVol=167788 volSMA=43299 buf=0.054 prices=
+2026-02-13T09:55:00.000-05:00,[KLB] 9:55 ▲ FADE at 53.94
+2026-02-13T10:10:00.000-05:00,[KLB] 10:10 ▲ 🔇 QBS ramp=0.5x vol=1.1x pos=^88 vwap=above ema=bull adx=23 body=48% rangeATR=1.6 O54.19 H54.31 L54.1 C54.29 ATR=1.08
+2026-02-13T10:25:00.000-05:00,[KLB] CONF 10:25 ▲ QBS → ✗ (failed)
+2026-02-17T09:35:00.000-05:00,[KLB] 9:35 ▼ RNG range break vol=16.8x
+2026-02-17T09:35:00.000-05:00,[KLB] 9:35 ▼ BRK PM L vol=16.8x pos=v96 vwap=below ema=bear rs=-0.8% adx=37 body=37% ramp=117.3x rangeATR=5.6 ⚡ O54.5 H54.9 L54.23 C54.25 ATR=1.05 SL=54.33/54.36 rawVol=370605 volSMA=22066 buf=0.053 prices=54.38
+2026-02-17T09:35:00.000-05:00,"[KLB] 9:35 ▼ ~ ~ Yest H
+~ VWAP + ~ Today O + ~ PD Cls vol=16.8x pos=v96 vwap=below ema=bear rs=-0.8% adx=37 body=37% ramp=117.3x rangeATR=5.6 ⚡ O54.5 H54.9 L54.23 C54.25 ATR=1.05 SL=54.33/54.36 rawVol=370605 volSMA=22066 buf=0.053 prices=54.58"
+2026-02-17T09:35:00.000-05:00,[KLB] CONF 9:35 ▼ BRK → ✓ (auto-R1: EMA)
+2026-02-17T09:40:00.000-05:00,[KLB] 9:40 ▼ ~ x~ Yest H vol=10.2x pos=v50 vwap=below ema=bear rs=-1% adx=35 body=23% ramp=235x rangeATR=1.9 O54.26 H54.32 L54.08 C54.2 ATR=1.05 SL=54.28/54.31 rawVol=288206 volSMA=36476 buf=0.053 prices=54.58
+2026-02-17T09:40:00.000-05:00,[KLB] 5m CHECK 9:40 ▼ pnl=0.05 SPY✗ → HOLD
+2026-02-17T09:50:00.000-05:00,[KLB] 9:50 ▼ BRK Yest L vol=3.6x pos=v93 vwap=below ema=bear rs=-1.6% adx=34 body=83% ramp=1.7x rangeATR=1.9 ⚠ O53.96 H53.99 L53.69 C53.71 ATR=1.05 SL=53.79/53.82 rawVol=145508 volSMA=53344 buf=0.053 prices=53.81
+2026-02-17T09:50:00.000-05:00,[KLB] CONF 9:50 ▼ BRK → ✓ (auto-R1: EMA)
+2026-02-17T09:55:00.000-05:00,[KLB] 5m CHECK 9:55 ▼ pnl=0.25 SPY✓ → HOLD
+2026-02-18T09:30:00.000-05:00,[KLB] 9:30 ▲ RNG range break vol=4.2x
+2026-02-18T10:05:00.000-05:00,[KLB] 10:05 ▼ ~ x~ PM H vol=1.2x pos=v70 vwap=below ema=bull rs=-0.8% adx=17 body=24% ramp=0.4x rangeATR=1.4 🔇 O54.42 H54.5 L54.33 C54.38 ATR=1.1 SL=54.47/54.49 rawVol=82603 volSMA=78425 buf=0.055 prices=54.49
+2026-02-19T09:30:00.000-05:00,[KLB] 9:30 ▼ ~ ~ Today O vol=0.8x pos=v85 vwap=above ema=bull rs=-0.5% adx=34 body=85% ramp=1.1x rangeATR=2.3 ⚡ ⚠ O55.5 H55.5 L55.37 C55.39 ATR=1.1 SL=55.48/55.5 rawVol=552 volSMA=1650 buf=0.055 prices=
+2026-02-19T09:35:00.000-05:00,[KLB] 9:35 ▲ FADE at 55.46
+2026-02-19T09:40:00.000-05:00,[KLB] 9:40 ▲ RNG range break vol=12.6x
+2026-02-19T09:40:00.000-05:00,[KLB] 9:40 ▲ ~ ~ VWAP vol=12.6x pos=^92 vwap=above ema=bull rs=+0.5% adx=32 body=64% ramp=138.5x rangeATR=3.8 ⚡ O55.49 H55.77 L55.37 C55.74 ATR=1.1 SL=55.65/55.63 rawVol=324828 volSMA=47667 buf=0.055 prices=
+2026-02-19T11:50:00.000-05:00,[KLB] 11:50 ▼ ~ ~ Week H vol=0.8x pos=v100 vwap=below ema=bear rs=-0.4% adx=23 body=79% ramp=0.7x rangeATR=0.9 O55.26 H55.28 L55.19 C55.19 ATR=1.1 SL=55.41/55.46 rawVol=47888 volSMA=88982 buf=0.055 prices=55.24
+2026-02-19T12:50:00.000-05:00,[KLB] 12:50 ▼ ~ ~ Week H vol=0.9x pos=v94 vwap=below ema=bear rs=-0.4% adx=23 body=94% ramp=1.4x rangeATR=1 ⚠ O55.24 H55.24 L55.15 C55.15 ATR=1.1 SL=55.37/55.43 rawVol=51598 volSMA=54819 buf=0.055 prices=55.24
+2026-02-19T14:20:00.000-05:00,[KLB] 14:20 ▼ ~ ~ VWAP vol=1.2x pos=v70 vwap=below ema=bear rs=-0.4% adx=23 body=60% ramp=1.2x rangeATR=0.6 O55.29 H55.29 L55.24 C55.26 ATR=1.1 SL=55.37/55.42 rawVol=70205 volSMA=57953 buf=0.055 prices=
+2026-02-20T09:30:00.000-05:00,[KLB] 9:30 ▲ RNG range break vol=3.2x
+2026-02-20T09:35:00.000-05:00,[KLB] 9:35 ▼ ~ ~ Week H + ~ PD Cls vol=18.9x pos=v83 vwap=below ema=bear rs=-0.3% adx=20 body=34% ramp=200.1x rangeATR=4.6 ⚡ O55.04 H55.19 L54.89 C54.94 ATR=1.1 SL=55.03/55.05 rawVol=198454 volSMA=10496 buf=0.055 prices=55.24
+2026-02-23T09:35:00.000-05:00,[KLB] 9:35 ▲ RNG range break vol=18.3x
+2026-02-23T09:35:00.000-05:00,[KLB] 9:35 ▲ ~ ~ VWAP + ~ Today O vol=18.3x pos=^92 vwap=above ema=bull rs=+0.5% adx=31 body=82% ramp=23.4x rangeATR=7.8 ⚡ ⚠ O55.04 H55.49 L54.99 C55.45 ATR=1.08 SL=55.36/55.34 rawVol=191420 volSMA=10468 buf=0.054 prices=
+2026-02-23T10:10:00.000-05:00,[KLB] 10:10 ▼ ~ x~ ORB H vol=2x pos=v80 vwap=below ema=bull rs=+1.2% adx=41 body=20% ramp=0.8x rangeATR=0.9 O55.46 H55.52 L55.42 C55.44 ATR=1.08 SL=55.53/55.55 rawVol=96278 volSMA=62882 buf=0.054 prices=55.49
+2026-02-23T11:50:00.000-05:00,[KLB] 11:50 ▼ ~ x~ PM H vol=0.8x pos=v19 vwap=below ema=bull rs=+0.9% adx=16 body=13% ramp=0.9x rangeATR=0.9 O55.08 H55.08 L55 C55.07 ATR=1.08 SL=55.28/55.33 rawVol=45594 volSMA=55974 buf=0.054 prices=55.1
+2026-02-23T11:55:00.000-05:00,[KLB] 11:55 ▲ FADE at 55.1
+2026-02-23T12:05:00.000-05:00,[KLB] 12:05 ▼ ~ x~ PM H vol=0.9x pos=v75 vwap=below ema=bull rs=+0.9% adx=15 body=25% ramp=0.8x rangeATR=0.9 O55.08 H55.12 L55.04 C55.06 ATR=1.08 SL=55.28/55.33 rawVol=46092 volSMA=52747 buf=0.054 prices=55.1
+2026-02-23T12:10:00.000-05:00,[KLB] 12:10 ▼ ~ x~ PM H vol=0.9x pos=v38 vwap=below ema=bull rs=+0.8% adx=15 body=15% ramp=0.9x rangeATR=0.7 O55.05 H55.07 L55 C55.04 ATR=1.08 SL=55.26/55.31 rawVol=46505 volSMA=52469 buf=0.054 prices=55.1
+2026-02-23T13:00:00.000-05:00,[KLB] 13:00 ▼ ~ x~ PM H vol=1x pos=v91 vwap=below ema=bear rs=+0.8% adx=18 body=18% ramp=1x rangeATR=0.7 O55.03 H55.07 L55.02 C55.02 ATR=1.08 SL=55.24/55.29 rawVol=44556 volSMA=43580 buf=0.054 prices=55.1
+2026-02-23T14:10:00.000-05:00,[KLB] 14:10 ▼ ~ x~ PM H vol=1.3x pos=v71 vwap=below ema=bear rs=+0.9% adx=10 body=29% ramp=1x rangeATR=0.6 O55.07 H55.09 L55.05 C55.06 ATR=1.08 SL=55.17/55.22 rawVol=34577 volSMA=36573 buf=0.054 prices=55.1
+2026-02-24T09:35:00.000-05:00,[KLB] 9:35 ▼ RNG range break vol=18.6x
+2026-02-24T09:35:00.000-05:00,"[KLB] 9:35 ▼ ~ ~ Yest H
+~ VWAP + ~ Today O + ~ PD Cls vol=18.6x pos=v100 vwap=below ema=bull rs=-0.5% adx=30 body=100% ramp=455.7x rangeATR=6.1 ⚡ ⚠ O55.15 H55.15 L54.75 C54.75 ATR=1.08 SL=54.84/54.86 rawVol=226495 volSMA=12176 buf=0.054 prices=55.93"
+2026-02-24T09:40:00.000-05:00,[KLB] 9:40 ▼ BRK ORB L vol=10.6x pos=v79 vwap=below ema=bear rs=-1% adx=33 body=75% ramp=932x rangeATR=3.1 ⚡ O54.76 H54.77 L54.53 C54.58 ATR=1.08 SL=54.67/54.69 rawVol=182297 volSMA=21290 buf=0.054 prices=54.75
+2026-02-24T09:40:00.000-05:00,[KLB] CONF 9:40 ▼ BRK → ✓ (auto-R1: EMA)
+2026-02-24T09:45:00.000-05:00,[KLB] 9:45 ▼ BRK Week O vol=6.2x pos=v70 vwap=below ema=bear rs=-1.5% adx=36 body=55% ramp=745.4x rangeATR=2.3 ⚡ O54.57 H54.6 L54.4 C54.46 ATR=1.08 SL=54.55/54.57 rawVol=163684 volSMA=29420 buf=0.054 prices=
+2026-02-24T09:45:00.000-05:00,[KLB] CONF 9:45 ▼ BRK → ✓ (auto-R1: EMA)
+2026-02-24T09:50:00.000-05:00,[KLB] 5m CHECK 9:50 ▼ pnl=-0.23 SPY✗ → BAIL
+2026-02-24T10:30:00.000-05:00,[KLB] 10:30 ▼ BRK Yest L vol=2.4x pos=v91 vwap=above ema=bear rs=-1.3% adx=35 body=64% ramp=1.4x rangeATR=2.1 ⚡ O54.92 H54.99 L54.75 C54.77 ATR=1.08 SL=54.86/54.88 rawVol=194471 volSMA=82638 buf=0.054 prices=54.87
+2026-02-24T10:30:00.000-05:00,[KLB] CONF 10:30 ▼ BRK → ✓ (auto-R1: EMA)
+2026-02-24T10:35:00.000-05:00,[KLB] 10:35 ▼ BRK ORB L vol=2.2x pos=v83 vwap=below ema=bear rs=-1.6% adx=35 body=74% ramp=1.6x rangeATR=1.9 O54.76 H54.78 L54.55 C54.59 ATR=1.08 SL=54.68/54.7 rawVol=148893 volSMA=90077 buf=0.054 prices=54.75
+2026-02-24T10:35:00.000-05:00,[KLB] CONF 10:35 ▼ BRK → ✓ (auto-R1: EMA)
+2026-02-24T10:40:00.000-05:00,[KLB] 5m CHECK 10:40 ▼ pnl=-0.04 SPY✗ → BAIL
+2026-02-24T12:05:00.000-05:00,[KLB] 12:05 ▲ ~ ~ ORB L vol=0.4x pos=^92 vwap=above ema=bear rs=-1.3% adx=24 body=67% ramp=0.6x rangeATR=0.7 O54.75 H54.8 L54.74 C54.79 ATR=1.08 SL=54.57/54.52 rawVol=26235 volSMA=67012 buf=0.054 prices=54.75
+2026-02-24T13:35:00.000-05:00,[KLB] 13:35 ▲ ~ ~ Yest L vol=0.7x pos=^100 vwap=above ema=bull rs=-0.9% adx=24 body=67% ramp=0.8x rangeATR=0.5 O55.02 H55.04 L55.01 C55.04 ATR=1.08 SL=54.82/54.77 rawVol=22514 volSMA=30302 buf=0.054 prices=54.87
+2026-02-24T13:40:00.000-05:00,[KLB] 13:40 ▲ ~ ~ Yest L vol=0.8x pos=^100 vwap=above ema=bull rs=-0.9% adx=25 body=86% ramp=0.6x rangeATR=0.7 ⚠ O55.04 H55.07 L55.03 C55.07 ATR=1.08 SL=54.85/54.8 rawVol=19803 volSMA=29923 buf=0.054 prices=54.87
+2026-02-24T13:45:00.000-05:00,[KLB] 13:45 ▲ ~ ~ PD LH L vol=0.9x pos=^100 vwap=above ema=bull rs=-0.9% adx=26 body=90% ramp=0.9x rangeATR=0.9 ⚠ O55.07 H55.11 L55.06 C55.11 ATR=1.08 SL=54.89/54.84 rawVol=27294 volSMA=29976 buf=0.054 prices=
+2026-02-24T14:25:00.000-05:00,[KLB] 14:25 ▲ ~ ~ VWAP vol=1.2x pos=^100 vwap=above ema=bull rs=-1.1% adx=23 body=88% ramp=1.1x rangeATR=1.4 ⚠ O54.84 H54.92 L54.83 C54.92 ATR=1.08 SL=54.81/54.75 rawVol=38981 volSMA=32758 buf=0.054 prices=
+2026-02-24T14:35:00.000-05:00,[KLB] 14:35 ▲ ~ ~ Yest L vol=1.1x pos=^92 vwap=above ema=bull rs=-0.9% adx=22 body=92% ramp=0.8x rangeATR=1 ⚠ O54.98 H55.05 L54.98 C55.04 ATR=1.08 SL=54.93/54.88 rawVol=23239 volSMA=30043 buf=0.054 prices=54.87
+2026-02-24T15:40:00.000-05:00,[KLB] 15:40 ▲ ~ ~ PM L vol=1.1x pos=^71 vwap=above ema=bull rs=-0.7% adx=21 body=43% ramp=1x rangeATR=0.6 O55.13 H55.16 L55.12 C55.15 ATR=1.08 SL=55.04/54.98 rawVol=41161 volSMA=38047 buf=0.054 prices=55.09
+2026-02-24T15:50:00.000-05:00,[KLB] 15:50 ▲ ~ ~ PM L vol=1.8x pos=^87 vwap=above ema=bull rs=-0.7% adx=24 body=40% ramp=1.2x rangeATR=1.3 O55.15 H55.19 L55.12 C55.18 ATR=1.08 SL=55.07/55.02 rawVol=48690 volSMA=40440 buf=0.054 prices=55.09
+2026-02-25T09:30:00.000-05:00,[KLB] 9:30 ▲ BRK PD LH H vol=2.5x pos=^100 vwap=above ema=bull rs=+0.5% adx=21 body=92% ramp=6.3x rangeATR=3.4 ⚡ ⚠ O55.22 H55.33 L55.21 C55.33 ATR=1.06 SL=55.25/55.22 rawVol=2179 volSMA=860 buf=0.053 prices=
+2026-02-25T09:30:00.000-05:00,[KLB] 9:30 ▲ ~ ~ Today O vol=2.5x pos=^100 vwap=above ema=bull rs=+0.5% adx=21 body=92% ramp=6.3x rangeATR=3.4 ⚡ ⚠ O55.22 H55.33 L55.21 C55.33 ATR=1.06 SL=55.25/55.22 rawVol=2179 volSMA=860 buf=0.053 prices=
+2026-02-25T09:30:00.000-05:00,[KLB] CONF 9:30 ▲ BRK → ✓ (auto-R1: EMA)
+2026-02-25T09:35:00.000-05:00,[KLB] 9:35 ▼ RNG range break vol=18x
+2026-02-25T09:35:00.000-05:00,"[KLB] 9:35 ▼ ~ ~ PM H + ~ Yest H
+~ VWAP + ~ PD Cls vol=18x pos=v85 vwap=below ema=bull rs=-0.6% adx=21 body=73% ramp=28.5x rangeATR=6.6 ⚡ O55.3 H55.35 L54.94 C55 ATR=1.06 SL=55.08/55.11 rawVol=133691 volSMA=7427 buf=0.053 prices=55.33/55.22"
+2026-02-25T09:35:00.000-05:00,[KLB] 5m CHECK 9:35 ▲ pnl=-0.31 SPY~ → BAIL
+2026-02-25T09:50:00.000-05:00,[KLB] 9:50 ▼ BRK PD LH L vol=4.8x pos=v91 vwap=below ema=bear rs=-1.3% adx=26 body=68% ramp=2.6x rangeATR=2.4 ⚡ O54.87 H54.92 L54.7 C54.72 ATR=1.06 SL=54.8/54.83 rawVol=104172 volSMA=25166 buf=0.053 prices=
+2026-02-25T09:50:00.000-05:00,[KLB] CONF 9:50 ▼ BRK → ✓ (auto-R1: EMA)
+2026-02-25T09:55:00.000-05:00,[KLB] 9:55 ▼ BRK Week O vol=3.5x pos=v91 vwap=below ema=bear rs=-1.7% adx=29 body=91% ramp=1.2x rangeATR=2.5 ⚡ ⚠ O54.7 H54.7 L54.43 C54.46 ATR=1.06 SL=54.54/54.56 rawVol=92288 volSMA=29745 buf=0.053 prices=
+2026-02-25T09:55:00.000-05:00,[KLB] CONF 9:55 ▼ BRK → ✓ (auto-R1: EMA)
+2026-02-25T10:00:00.000-05:00,[KLB] 5m CHECK 10:00 ▼ pnl=0.03 SPY~ → HOLD
+2026-02-25T10:05:00.000-05:00,[KLB] 10:05 ▼ BRK Yest L vol=3.1x pos=v97 vwap=below ema=bear rs=-1.9% adx=35 body=63% ramp=0.9x rangeATR=1.5 O54.43 H54.49 L54.32 C54.32 ATR=1.06 SL=54.4/54.43 rawVol=101520 volSMA=41043 buf=0.053 prices=54.4
+2026-02-25T10:05:00.000-05:00,[KLB] CONF 10:05 ▼ BRK → ✓ (auto-R1: EMA)
+2026-02-25T10:10:00.000-05:00,[KLB] 5m CHECK 10:10 ▼ pnl=0.05 SPY~ → HOLD
+2026-02-25T15:35:00.000-05:00,[KLB] 15:35 ▲ ~ ~ VWAP vol=1.5x pos=^92 vwap=above ema=bull rs=-1.3% adx=26 body=77% ramp=1.1x rangeATR=1.3 O54.73 H54.79 L54.72 C54.78 ATR=1.06 SL=54.67/54.62 rawVol=59288 volSMA=39999 buf=0.053 prices=
+2026-02-26T09:45:00.000-05:00,[KLB] 9:45 ▼ ~ ~ ORB H vol=3.4x pos=v78 vwap=below ema=bear rs=+0.1% adx=45 body=78% ramp=225.9x rangeATR=3 ⚡ O54.5 H54.5 L54.23 C54.29 ATR=1.07 SL=54.38/54.4 rawVol=104560 volSMA=30491 buf=0.053 prices=54.51
+2026-02-26T10:20:00.000-05:00,[KLB] 10:20 ▲ BRK PD LH H vol=1.4x pos=^100 vwap=above ema=bull rs=+2.1% adx=34 body=100% ramp=0.8x rangeATR=1.6 ⚠ O54.79 H54.98 L54.79 C54.98 ATR=1.07 SL=54.89/54.87 rawVol=89317 volSMA=62451 buf=0.053 prices=
+2026-02-26T10:20:00.000-05:00,[KLB] 10:20 ▲ ~ ~ Yest L vol=1.4x pos=^100 vwap=above ema=bull rs=+2.1% adx=34 body=100% ramp=0.8x rangeATR=1.6 ⚠ O54.79 H54.98 L54.79 C54.98 ATR=1.07 SL=54.89/54.87 rawVol=89317 volSMA=62451 buf=0.053 prices=54.19
+2026-02-26T10:20:00.000-05:00,[KLB] CONF 10:20 ▲ BRK → ✓ (auto-R1: EMA)
+2026-02-26T10:25:00.000-05:00,[KLB] 5m CHECK 10:25 ▲ pnl=-0.03 SPY✗ → BAIL
+2026-02-26T10:30:00.000-05:00,[KLB] 10:30 ▲ BRK PD LH H vol=1.4x pos=^100 vwap=above ema=bull rs=+2.3% adx=33 body=61% ramp=1.2x rangeATR=1 O54.95 H55.02 L54.91 C55.02 ATR=1.07 SL=54.93/54.91 rawVol=96305 volSMA=70832 buf=0.053 prices=
+2026-02-26T10:30:00.000-05:00,[KLB] CONF 10:30 ▲ BRK → ✓ (auto-R1: EMA)
+2026-02-26T10:35:00.000-05:00,[KLB] 5m CHECK 10:35 ▲ pnl=0.13 SPY✗ → HOLD
+2026-02-26T14:50:00.000-05:00,[KLB] 14:50 ▲ ~ ~ VWAP vol=0.5x pos=^78 vwap=above ema=bull rs=+2% adx=20 body=67% ramp=0.6x rangeATR=0.5 O55.16 H55.2 L55.16 C55.19 ATR=1.07 SL=55.08/55.03 rawVol=25682 volSMA=81289 buf=0.053 prices=
+2026-02-27T09:30:00.000-05:00,[KLB] 9:30 ▼ RNG range break vol=3.3x
+2026-02-27T09:30:00.000-05:00,[KLB] 9:30 ▼ ~ ~ PM H + ~ Week H + ~ Today O vol=3.3x pos=v100 vwap=below ema=bull rs=-1% adx=44 body=68% ramp=2.7x rangeATR=3.9 ⚡ O55.75 H55.82 L55.6 C55.6 ATR=1.1 SL=55.69/55.71 rawVol=3196 volSMA=962 buf=0.055 prices=55.87/55.88
+2026-02-27T09:35:00.000-05:00,[KLB] 9:35 ▼ ~ ~ VWAP vol=19.1x pos=v97 vwap=below ema=bull rs=-0.6% adx=44 body=71% ramp=344x rangeATR=4.4 ⚡ O55.62 H55.71 L55.37 C55.38 ATR=1.1 SL=55.47/55.49 rawVol=385302 volSMA=20131 buf=0.055 prices=
+2026-02-27T10:15:00.000-05:00,[KLB] 10:15 ▼ BRK PM L vol=2x pos=v71 vwap=below ema=bear rs=-1.3% adx=47 body=71% ramp=1x rangeATR=1.4 O55.15 H55.15 L54.98 C55.03 ATR=1.1 SL=55.12/55.14 rawVol=124835 volSMA=63768 buf=0.055 prices=55.05
+2026-02-27T10:15:00.000-05:00,[KLB] 10:15 ▼ ~ ~ Yest H + ~ PD Cls vol=2x pos=v71 vwap=below ema=bear rs=-1.3% adx=47 body=71% ramp=1x rangeATR=1.4 O55.15 H55.15 L54.98 C55.03 ATR=1.1 SL=55.12/55.14 rawVol=124835 volSMA=63768 buf=0.055 prices=55.67
+2026-02-27T10:15:00.000-05:00,[KLB] CONF 10:15 ▼ BRK → ✓ (auto-R1: EMA)
+2026-02-27T10:20:00.000-05:00,[KLB] 10:20 ▼ ~ ~ Yest H vol=1.8x pos=v72 vwap=below ema=bear rs=-1.3% adx=48 body=36% ramp=1.3x rangeATR=1.1 O55.04 H55.09 L54.96 C55 ATR=1.1 SL=55.08/55.11 rawVol=85995 volSMA=68012 buf=0.055 prices=55.67
+2026-02-27T10:20:00.000-05:00,[KLB] 5m CHECK 10:20 ▼ pnl=0.03 SPY~ → HOLD
+2026-02-27T10:35:00.000-05:00,[KLB] 10:35 ▼ BRK PM L vol=1.3x pos=v89 vwap=below ema=bear rs=-1.4% adx=49 body=79% ramp=0.9x rangeATR=1.6 O55.1 H55.12 L54.93 C54.95 ATR=1.1 SL=55.04/55.06 rawVol=105006 volSMA=80967 buf=0.055 prices=55.05
+2026-02-27T10:35:00.000-05:00,[KLB] 10:35 ▼ ~ ~ Yest H vol=1.3x pos=v89 vwap=below ema=bear rs=-1.4% adx=49 body=79% ramp=0.9x rangeATR=1.6 O55.1 H55.12 L54.93 C54.95 ATR=1.1 SL=55.04/55.06 rawVol=105006 volSMA=80967 buf=0.055 prices=55.67
+2026-02-27T10:35:00.000-05:00,[KLB] CONF 10:35 ▼ BRK → ✓ (auto-R1: EMA)
+2026-02-27T10:40:00.000-05:00,[KLB] 5m CHECK 10:40 ▼ pnl=-0.09 SPY~ → HOLD
+2026-02-27T10:50:00.000-05:00,[KLB] 10:50 ▼ ~ ~ Yest H vol=0.5x pos=v100 vwap=below ema=bear rs=-1.4% adx=48 body=85% ramp=0.7x rangeATR=1.3 ⚠ O55.15 H55.18 L55.01 C55.01 ATR=1.1 SL=55.1/55.12 rawVol=43248 volSMA=90265 buf=0.055 prices=55.67
+2026-02-27T11:05:00.000-05:00,[KLB] 11:05 ▼ ~ ~ Yest H vol=0.7x pos=v86 vwap=below ema=bear rs=-1.5% adx=46 body=71% ramp=0.9x rangeATR=0.6 O55.07 H55.08 L55.01 C55.02 ATR=1.1 SL=55.24/55.3 rawVol=65036 volSMA=98615 buf=0.055 prices=55.67
+2026-02-27T12:05:00.000-05:00,[KLB] 12:05 ▲ ~ ~ ORB L vol=1.3x pos=^85 vwap=above ema=bear rs=-0.7% adx=31 body=85% ramp=1.3x rangeATR=1 ⚠ O55.35 H55.45 L55.35 C55.44 ATR=1.1 SL=55.21/55.16 rawVol=80959 volSMA=63873 buf=0.055 prices=55.37
+2026-02-27T12:30:00.000-05:00,[KLB] 12:30 ▲ ~ ~ ORB L vol=0.8x pos=^100 vwap=above ema=bear rs=-0.4% adx=31 body=33% ramp=0.8x rangeATR=1 O55.45 H55.48 L55.39 C55.48 ATR=1.1 SL=55.26/55.2 rawVol=44977 volSMA=58232 buf=0.055 prices=55.37
+2026-03-02T09:30:00.000-05:00,[KLB] 9:30 ▼ ~ ~ VWAP vol=2.8x pos=v75 vwap=below ema=bull rs=-1.1% adx=30 body=75% ramp=1.2x rangeATR=2.2 ⚡ O57.98 H57.98 L57.7 C57.77 ATR=1.11 SL=57.86/57.88 rawVol=29133 volSMA=10399 buf=0.056 prices=
+2026-03-02T09:35:00.000-05:00,[KLB] 9:35 ▼ RNG range break vol=16x
+2026-03-02T09:35:00.000-05:00,[KLB] 9:35 ▼ ~ ~ Today O vol=16x pos=v93 vwap=below ema=bull rs=-2.1% adx=34 body=84% ramp=25.9x rangeATR=5.7 ⚡ ⚠ O57.75 H57.85 L56.68 C56.76 ATR=1.11 SL=56.85/56.87 rawVol=820321 volSMA=51128 buf=0.056 prices=
+2026-03-02T09:40:00.000-05:00,[KLB] 9:40 ▼ BRK ORB L vol=10x pos=v78 vwap=below ema=bear rs=-2.7% adx=37 body=67% ramp=34.4x rangeATR=2.4 ⚡ O56.75 H56.81 L56.27 C56.39 ATR=1.11 SL=56.48/56.5 rawVol=645345 volSMA=82320 buf=0.056 prices=56.68
+2026-03-02T09:40:00.000-05:00,[KLB] CONF 9:40 ▼ BRK → ✓ (auto-R1: EMA)
+2026-03-02T09:45:00.000-05:00,[KLB] 5m CHECK 9:45 ▼ pnl=-0.08 SPY✗ → BAIL
+2026-03-03T09:35:00.000-05:00,[KLB] 9:35 ▼ RNG range break vol=17.5x
+2026-03-03T09:35:00.000-05:00,[KLB] 9:35 ▼ BRK PM L vol=17.5x pos=v96 vwap=below ema=bear rs=-0.4% adx=34 body=45% ramp=36x rangeATR=4.5 ⚡ O57.39 H57.71 L57.08 C57.11 ATR=1.17 SL=57.2/57.22 rawVol=608774 volSMA=34792 buf=0.059 prices=57.37
+2026-03-03T09:35:00.000-05:00,[KLB] 9:35 ▼ ~ ~ VWAP + ~ Today O vol=17.5x pos=v96 vwap=below ema=bear rs=-0.4% adx=34 body=45% ramp=36x rangeATR=4.5 ⚡ O57.39 H57.71 L57.08 C57.11 ATR=1.17 SL=57.2/57.22 rawVol=608774 volSMA=34792 buf=0.059 prices=
+2026-03-03T09:35:00.000-05:00,[KLB] CONF 9:35 ▼ BRK → ✓ (auto-R1: EMA)
+2026-03-03T09:40:00.000-05:00,[KLB] 9:40 ▼ BRK ORB L vol=9.9x pos=v55 vwap=below ema=bear rs=-0.8% adx=37 body=31% ramp=91.5x rangeATR=2.6 ⚡ O57.12 H57.22 L56.8 C56.99 ATR=1.17 SL=57.08/57.11 rawVol=544473 volSMA=61747 buf=0.059 prices=57.08
+2026-03-03T09:40:00.000-05:00,[KLB] 9:40 ▼ ~ ~ PD Cls vol=9.9x pos=v55 vwap=below ema=bear rs=-0.8% adx=37 body=31% ramp=91.5x rangeATR=2.6 ⚡ O57.12 H57.22 L56.8 C56.99 ATR=1.17 SL=57.08/57.11 rawVol=544473 volSMA=61747 buf=0.059 prices=
+2026-03-03T09:40:00.000-05:00,[KLB] CONF 9:40 ▼ BRK → ✓ (auto-R1: EMA)
+2026-03-03T09:45:00.000-05:00,[KLB] 9:45 ▼ BRK PD LH L vol=6.2x pos=v92 vwap=below ema=bear rs=-1.7% adx=40 body=92% ramp=135x rangeATR=3.8 ⚡ ⚠ O56.98 H56.98 L56.21 C56.28 ATR=1.17 SL=56.37/56.39 rawVol=524458 volSMA=87778 buf=0.059 prices=
+2026-03-03T09:45:00.000-05:00,[KLB] CONF 9:45 ▼ BRK → ✓ (auto-R1: EMA)
+2026-03-03T09:50:00.000-05:00,[KLB] 9:50 ▼ BRK Yest L vol=4.8x pos=v100 vwap=below ema=bear rs=-1.8% adx=43 body=57% ramp=2.4x rangeATR=1.1 O56.28 H56.37 L56.15 C56.15 ATR=1.17 SL=56.24/56.27 rawVol=427788 volSMA=109038 buf=0.059 prices=56.27
+2026-03-03T09:50:00.000-05:00,[KLB] CONF 9:50 ▼ BRK → ✓ (auto-R1: EMA)
+2026-03-03T09:55:00.000-05:00,[KLB] 5m CHECK 9:55 ▼ pnl=-0.11 SPY~ → BAIL
+2026-03-03T11:20:00.000-05:00,[KLB] 11:20 ▲ ~ ~ ORB L vol=0.8x pos=^87 vwap=above ema=bear rs=-0.5% adx=28 body=87% ramp=0.7x rangeATR=1.2 ⚠ O56.94 H57.17 L56.94 C57.14 ATR=1.17 SL=56.91/56.85 rawVol=182770 volSMA=241229 buf=0.059 prices=57.08
+2026-03-03T11:45:00.000-05:00,[KLB] 11:45 ▼ BRK PD LH L vol=1.3x pos=v81 vwap=below ema=bear rs=-1.5% adx=23 body=58% ramp=1x rangeATR=1.8 O56.87 H56.95 L56.59 C56.66 ATR=1.17 SL=56.89/56.95 rawVol=247622 volSMA=188854 buf=0.059 prices=
+2026-03-03T11:45:00.000-05:00,[KLB] CONF 11:45 ▼ BRK → ✓ (auto-R1: EMA)
+2026-03-03T11:50:00.000-05:00,[KLB] 5m CHECK 11:50 ▼ pnl=0.03 SPY✗ → HOLD
+2026-03-03T14:45:00.000-05:00,[KLB] 14:45 ▼ BRK Yest L vol=3.5x pos=v97 vwap=below ema=bear rs=-3.1% adx=22 body=97% ramp=3.8x rangeATR=2.3 ⚡ ⚠ O56.53 H56.53 L56.18 C56.19 ATR=1.17 SL=56.3/56.36 rawVol=413044 volSMA=136485 buf=0.059 prices=56.27
+2026-03-03T14:45:00.000-05:00,[KLB] CONF 14:45 ▼ BRK → ✓ (auto-R1: EMA)
+2026-03-03T14:50:00.000-05:00,[KLB] 5m CHECK 14:50 ▼ pnl=-0.12 SPY✗ → BAIL
+2026-03-03T15:00:00.000-05:00,[KLB] 15:00 ▼ BRK Yest L vol=1.8x pos=v47 vwap=below ema=bear rs=-3% adx=28 body=47% ramp=0.9x rangeATR=1 O56.28 H56.28 L56.12 C56.21 ATR=1.17 SL=56.32/56.38 rawVol=256584 volSMA=168179 buf=0.059 prices=56.27
+2026-03-03T15:00:00.000-05:00,[KLB] CONF 15:00 ▼ BRK → ✓ (auto-R1: EMA)
+2026-03-03T15:05:00.000-05:00,[KLB] 5m CHECK 15:05 ▼ pnl=0 SPY✗ → BAIL
+2026-03-03T15:10:00.000-05:00,[KLB] 15:10 ▼ ~ ~ Week H vol=1.2x pos=v79 vwap=below ema=bear rs=-3.2% adx=31 body=58% ramp=0.6x rangeATR=1.2 O56.2 H56.24 L56.05 C56.09 ATR=1.17 SL=56.21/56.27 rawVol=211905 volSMA=179157 buf=0.059 prices=56.15
+2026-03-04T09:40:00.000-05:00,[KLB] 9:40 ▼ ~ x~ Week H vol=8.3x pos=v58 vwap=below ema=bear rs=+0.1% adx=27 body=20% ramp=206.2x rangeATR=3.6 ⚡ O56.13 H56.3 L55.85 C56.04 ATR=1.21 SL=56.14/56.16 rawVol=439882 volSMA=52772 buf=0.06 prices=56.15
+2026-03-04T09:45:00.000-05:00,[KLB] 9:45 ▼ RNG range break vol=6.3x
+2026-03-04T09:45:00.000-05:00,[KLB] 9:45 ▼ BRK PM L + ORB L vol=6.3x pos=v65 vwap=below ema=bear rs=-0.2% adx=26 body=54% ramp=51.2x rangeATR=3.1 ⚡ O56.06 H56.11 L55.65 C55.81 ATR=1.21 SL=55.91/55.93 rawVol=335218 volSMA=69444 buf=0.06 prices=55.86/56.02
+2026-03-04T09:45:00.000-05:00,"[KLB] 9:45 ▼ ~ ~ Week H
+~ VWAP vol=6.3x pos=v65 vwap=below ema=bear rs=-0.2% adx=26 body=54% ramp=51.2x rangeATR=3.1 ⚡ O56.06 H56.11 L55.65 C55.81 ATR=1.21 SL=55.91/55.93 rawVol=335218 volSMA=69444 buf=0.06 prices=56.15"
+2026-03-04T09:45:00.000-05:00,[KLB] CONF 9:45 ▼ BRK → ✓ (auto-R1: EMA)
+2026-03-04T09:50:00.000-05:00,[KLB] 5m CHECK 9:50 ▼ pnl=0.07 SPY~ → HOLD
+2026-03-05T09:35:00.000-05:00,[KLB] 9:35 ▲ RNG range break vol=18.9x
+2026-03-05T09:40:00.000-05:00,[KLB] 9:40 ▼ ~ ~ ORB H vol=8.4x pos=v82 vwap=below ema=bull rs=0% adx=23 body=70% ramp=88.1x rangeATR=4.6 ⚡ O57 H57.06 L56.55 C56.64 ATR=1.21 SL=56.74/56.76 rawVol=226467 volSMA=26966 buf=0.06 prices=57.02
+2026-03-05T10:25:00.000-05:00,[KLB] 10:25 ▲ ~ ~ VWAP vol=2.2x pos=^94 vwap=above ema=bull rs=+0.8% adx=41 body=90% ramp=1.3x rangeATR=1.8 ⚠ O56.66 H56.9 L56.65 C56.89 ATR=1.21 SL=56.79/56.76 rawVol=188919 volSMA=86981 buf=0.06 prices=
+2026-03-05T11:20:00.000-05:00,[KLB] 11:20 ▲ ~ ~ ORB L vol=1.1x pos=^100 vwap=above ema=bull rs=+0.7% adx=28 body=76% ramp=0.9x rangeATR=1.3 O56.5 H56.66 L56.45 C56.66 ATR=1.21 SL=56.42/56.36 rawVol=126480 volSMA=134939 buf=0.06 prices=56.44
+2026-03-05T11:30:00.000-05:00,[KLB] 11:30 ▼ ~ x~ PM H vol=1.6x pos=v27 vwap=below ema=bull rs=+0.2% adx=25 body=9% ramp=1.3x rangeATR=0.7 O56.45 H56.47 L56.36 C56.44 ATR=1.21 SL=56.68/56.74 rawVol=128628 volSMA=135182 buf=0.06 prices=56.5
+2026-03-05T11:35:00.000-05:00,[KLB] 11:35 ▲ FADE at 56.5
+2026-03-05T12:50:00.000-05:00,[KLB] 12:50 ▼ ~ ~ PD Cls vol=1.1x pos=v100 vwap=below ema=bull rs=+0.2% adx=21 body=91% ramp=0.7x rangeATR=0.8 ⚠ O56.27 H56.28 L56.17 C56.17 ATR=1.21 SL=56.41/56.47 rawVol=54435 volSMA=134934 buf=0.06 prices=
+2026-03-05T12:55:00.000-05:00,[KLB] 12:55 ▲ FADE at 56.19
+2026-03-05T13:50:00.000-05:00,"[KLB] 13:50 ▼ ~ ~ PM H
+~ VWAP vol=1.2x pos=v74 vwap=below ema=bear rs=+0.5% adx=23 body=70% ramp=1.4x rangeATR=1 O56.47 H56.48 L56.36 C56.39 ATR=1.21 SL=56.63/56.69 rawVol=119930 volSMA=99376 buf=0.06 prices=56.5"
+2026-03-05T15:55:00.000-05:00,[KLB] 15:55 ▼ ~ x~ PM H vol=1.5x pos=v27 vwap=below ema=bear rs=-0.1% adx=17 body=20% ramp=1.1x rangeATR=1.2 O56.47 H56.48 L56.33 C56.44 ATR=1.21 SL=56.56/56.62 rawVol=151588 volSMA=102773 buf=0.06 prices=56.5
+2026-03-06T09:30:00.000-05:00,[KLB] 9:30 ▼ RNG range break vol=3.6x
+2026-03-06T09:45:00.000-05:00,[KLB] 9:45 ▼ BRK PM L vol=5.8x pos=v97 vwap=below ema=bear rs=-1.2% adx=22 body=84% ramp=59.7x rangeATR=3.8 ⚡ ⚠ O56.8 H56.89 L56.22 C56.24 ATR=1.19 SL=56.34/56.36 rawVol=248524 volSMA=57902 buf=0.06 prices=56.56
+2026-03-06T09:45:00.000-05:00,"[KLB] 9:45 ▼ ~ ~ Yest H
+~ VWAP + ~ PD Cls vol=5.8x pos=v97 vwap=below ema=bear rs=-1.2% adx=22 body=84% ramp=59.7x rangeATR=3.8 ⚡ ⚠ O56.8 H56.89 L56.22 C56.24 ATR=1.19 SL=56.34/56.36 rawVol=248524 volSMA=57902 buf=0.06 prices=57.06"
+2026-03-06T09:45:00.000-05:00,[KLB] CONF 9:45 ▼ BRK → ✓ (auto-R1: EMA)
+2026-03-06T09:50:00.000-05:00,[KLB] 5m CHECK 9:50 ▼ pnl=-0.13 SPY✓ → HOLD
+2026-03-06T09:55:00.000-05:00,[KLB] 9:55 ▼ ~ ~ Yest H vol=2.2x pos=v93 vwap=below ema=bear rs=-1.1% adx=27 body=41% ramp=0.8x rangeATR=1.4 O56.38 H56.52 L56.25 C56.27 ATR=1.19 SL=56.37/56.39 rawVol=173701 volSMA=77903 buf=0.06 prices=57.06
+2026-03-06T11:25:00.000-05:00,[KLB] 11:25 ▼ ~ ~ Yest H vol=0.7x pos=v62 vwap=below ema=bear rs=-1.3% adx=23 body=58% ramp=1x rangeATR=0.8 O56.58 H56.58 L56.45 C56.5 ATR=1.19 SL=56.74/56.8 rawVol=71718 volSMA=113749 buf=0.06 prices=57.06
+2026-03-06T11:35:00.000-05:00,[KLB] 11:35 ▼ ~ x~ Yest H vol=0.7x pos=v67 vwap=below ema=bear rs=-1.2% adx=22 body=13% ramp=0.7x rangeATR=0.9 O56.53 H56.61 L56.46 C56.51 ATR=1.19 SL=56.75/56.81 rawVol=71127 volSMA=100288 buf=0.06 prices=57.06
+2026-03-06T13:05:00.000-05:00,[KLB] 13:05 ▼ ~ x~ Yest H vol=2.2x pos=v60 vwap=below ema=bear rs=-1.1% adx=14 body=20% ramp=1.3x rangeATR=0.9 O56.54 H56.58 L56.48 C56.52 ATR=1.19 SL=56.76/56.82 rawVol=153197 volSMA=70940 buf=0.06 prices=57.06
+2026-03-06T15:55:00.000-05:00,[KLB] 15:55 ▼ ~ ~ Yest H vol=2.5x pos=v56 vwap=below ema=bear rs=-1.1% adx=23 body=56% ramp=1.6x rangeATR=0.9 O56.53 H56.53 L56.44 C56.48 ATR=1.19 SL=56.6/56.66 rawVol=224938 volSMA=90961 buf=0.06 prices=57.06
+2026-03-09T09:30:00.000-04:00,[KLB] 9:30 ▼ ~ ~ Yest H vol=0.5x pos=v100 vwap=below ema=bear rs=-0.8% adx=22 body=79% ramp=0.7x rangeATR=3.5 ⚡ O57.11 H57.17 L56.89 C56.89 ATR=1.19 SL=56.99/57.01 rawVol=1160 volSMA=2324 buf=0.059 prices=57.34
+2026-03-09T09:35:00.000-04:00,[KLB] 9:35 ▼ RNG range break vol=18.2x
+2026-03-09T09:35:00.000-04:00,[KLB] 9:35 ▼ BRK PM L vol=18.2x pos=v78 vwap=below ema=bear rs=-0.7% adx=26 body=64% ramp=43.9x rangeATR=6 ⚡ O56.95 H57.06 L56.28 C56.45 ATR=1.19 SL=56.55/56.57 rawVol=449865 volSMA=24672 buf=0.059 prices=56.89
+2026-03-09T09:35:00.000-04:00,[KLB] 9:35 ▼ ~ ~ VWAP + ~ Today O + ~ PD Cls vol=18.2x pos=v78 vwap=below ema=bear rs=-0.7% adx=26 body=64% ramp=43.9x rangeATR=6 ⚡ O56.95 H57.06 L56.28 C56.45 ATR=1.19 SL=56.55/56.57 rawVol=449865 volSMA=24672 buf=0.059 prices=
+2026-03-09T09:35:00.000-04:00,[KLB] CONF 9:35 ▼ BRK → ✓ (auto-R1: EMA)
+2026-03-09T09:40:00.000-04:00,[KLB] 5m CHECK 9:40 ▼ pnl=-0.14 SPY~ → BAIL
+2026-03-09T15:50:00.000-04:00,[KLB] 15:50 ▼ BRK Yest L vol=1.6x pos=v81 vwap=below ema=bear rs=-3.1% adx=23 body=72% ramp=1.3x rangeATR=1 O56.22 H56.23 L56.07 C56.1 ATR=1.19 SL=56.22/56.28 rawVol=333641 volSMA=209297 buf=0.059 prices=56.17
+2026-03-09T15:50:00.000-04:00,[KLB] CONF 15:50 ▼ BRK → ✓ (auto-R1: EMA)
+2026-03-09T15:55:00.000-04:00,[KLB] 5m CHECK 15:55 ▼ pnl=-0.01 SPY✗ → BAIL
