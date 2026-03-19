@@ -26,3 +26,4 @@ a60913f	1797.5	811.1	4953	2242	discard	add Today Open+PD Close to BRK_BEAR (no-o
 00391bf	—	—	—	—	1193.3	2104.3	23276	4665	keep	Phase AT5: FRESHNESS_MAX_TESTS 3 → 0 (disable gate — AQ2 0→2=+1.7, confirm gate still adds value at 2104.3 composition)
 cc064dd	—	—	—	—	1194.2	2102.8	23276	4665	discard	Phase AZ4: add Week Open to BRK_BEAR_LEVELS (weekly open breakdown)
 4beb201	—	—	—	—	1193.3	2104.3	23276	4665	keep	Phase AZ5: remove ORB Low duplicate from BRK_BEAR_LEVELS
+dd46d85	—	—	—	—	1070.6	1792.1	23399	4685	discard	Phase BB5: VWAP_RECLAIM_ENABLED True (test VRC at new RS/SPY baseline)
