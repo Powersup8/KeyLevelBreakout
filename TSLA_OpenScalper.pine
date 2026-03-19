@@ -1,11 +1,11 @@
 // © TSLA Open Scalper
-// 0DTE/1DTE opening trade decision system (v1.3)
-// v1.3: remove fallback SL (ORB low only), hold=3 default, PM vol kill=7000, dual exit labels
+// 0DTE/1DTE opening trade decision system (v1.3a)
+// v1.3a: vol kill 7000→3000, runner label only if conf>=4 (lime=5, teal=4), SL line from 9:35
 // v1.2c: fix SL self-trigger on ORB freeze bar, fakeout = bar2 must break bar1 low
 // v1.2: 2m accel, 15s/30s sub-bars, ORB-based SL, min ORB width
 // Designed for TSLA on 1-min chart with Extended Hours ON
 //@version=6
-indicator("TSLA Open Scalper v1.3", overlay=true, max_labels_count=50, max_lines_count=20)
+indicator("TSLA Open Scalper v1.3a", overlay=true, max_labels_count=50, max_lines_count=20)
 
 // ─── Inputs ────────────────────────────────────────────────
 i_vixSymbol    = input.string("CBOE:VIX", "VIX Symbol", tooltip="VIX data provider. Try TVC:VIX if CBOE:VIX fails.", group="Data")
@@ -14,7 +14,7 @@ i_runnerBars   = input.int(20, "Runner Bars (1-2DTE)", minval=5, maxval=120, too
 i_slFallback   = input.float(0, "Fallback SL ($)", minval=0, step=0.25, tooltip="SL before ORB freezes (9:30-9:34). Set 0 to disable. Research: removing fallback SL triples total PnL ($96 vs $32), Sharpe 2.48 vs 1.21.", group="Trade")
 i_minOrbWidth  = input.float(1.0, "Min ORB Width ($)", minval=0.25, step=0.25, tooltip="Skip breakout if ORB range < this (noise filter). Research: P25=$3.70, too narrow = false breakouts.", group="Trade")
 i_dipRecovery  = input.float(15.0, "Dip Entry Recovery (%)", minval=5.0, maxval=50.0, step=5.0, tooltip="On shakeout bars: enter at bar low + X% of bar range (captures turning point)", group="Trade")
-i_pmVolMinKill = input.float(7000, "PM Vol Min Kill", minval=0, step=1000, tooltip="Hard kill if PM volume (9:25-9:29) < this. Set 0 to disable. TV vol ~8x lower than IB: 7000 TV ≈ 53k IB (Q1 kill).", group="Trade")
+i_pmVolMinKill = input.float(3000, "PM Vol Min Kill", minval=0, step=1000, tooltip="Hard kill if PM volume (9:25-9:29) < this. Set 0 to disable. Research: 3000 catches dead days (Sharpe 3.20), 7000 killed 20 winners.", group="Trade")
 i_showTable    = input.bool(true, "Show Info Table", group="Visuals")
 i_showBG       = input.bool(true, "Show Background Colors", group="Visuals")
 i_debugLog     = input.bool(false, "Log Signals (Pine Logs)", group="Debug")
@@ -42,6 +42,10 @@ fmtTime(int t) =>
 logMsg(string msg) =>
     if i_debugLog and barstate.isconfirmed
         log.info("[SCALP] " + syminfo.ticker + " " + fmtTime(time) + " " + msg)
+
+// ─── Label Spacing ───────────────────────────────────────────
+// TSLA ~$400: use fixed offset to prevent label overlap
+float labelOff = 1.5  // $1.50 vertical offset between stacked labels
 
 // ─── Timezone & Session Detection ──────────────────────────
 TZ = "America/New_York"
@@ -257,8 +261,8 @@ if state == 1 and isPremarket
         // Gap trap
         if gapDangerFlat
             hard_kill := true
-        // Low PM volume (v1.2: new hard kill)
-        if pm_vol_5m < i_pmVolMinKill and pm_vol_5m > 0
+        // Low PM volume — skip kill if conf>=4 (high-confidence days trade regardless)
+        if pm_vol_5m < i_pmVolMinKill and pm_vol_5m > 0 and confidence < 4
             hard_kill := true
 
         // ── Tier mapping ──
@@ -427,15 +431,15 @@ if is0934 and (state == 3 or state == 4)
                  color=color.yellow, width=2, style=line.style_dashed)
     linefill.new(orbHighLine, orbLowLine, color=color.new(color.yellow, 90))
 
-    // v1.2c: Switch SL to ORB low — redraw line starting from this bar (not from 9:30)
+    // v1.3a: SL = ORB low, active from 9:35. Line starts at next bar to match activation
     sl_level := orb_low
     if not na(slLine)
         line.delete(slLine)
-    slLine := line.new(bar_index, sl_level, bar_index + 20, sl_level,
+    slLine := line.new(bar_index + 1, sl_level, bar_index + 21, sl_level,
                  color=#FF4444, width=3, style=line.style_solid)
     if not na(slPriceLabel)
         label.delete(slPriceLabel)
-    slPriceLabel := label.new(bar_index + 20, sl_level, str.format("SL {0,number,#.##} (ORB)", sl_level),
+    slPriceLabel := label.new(bar_index + 21, sl_level, str.format("SL {0,number,#.##} (ORB)", sl_level),
          style=label.style_label_left, color=#FF4444, textcolor=color.white, size=size.small)
 
     // v1.2: Check min ORB width
@@ -451,7 +455,7 @@ if is0934 and (state == 3 or state == 4)
     if orb_narrow
         fiveMinTxt += " | ORB narrow"
     color fiveMinCol = is_hold ? color.green : color.orange
-    label.new(bar_index, high, fiveMinTxt,
+    label.new(bar_index, high + labelOff, fiveMinTxt,
          style=label.style_label_down, color=fiveMinCol, textcolor=color.white, size=size.small)
 
     logMsg(str.format("ORB FROZEN H={0} L={1} width={2} 5m={3} close={4} orig_open={5} sl={6} narrow={7}",
@@ -506,35 +510,35 @@ if state == 5 and hm >= 935 and hm <= 955 and not orb_narrow
              str.tostring(open_930, "#.##"), str.tostring(bear_pnl, "#.##")))
 
 // ─── STATE 6: BREAKOUT — dual exit timer ─────────────────────
-// v1.3: Two exit signals — quick take-profit (0DTE) + runner exit (1-2DTE)
-// Primary: hold=3 bars (93% bull win, Sharpe 2.96)
-// Secondary: hold=20 bars (75% bull win, $4.44 avg — for identified runners)
+// v1.3a: Primary exit always. Runner label only if conf>=4 (80% runner rate at conf=5, 50% at conf=4)
+// conf<=3: runner is a coin flip (+$0.11 avg delta) → no label, less chart clutter
 if state == 6 and orb_bull and not na(breakout_bar)
     int bars_since = bar_index - breakout_bar
 
-    // Primary exit: quick take-profit
+    // Primary exit: quick take-profit (always fires)
     if bars_since == i_holdBars
         float pnl_quick = close - open_930
-        label.new(bar_index, high, str.format("EXIT {0}b — ${1,number,#.##}", i_holdBars, pnl_quick),
+        label.new(bar_index, high + labelOff, str.format("EXIT {0}b — ${1,number,#.##}", i_holdBars, pnl_quick),
              style=label.style_label_down, color=color.green, textcolor=color.white, size=size.large)
         alert(str.format("TSLA EXIT — {0} bars after bull breakout — TAKE PROFIT ${1,number,#.##}", i_holdBars, pnl_quick), alert.freq_once_per_bar)
         logMsg(str.format("EXIT TAKE_PROFIT close={0} entry={1} pnl={2} bars_held={3}",
              str.tostring(close, "#.##"), str.tostring(open_930, "#.##"),
              str.tostring(pnl_quick, "#.##"), bars_since))
 
-    // Secondary exit: runner target (only if different from primary)
-    if bars_since == i_runnerBars and i_runnerBars != i_holdBars
+    // Runner exit: only if conf>=4 (high-confidence days run further)
+    if bars_since == i_runnerBars and i_runnerBars != i_holdBars and confidence >= 4
         float pnl_runner = close - open_930
-        label.new(bar_index, high, str.format("RUNNER {0}b — ${1,number,#.##}", i_runnerBars, pnl_runner),
-             style=label.style_label_down, color=color.teal, textcolor=color.white, size=size.normal)
+        color runnerCol = confidence >= 5 ? color.lime : color.teal
+        label.new(bar_index, high + labelOff, str.format("RUNNER {0}b — ${1,number,#.##}", i_runnerBars, pnl_runner),
+             style=label.style_label_down, color=runnerCol, textcolor=color.white, size=size.normal)
         alert(str.format("TSLA RUNNER EXIT — {0} bars — ${1,number,#.##}", i_runnerBars, pnl_runner), alert.freq_once_per_bar)
-        logMsg(str.format("EXIT RUNNER close={0} entry={1} pnl={2} bars_held={3}",
+        logMsg(str.format("EXIT RUNNER close={0} entry={1} pnl={2} bars_held={3} conf={4}",
              str.tostring(close, "#.##"), str.tostring(open_930, "#.##"),
-             str.tostring(pnl_runner, "#.##"), bars_since))
-        state := 7
+             str.tostring(pnl_runner, "#.##"), bars_since, confidence))
 
-    // Done after runner exit (or after primary if no runner configured)
-    if bars_since == math.max(i_holdBars, i_runnerBars)
+    // Done after runner bar if conf>=4, or after primary if conf<4
+    int exit_bar = confidence >= 4 ? math.max(i_holdBars, i_runnerBars) : i_holdBars
+    if bars_since == exit_bar
         state := 7
 
 // Timeout: no breakout by 9:55 → done
@@ -578,11 +582,11 @@ bgcolor(bgColor)
 
 // ─── Corner Table ──────────────────────────────────────────
 var table infoTable = table.new(position.top_right, 2, 5,
-     bgcolor=color.new(color.black, 80), border_width=1, border_color=color.gray)
+     bgcolor=color.new(color.black, 20), border_width=1, border_color=color.gray)
 
 if i_showTable and isRTH
     table.cell(infoTable, 0, 0, "TSLA OPEN SCALP", text_color=color.white, text_size=size.small)
-    table.cell(infoTable, 1, 0, "v1.3", text_color=color.gray, text_size=size.tiny)
+    table.cell(infoTable, 1, 0, "v1.3a", text_color=color.gray, text_size=size.tiny)
 
     string stateStr = state == 0 ? "SLEEP" : state == 1 ? "PRE-SCAN" :
                       state == 2 ? "OPENING" : state == 3 ? "FAKEOUT" :
