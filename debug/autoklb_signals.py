@@ -66,6 +66,7 @@ BRK_BULL_LEVELS = {
     "PD Last Hr High",          # v3.4: added
     "Today Open",               # loop: Today Open BRK
     "PD High",                  # loop: PD High BRK                               # loop T2: removed PD Close (weak gap fill reclaim)
+    "Yest High",                # loop AY2: re-add prior session high BRK
     # loop AD3: removed Yest High from BRK_BULL (prior day high BRK — first-move test)
     "Week High",               # loop D5: Week High bull BRK
     "Month Open",               # loop M1: bull BRK above Month Open
