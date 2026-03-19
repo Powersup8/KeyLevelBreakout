@@ -26,7 +26,7 @@ LEVEL_PROXIMITY_ATR = 0.65    # loop AM1: test tighter BRK proximity (0.70→0.6
 FRESHNESS_MAX_TESTS = 0        # loop AT5: disable FRESHNESS gate (3→0 — AQ2 had 0→2=+1.7; confirm gate still adds value at current cleaner composition)
 ATR_CONSUMED_MAX = 999.0       # loop Q5: fully disable ATR consumed filter
 SPY_RANGE_EXHAUSTION = 0.0     # loop R1: fully disable SPY range exhaustion
-REV_PROXIMITY_TOL = 0.45       # loop AX3: even tighter bear REV proximity
+REV_PROXIMITY_TOL = 0.40       # loop AY1: cascade tighter bear REV
 BIG_CANDLE_ATR = 0.15          # loop E4: retry big-candle tighter at new baseline
 
 # ── Quality override thresholds ──
