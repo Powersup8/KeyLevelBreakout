@@ -34,10 +34,10 @@ QUIET_COIL_VOL_RAMP = 0.0     # loop D7: disable quiet coil vol ramp
 QUIET_COIL_RANGE = 7.0        # loop F6: aggressive quiet coil range
 MIDDAY_EMA_CHANGE = 0.0       # loop B5: disable midday flat gate entirely
 BROAD_COIL_RANGE = 7.0        # loop F7: aggressive broad coil range
-BROAD_COIL_SPY_MIN = 0.0      # loop Y4: fully open broad coil (no SPY req)
-VWAP_RECLAIM_ENABLED = True   # loop AZ2: re-enable VRC at clean routing
+BROAD_COIL_SPY_MIN = 999.0    # loop BA-fix: neutralize broad_coil (real spy data now provided)
+VWAP_RECLAIM_ENABLED = False  # loop BA-fix: disable VRC until loop tests (real VWAP data now provided)
 VWAP_RECLAIM_MIN_BARS = 0     # loop Q3: no bar gap required for VWAP reclaim
-RS_LEADERSHIP_MIN = 0.0       # loop Q4: fully disable RS leadership gate
+RS_LEADERSHIP_MIN = 0.02      # loop BA2: RS leadership at 2% outperformance threshold
 RS_LEADERSHIP_VWAP_SKIP = True   # loop R2: RS leaders bypass VWAP too (cascade Q4)
 
 # ══════════════════════════════════════════════════════════════════════════════

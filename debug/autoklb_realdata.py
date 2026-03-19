@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-AutoKLB Real-Data Harness — v3.8
+AutoKLB Real-Data Harness — v3.9
 ==================================
-DO NOT MODIFY — this is the evaluation harness.
+v3.9: Added VWAP position, SPY relative strength, SPY VWAP features.
 
 Signal detection : native 5m bars (bars/)  →  Jan 2024 →
 MFE/MAE tier    :
@@ -152,11 +152,16 @@ def compute_indicators(df_5m):
                    df.groupby("_date")["volume"].cumsum().replace(0, np.nan))
     df.drop(columns=["_date", "_tp", "_tpv"], inplace=True)
 
+    # VWAP position booleans (before lagging/dropping)
+    df["close_above_vwap"] = df["close"] > df["vwap"]
+
     # Lag all by 1 (Pine [1] = confirmed prior bar)
     for col in ["ema20", "ema50", "adx", "vwap", "vol_sma20"]:
         df[f"{col}_p"] = df[col].shift(1)
     df["close_p"]  = df["close"].shift(1)
     df["close_p2"] = df["close"].shift(2)
+    df["close_above_vwap_p"]  = df["close_above_vwap"].shift(1)
+    df["close_above_vwap_p2"] = df["close_above_vwap"].shift(2)
     df.drop(columns=["ema20", "ema50", "adx", "vwap", "vol_sma20"], inplace=True)
     return df
 
@@ -219,7 +224,8 @@ def _level_interaction(close, prev_close, bar_high, bar_low, level_price):
     return "near"
 
 
-def build_row(symbol, ts, bar, daily_atr, level_type, dist_atr, interaction):
+def build_row(symbol, ts, bar, daily_atr, level_type, dist_atr, interaction,
+              spy_data=None, spy_atr=0.0):
     bar_range  = bar["high"] - bar["low"]
     direction  = "bull" if bar["close"] >= bar["open"] else "bear"
     body_pct   = (abs(bar["close"] - bar["open"]) / bar_range * 100
@@ -233,6 +239,28 @@ def build_row(symbol, ts, bar, daily_atr, level_type, dist_atr, interaction):
     vol_sma    = bar["vol_sma20_p"]
     vol_ratio  = bar["volume"] / vol_sma if (not pd.isna(vol_sma) and vol_sma > 0) else 0.0
     trig_range = bar_range / daily_atr if daily_atr > 0 else np.nan
+
+    # VWAP position features (for VRC signals)
+    close_above_vwap      = bool(bar.get("close_above_vwap", False))
+    prev_close_above_vwap = bool(bar.get("close_above_vwap_p", False))
+    prev2_close_above     = bool(bar.get("close_above_vwap_p2", False))
+
+    # SPY features
+    spy_above_vwap      = False
+    spy_prev_above_vwap = False
+    rs_val              = 0.0
+    spy_mag             = np.nan
+
+    if spy_data is not None and ts in spy_data:
+        sb = spy_data[ts]
+        spy_above_vwap      = bool(sb["close_above_vwap"])
+        spy_prev_above_vwap = bool(sb["close_above_vwap_p"])
+        sym_ret = (bar["close"] - bar["open"]) / bar["open"] if bar["open"] != 0 else 0
+        spy_ret = (sb["close"] - sb["open"]) / sb["open"] if sb["open"] != 0 else 0
+        rs_val  = sym_ret - spy_ret
+        if spy_atr > 0:
+            spy_mag = (sb["high"] - sb["low"]) / spy_atr
+
     return {
         "nearest_level_type":      level_type,
         "nearest_level_dist_atr":  dist_atr,
@@ -247,7 +275,13 @@ def build_row(symbol, ts, bar, daily_atr, level_type, dist_atr, interaction):
         "level_interaction":       interaction,
         "pre_vol_avg_ratio":       vol_ratio,
         "trig_range_atr":          trig_range,
-        "spy_magnitude_atr":       np.nan,
+        "close_above_vwap":        close_above_vwap,
+        "prev_close_above_vwap":   prev_close_above_vwap,
+        "prev2_close_above_vwap":  prev2_close_above,
+        "spy_above_vwap":          spy_above_vwap,
+        "spy_prev_above_vwap":     spy_prev_above_vwap,
+        "rs_vs_spy":               rs_val,
+        "spy_magnitude_atr":       spy_mag,
     }
 
 
@@ -255,7 +289,8 @@ def build_row(symbol, ts, bar, daily_atr, level_type, dist_atr, interaction):
 # SIGNAL EMISSION
 # ══════════════════════════════════════════════════════════════════════════════
 
-def emit_signals(symbol, df_5m_ind, levels_sym, daily_atr_map):
+def emit_signals(symbol, df_5m_ind, levels_sym, daily_atr_map,
+                 spy_data=None, spy_atr_map=None):
     import autoklb_signals as sig
     importlib.reload(sig)
 
@@ -283,6 +318,7 @@ def emit_signals(symbol, df_5m_ind, levels_sym, daily_atr_map):
             continue
 
         prox_atr = sig.LEVEL_PROXIMITY_ATR * 1.5
+        spy_atr  = spy_atr_map.get(pd.Timestamp(bar_date), 0.0) if spy_atr_map else 0.0
 
         for lvl in levels_today:
             level_price = lvl["level_price"]
@@ -296,7 +332,8 @@ def emit_signals(symbol, df_5m_ind, levels_sym, daily_atr_map):
             interaction = _level_interaction(
                 bar["close"], prev_close, bar["high"], bar["low"], level_price)
             row    = build_row(symbol, ts, bar, daily_atr,
-                               lvl["level_name"], dist_atr, interaction)
+                               lvl["level_name"], dist_atr, interaction,
+                               spy_data=spy_data, spy_atr=spy_atr)
             result = sig.classify_signal(row)  # dict supports [] and .get()
             if result["would_fire"] and not result["is_dimmed"]:
                 cooldown[cd_key] = i
@@ -345,6 +382,15 @@ def main():
     levels_db = pd.read_parquet(LEVELS_PATH)
     levels_db["date"] = pd.to_datetime(levels_db["date"])
 
+    # Load SPY data once for relative strength and SPY VWAP features
+    spy_5m = load_5m("SPY")
+    spy_ind = compute_indicators(spy_5m) if spy_5m is not None else None
+    spy_atr_map = load_daily_atr("SPY")
+    spy_data = None
+    if spy_ind is not None:
+        spy_data = spy_ind[["close", "open", "high", "low",
+                            "close_above_vwap", "close_above_vwap_p"]].to_dict("index")
+
     all_signals = []
 
     for symbol in SYMBOLS:
@@ -360,7 +406,8 @@ def main():
         df_1m    = load_1m(symbol)
         df_15sec = load_15sec(symbol)
 
-        fired = emit_signals(symbol, df_5m_ind, levels_sym, daily_atr_map)
+        fired = emit_signals(symbol, df_5m_ind, levels_sym, daily_atr_map,
+                             spy_data=spy_data, spy_atr_map=spy_atr_map)
 
         for sig in fired:
             mfe, mae = get_forward_pnl(
