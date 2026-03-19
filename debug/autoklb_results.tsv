@@ -28,3 +28,4 @@ cc064dd	—	—	—	—	1194.2	2102.8	23276	4665	discard	Phase AZ4: add Week Ope
 4beb201	—	—	—	—	1193.3	2104.3	23276	4665	keep	Phase AZ5: remove ORB Low duplicate from BRK_BEAR_LEVELS
 dd46d85	—	—	—	—	1070.6	1792.1	23399	4685	discard	Phase BB5: VWAP_RECLAIM_ENABLED True (test VRC at new RS/SPY baseline)
 1cc1b78	—	—	—	—	1191.1	2107.6	23276	4665	discard	Phase BC5: RS_LEADERSHIP_MIN 0.01 → 0.015 (fine-tune between 0.01 and 0.02)
+5b7e863	—	—	—	—	1212.6	2093.1	23328	4675	discard	Phase BD7: LEVEL_PROXIMITY_ATR 0.65 → 0.70 (retry wider at RS baseline)
