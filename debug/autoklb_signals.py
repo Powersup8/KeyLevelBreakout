@@ -57,6 +57,7 @@ BRK_BEAR_LEVELS = {
     "ORB Low",                                     # loop K3: bear BRK below ORB Low
     "PD High",                                      # loop V8: bear BRK below PD High
     "PM High",                                      # loop V9: bear BRK below PM High
+    "PD Close",                                    # loop AX5: gap fill break below prior close
     # loop AF3: removed Month High from BRK_BEAR (C1: AD4/AA5 cascade — monthly high pattern)
     # loop V2: removed Month Low bear BRK (late panic break)
 }
