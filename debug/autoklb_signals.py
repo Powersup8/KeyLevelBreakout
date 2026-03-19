@@ -54,7 +54,7 @@ BRK_BEAR_LEVELS = {
     "VWAP",                                       # loop G3: VWAP bear BRK
     "Yest High",                                  # loop J5: bear BRK below Yest High                               # loop T4: removed Yest Low bear BRK (late continuation)
     # loop AO4: removed Yest Low from BRK_BEAR (AI1 neutral re-add — test cleanup at new 2102.6 baseline)
-    "ORB Low",                                     # loop K3: bear BRK below ORB Low
+    # loop AZ5: removed ORB Low duplicate from BRK_BEAR (already listed above)
     "PD High",                                      # loop V8: bear BRK below PD High
     "PM High",                                      # loop V9: bear BRK below PM High
     "PD Close",                                    # loop AX5: gap fill break below prior close
