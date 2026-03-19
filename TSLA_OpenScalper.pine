@@ -490,7 +490,7 @@ if state == 5 and hm >= 935 and hm <= 955 and not orb_narrow
         state := 6
         string brkLabel = shakeout_detected ? "ORB BULL — SHAKEOUT RECOVERY" : "ORB BULL — ADD SIZE"
         color brkColor = shakeout_detected ? color.teal : color.green
-        label.new(bar_index, low, brkLabel,
+        label.new(bar_index, low - labelOff, brkLabel,
              style=label.style_label_up, color=brkColor, textcolor=color.white, size=size.large)
         alert(str.format("TSLA ORB BULL BREAK at {0,number,#.##} — ADD SIZE", close), alert.freq_once_per_bar)
         logMsg(str.format("ORB BULL BREAK close={0} > orbH={1} shakeout={2}",
@@ -501,7 +501,7 @@ if state == 5 and hm >= 935 and hm <= 955 and not orb_narrow
         orb_bear := true
         breakout_bar := bar_index
         state := 6
-        label.new(bar_index, high, "ORB BEAR — EXIT",
+        label.new(bar_index, high + labelOff, "ORB BEAR — EXIT",
              style=label.style_label_down, color=color.red, textcolor=color.white, size=size.large)
         alert(str.format("TSLA ORB BEAR BREAK at {0,number,#.##} — EXIT", close), alert.freq_once_per_bar)
         float bear_pnl = close - open_930
@@ -584,7 +584,7 @@ bgcolor(bgColor)
 var table infoTable = table.new(position.top_right, 2, 5,
      bgcolor=color.new(color.black, 20), border_width=1, border_color=color.gray)
 
-if i_showTable and isRTH
+if i_showTable and (isRTH or isActiveWindow)
     table.cell(infoTable, 0, 0, "TSLA OPEN SCALP", text_color=color.white, text_size=size.small)
     table.cell(infoTable, 1, 0, "v1.3a", text_color=color.gray, text_size=size.tiny)
 
