@@ -1,7 +1,8 @@
 // This Pine Script® code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
 // © mabvvy61
 // TSLA Open Scalper
-// 0DTE/1DTE opening trade decision system (v2.1)
+// 0DTE/1DTE opening trade decision system (v2.2)
+// v2.2: DRIFT_UP/DN detection+entry at bar1, FAKEDN extended hold (19m) at bar2
 // v2.1: CRASH/SURGE direction override + immediate entry, SURGE pat_max_hold=20
 // v2.0a: skip on agree=0/2 (3/20 fix), ORB label spacing
 // v2.0: VWAP+EMA20 agreement sizing, 1m-bar trail exit, smart entry (confirm/bounce)
@@ -12,7 +13,7 @@
 // v1.2: 2m accel, 15s/30s sub-bars, ORB-based SL, min ORB width
 // Designed for TSLA on 1-min chart with Extended Hours ON
 //@version=6
-indicator("TSLA Open Scalper v2.1", overlay=true, max_labels_count=50, max_lines_count=20)
+indicator("TSLA Open Scalper v2.2", overlay=true, max_labels_count=50, max_lines_count=20)
 
 // ─── Inputs ────────────────────────────────────────────────
 i_vixSymbol    = input.string("CBOE:VIX", "VIX Symbol", tooltip="VIX data provider. Try TVC:VIX if CBOE:VIX fails.", group="Data")
@@ -159,6 +160,9 @@ var float dip_extreme    = na   // running low (bull) or high (bear) for bounce 
 // v2.1: Pattern-based direction overrides
 var string opening_pattern = "UNKNOWN"
 var int    pat_max_hold    = 7   // per-pattern max hold (default matches i_maxHold)
+// v2.2: bar0/bar1 direction for incremental pattern classification
+var string bar0_dir        = ""  // "G" or "R" — set at bar0 close
+var string bar1_dir        = ""  // "G" or "R" — set at bar1 close
 
 // ─── Daily Reset ───────────────────────────────────────────
 bool newRTH = isRTH and not isRTH[1]
@@ -220,6 +224,8 @@ if newSession or (newRTH and not pmSeen)
     dip_extreme       := na
     opening_pattern   := "UNKNOWN"
     pat_max_hold      := 7
+    bar0_dir          := ""
+    bar1_dir          := ""
 
 // ─── Prev Day Close ───────────────────────────────────────
 if isRTH
@@ -397,8 +403,9 @@ if is0930 and state == 1
     orb_high := high
     orb_low  := low
 
-    // v2.1: Classify bar0 pattern (CRASH/SURGE identifiable at bar0 close)
+    // v2.1/v2.2: Classify bar0 pattern (CRASH/SURGE identifiable at bar0 close)
     float bar0_range = high - low
+    bar0_dir := close >= open ? "G" : "R"  // v2.2: store for bar1/bar2 pattern classification
     if close < open and bar0_range > 2.50
         opening_pattern := "CRASH"
         is_call_tier    := false  // override binary conf: CRASH → always PUT
@@ -524,6 +531,32 @@ if is0930 and state == 2
          fakeout_fired ? "Y" : "N", shakeout_detected ? "Y" : "N",
          str.tostring(bar1_range, "#.##"), going_right ? "Y" : "N"))
 
+// ─── v2.2: Bar1 Pattern Classification + DRIFT Entry (9:31) ──
+// Store bar1_dir always (needed for FAKEDN detection at 9:32)
+// Detect DRIFT_UP (GG) and DRIFT_DN (RR) — both bars same direction, no large range
+if h == 9 and m == 31 and state == 3 and not trade_active
+    bar1_dir := close >= open ? "G" : "R"
+    if opening_pattern == "UNKNOWN"
+        bool is_drift_up = bar0_dir == "G" and bar1_dir == "G"
+        bool is_drift_dn = bar0_dir == "R" and bar1_dir == "R"
+        if is_drift_up or is_drift_dn
+            opening_pattern := is_drift_up ? "DRIFT_UP" : "DRIFT_DN"
+            is_call_tier    := is_drift_up   // DRIFT_UP → CALL, DRIFT_DN → PUT
+            skip_day        := false         // always trade — direction is reliable
+            waiting_confirm := false
+            waiting_bounce  := false
+            trade_entry     := close
+            trade_active    := true
+            entry_bar_idx   := bar_index
+            string driftDir = is_call_tier ? "CALL" : "PUT"
+            label.new(bar_index, is_call_tier ? low : high + labelOff,
+                 str.format("{0} {1} — {2,number,#.##}", opening_pattern, driftDir, close),
+                 style=is_call_tier ? label.style_label_up : label.style_label_down,
+                 color=is_call_tier ? #00BFFF : #FF6600, textcolor=color.white, size=size.large)
+            alert(str.format("TSLA {0} {1} — entered at {2,number,#.##}", opening_pattern, driftDir, close), alert.freq_once_per_bar)
+            logMsg(str.format("DRIFT ENTRY pat={0} dir={1} entry={2}", opening_pattern, driftDir, str.tostring(close, "#.##")))
+            state := 4
+
 // ─── Smart Entry: Bar1 Confirmation (9:31) ─────────────────
 if waiting_confirm and h == 9 and m == 31 and state == 3
     // Check: did bar1 continue in our direction?
@@ -588,6 +621,16 @@ if waiting_bounce and hm == 937 and not trade_active
          style=label.style_label_down, color=color.gray, textcolor=color.white, size=size.small)
     logMsg(str.format("BOUNCE TIMEOUT no entry by 9:37, extreme={0}",
          str.tostring(nz(dip_extreme), "#.##")))
+
+// ─── v2.2: FAKEDN Extended Hold (9:32) ─────────────────────
+// bar0=R, bar1=G, bar2=R → FAKEDN — research: optimal exit at 19m
+// Only updates pat_max_hold if trade is active (entry already happened via binary conf / bounce)
+if h == 9 and m == 32 and trade_active and opening_pattern == "UNKNOWN"
+    string bar2_dir = close >= open ? "G" : "R"
+    if bar0_dir == "R" and bar1_dir == "G" and bar2_dir == "R"
+        opening_pattern := "FAKEDN"
+        pat_max_hold    := 19
+        logMsg("FAKEDN detected at bar2 — extending hold to 19m")
 
 // ─── ORB BUILD (9:31–9:34) ─────────────────────────────────
 // Track the 5-minute opening range high/low (informational in v2.0)
@@ -743,7 +786,7 @@ var table infoTable = table.new(position.top_right, 2, 5,
 
 if i_showTable and (isRTH or isActiveWindow)
     table.cell(infoTable, 0, 0, "TSLA OPEN SCALP", text_color=color.white, text_size=size.small)
-    table.cell(infoTable, 1, 0, "v2.1", text_color=color.gray, text_size=size.tiny)
+    table.cell(infoTable, 1, 0, "v2.2", text_color=color.gray, text_size=size.tiny)
 
     string stateStr = state == 0 ? "SLEEP" : state == 1 ? "PRE-SCAN" :
                       state == 2 ? "OPENING" : state == 3 ? "ENTRY WATCH" :
