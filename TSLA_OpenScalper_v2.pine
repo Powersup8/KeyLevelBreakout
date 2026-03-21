@@ -1,7 +1,8 @@
 // This Pine Script® code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
 // © mabvvy61
 // TSLA Open Scalper
-// 0DTE/1DTE opening trade decision system (v2.2)
+// 0DTE/1DTE opening trade decision system (v2.3)
+// v2.3: INVV/VSHAPE (bar15s_1=G→CALL@1m) + FAKEUP (follow_binary@1m) entry at bar2
 // v2.2: DRIFT_UP/DN detection+entry at bar1, FAKEDN extended hold (19m) at bar2
 // v2.1: CRASH/SURGE direction override + immediate entry, SURGE pat_max_hold=20
 // v2.0a: skip on agree=0/2 (3/20 fix), ORB label spacing
@@ -13,7 +14,7 @@
 // v1.2: 2m accel, 15s/30s sub-bars, ORB-based SL, min ORB width
 // Designed for TSLA on 1-min chart with Extended Hours ON
 //@version=6
-indicator("TSLA Open Scalper v2.2", overlay=true, max_labels_count=50, max_lines_count=20)
+indicator("TSLA Open Scalper v2.3", overlay=true, max_labels_count=50, max_lines_count=20)
 
 // ─── Inputs ────────────────────────────────────────────────
 i_vixSymbol    = input.string("CBOE:VIX", "VIX Symbol", tooltip="VIX data provider. Try TVC:VIX if CBOE:VIX fails.", group="Data")
@@ -163,6 +164,8 @@ var int    pat_max_hold    = 7   // per-pattern max hold (default matches i_maxH
 // v2.2: bar0/bar1 direction for incremental pattern classification
 var string bar0_dir        = ""  // "G" or "R" — set at bar0 close
 var string bar1_dir        = ""  // "G" or "R" — set at bar1 close
+// v2.3: 15sec sub-bar direction from bar0 (saved for use at 9:32)
+var string bar15s_1_dir    = ""  // "G" or "R" — direction of 2nd 15sec sub-bar at 9:30
 
 // ─── Daily Reset ───────────────────────────────────────────
 bool newRTH = isRTH and not isRTH[1]
@@ -226,6 +229,7 @@ if newSession or (newRTH and not pmSeen)
     pat_max_hold      := 7
     bar0_dir          := ""
     bar1_dir          := ""
+    bar15s_1_dir      := ""
 
 // ─── Prev Day Close ───────────────────────────────────────
 if isRTH
@@ -406,6 +410,9 @@ if is0930 and state == 1
     // v2.1/v2.2: Classify bar0 pattern (CRASH/SURGE identifiable at bar0 close)
     float bar0_range = high - low
     bar0_dir := close >= open ? "G" : "R"  // v2.2: store for bar1/bar2 pattern classification
+    // v2.3: save 2nd 15sec sub-bar direction from bar0 (compare sub[1] close vs sub[0] close)
+    if array.size(sub15_close) >= 2
+        bar15s_1_dir := array.get(sub15_close, 1) >= array.get(sub15_close, 0) ? "G" : "R"
     if close < open and bar0_range > 2.50
         opening_pattern := "CRASH"
         is_call_tier    := false  // override binary conf: CRASH → always PUT
@@ -632,6 +639,68 @@ if h == 9 and m == 32 and trade_active and opening_pattern == "UNKNOWN"
         pat_max_hold    := 19
         logMsg("FAKEDN detected at bar2 — extending hold to 19m")
 
+// ─── v2.3: INVV/VSHAPE/FAKEUP Entry (9:32) ──────────────────
+// Reversal patterns confirmed at bar2 close; bar15s_1 sub-bar filters INVV + VSHAPE
+// All exit at 1m (pat_max_hold=1) — fast scalp, momentum fades quickly
+if h == 9 and m == 32 and not trade_active and opening_pattern == "UNKNOWN"
+    string bar2_dir = close >= open ? "G" : "R"
+    bool is_invv   = bar0_dir == "G" and bar1_dir == "R" and bar2_dir == "R"  // GRR
+    bool is_vshape = bar0_dir == "R" and bar1_dir == "G" and bar2_dir == "G"  // RGG
+    bool is_fakeup = bar0_dir == "G" and bar1_dir == "R" and bar2_dir == "G"  // GRG
+
+    if is_invv
+        opening_pattern := "INVV"
+        if bar15s_1_dir == "G"  // early 15sec recovery → enter CALL
+            is_call_tier    := true
+            pat_max_hold    := 1
+            skip_day        := false
+            trade_entry     := close
+            trade_active    := true
+            entry_bar_idx   := bar_index
+            label.new(bar_index, low, str.format("INVV CALL — {0,number,#.##}", close),
+                 style=label.style_label_up, color=#00BFFF, textcolor=color.white, size=size.large)
+            alert(str.format("TSLA INVV CALL — entered at {0,number,#.##}", close), alert.freq_once_per_bar)
+            logMsg(str.format("INVV bar15s_1=G → CALL entry={0}", str.tostring(close, "#.##")))
+            state := 4
+        else
+            logMsg("INVV bar15s_1=R — skip")
+            state := 5
+
+    else if is_vshape
+        opening_pattern := "VSHAPE"
+        if bar15s_1_dir == "G"  // V-recovery confirmed → enter CALL
+            is_call_tier    := true
+            pat_max_hold    := 1
+            skip_day        := false
+            trade_entry     := close
+            trade_active    := true
+            entry_bar_idx   := bar_index
+            label.new(bar_index, low, str.format("VSHAPE CALL — {0,number,#.##}", close),
+                 style=label.style_label_up, color=#00BFFF, textcolor=color.white, size=size.large)
+            alert(str.format("TSLA VSHAPE CALL — entered at {0,number,#.##}", close), alert.freq_once_per_bar)
+            logMsg(str.format("VSHAPE bar15s_1=G → CALL entry={0}", str.tostring(close, "#.##")))
+            state := 4
+        else
+            logMsg("VSHAPE bar15s_1=R — skip")
+            state := 5
+
+    else if is_fakeup
+        opening_pattern := "FAKEUP"
+        // follow_binary — trust PM confidence direction; exit fast
+        pat_max_hold    := 1
+        skip_day        := false
+        trade_entry     := close
+        trade_active    := true
+        entry_bar_idx   := bar_index
+        string fkDir    = is_call_tier ? "CALL" : "PUT"
+        label.new(bar_index, is_call_tier ? low : high + labelOff,
+             str.format("FAKEUP {0} — {1,number,#.##}", fkDir, close),
+             style=is_call_tier ? label.style_label_up : label.style_label_down,
+             color=is_call_tier ? #00BFFF : #FF6600, textcolor=color.white, size=size.large)
+        alert(str.format("TSLA FAKEUP {0} — entered at {1,number,#.##}", fkDir, close), alert.freq_once_per_bar)
+        logMsg(str.format("FAKEUP {0} entry={1}", fkDir, str.tostring(close, "#.##")))
+        state := 4
+
 // ─── ORB BUILD (9:31–9:34) ─────────────────────────────────
 // Track the 5-minute opening range high/low (informational in v2.0)
 if isORBBuild or is0930
@@ -786,7 +855,7 @@ var table infoTable = table.new(position.top_right, 2, 5,
 
 if i_showTable and (isRTH or isActiveWindow)
     table.cell(infoTable, 0, 0, "TSLA OPEN SCALP", text_color=color.white, text_size=size.small)
-    table.cell(infoTable, 1, 0, "v2.2", text_color=color.gray, text_size=size.tiny)
+    table.cell(infoTable, 1, 0, "v2.3", text_color=color.gray, text_size=size.tiny)
 
     string stateStr = state == 0 ? "SLEEP" : state == 1 ? "PRE-SCAN" :
                       state == 2 ? "OPENING" : state == 3 ? "ENTRY WATCH" :
