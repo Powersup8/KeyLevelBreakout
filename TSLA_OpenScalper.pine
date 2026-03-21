@@ -1,11 +1,14 @@
 // © TSLA Open Scalper
-// 0DTE/1DTE opening trade decision system (v1.3b)
+// 0DTE/1DTE opening trade decision system (v1.4b)
+// v1.4b: S/M/L sizing labels with physical label size, gap<-5 kill (+$25), PUT rescue (+$14)
+// v1.4: dual direction — CALLS on MED/HIGH, PUTS on LOW/NO-GO. Suppress SL/BEAR labels on put days.
+//       PUT zone: enter at open, bar1 RED = add, exit by 9:32. PT $2 / SL $1.50.
 // v1.3b: vol kill 7000→3000, runner label only if conf>=4 (lime=5, teal=4), SL line from 9:35
 // v1.2c: fix SL self-trigger on ORB freeze bar, fakeout = bar2 must break bar1 low
 // v1.2: 2m accel, 15s/30s sub-bars, ORB-based SL, min ORB width
 // Designed for TSLA on 1-min chart with Extended Hours ON
 //@version=6
-indicator("TSLA Open Scalper v1.3b", overlay=true, max_labels_count=50, max_lines_count=20)
+indicator("TSLA Open Scalper v1.4b", overlay=true, max_labels_count=50, max_lines_count=20)
 
 // ─── Inputs ────────────────────────────────────────────────
 i_vixSymbol    = input.string("CBOE:VIX", "VIX Symbol", tooltip="VIX data provider. Try TVC:VIX if CBOE:VIX fails.", group="Data")
@@ -131,6 +134,10 @@ var line  orbHighLine    = na
 var line  orbLowLine     = na
 var label slPriceLabel   = na    // v1.2c: track SL price label for updates
 
+// v1.4: PUT side tracking
+var bool  is_put_day     = false  // conf<=2 → PUT day
+var bool  put_bar1_red   = false  // bar1 close < open on put day (82% win add signal)
+
 // ─── Daily Reset ───────────────────────────────────────────
 bool newRTH = isRTH and not isRTH[1]
 if newSession or (newRTH and not pmSeen)
@@ -174,6 +181,8 @@ if newSession or (newRTH and not pmSeen)
     orbHighLine       := na
     orbLowLine        := na
     slPriceLabel      := na
+    is_put_day        := false
+    put_bar1_red      := false
 
 // ─── Prev Day Close ───────────────────────────────────────
 if isRTH
@@ -261,16 +270,41 @@ if state == 1 and isPremarket
         // Gap trap
         if gapDangerFlat
             hard_kill := true
+        // v1.4b: Gap-down override — large gap-downs kill calls even when PM looks bullish
+        // Backtested: gap < -5 flips 12 CALL days, 67% correct, +$25.01 total improvement
+        if est_gap < -5
+            hard_kill := true
         // Low PM volume — skip kill if conf>=4 (high-confidence days trade regardless)
         if pm_vol_5m < i_pmVolMinKill and pm_vol_5m > 0 and confidence < 4
             hard_kill := true
 
+        // v1.4b: PUT rescue — strong bullish PM overrides VIX/P9 kills
+        // Backtested: 2 days rescued, +$14.04. Only fires when PM is unambiguously bullish.
+        if hard_kill and not na(pm_accel) and pm_accel > 1.0 and not na(pm_position) and pm_position > 0.7 and confidence >= 3
+            hard_kill := false
+
         // ── Tier mapping ──
+        bool is_call_tier = not hard_kill and confidence >= 3
         tier := hard_kill ? "NO-GO" : confidence >= 5 ? "HIGH" : confidence >= 3 ? "MED" : confidence >= 2 ? "LOW" : "NO-GO"
 
-        color tierColor = tier == "HIGH" ? color.green : tier == "MED" ? color.lime : tier == "LOW" ? color.gray : color.red
-        label.new(bar_index, low, str.format("{0} ({1}/5)", tier, confidence),
-             style=label.style_label_up, color=tierColor, textcolor=color.white, size=size.normal)
+        // v1.4b: Direction label with S/M/L sizing (label size matches position size)
+        // CALLS: L = HIGH (conf>=5), M = MED (conf 3-4)
+        // PUTS:  L = strong (conf 0-1), M = moderate (conf 2), S = marginal (conf 3+ overridden)
+        string dirLabel = ""
+        color tierColor = color.white
+        string labelSize = size.normal
+        if is_call_tier
+            string sz = confidence >= 5 ? "L" : "M"
+            dirLabel := str.format("CALLS {0} ({1}/5)", sz, confidence)
+            tierColor := confidence >= 5 ? color.green : color.lime
+            labelSize := confidence >= 5 ? size.large : size.normal
+        else
+            string sz = confidence <= 1 ? "L" : confidence == 2 ? "M" : "S"
+            dirLabel := str.format("PUTS {0} ({1}/5)", sz, confidence)
+            tierColor := sz == "L" ? #FF4444 : sz == "M" ? #FF6600 : color.gray
+            labelSize := sz == "L" ? size.large : sz == "M" ? size.normal : size.small
+        label.new(bar_index, low, dirLabel,
+             style=label.style_label_up, color=tierColor, textcolor=color.white, size=labelSize)
 
         // Log: detailed pre-scan
         string chk1 = not na(pm_position) and pm_position > 0.219 ? "1" : "0"
@@ -305,21 +339,45 @@ if is0930 and state == 1
     gap := not na(prev_day_close) ? open - prev_day_close : na
     state := 2
 
+    // v1.4: determine direction at 9:30
+    is_put_day := not (not hard_kill and confidence >= 3)  // mirrors is_call_tier from pre-scan
+
     // Start ORB tracking with this bar
     orb_high := high
     orb_low  := low
 
-    logMsg(str.format("OPENING entry={0} gap={1} tier={2}",
-         str.tostring(open_930, "#.##"), str.tostring(nz(gap), "#.##"), tier))
+    logMsg(str.format("OPENING entry={0} gap={1} tier={2} direction={3}",
+         str.tostring(open_930, "#.##"), str.tostring(nz(gap), "#.##"), tier,
+         is_put_day ? "PUT" : "CALL"))
 
     // v1.3: fallback SL only if enabled (default=0 = disabled, ORB low is the real SL)
-    if i_slFallback > 0
+    if i_slFallback > 0 and not is_put_day
         sl_level := open_930 - i_slFallback
 
     // Draw entry line (SL line drawn after ORB freeze at 9:34 — no fallback SL line)
     if tier == "HIGH" or tier == "MED"
         entryLine := line.new(bar_index, open_930, bar_index + 25, open_930,
                      color=#00BFFF, width=3, style=line.style_solid)
+
+    // v1.4: PUT zone — entry line, SL line ($1.50 above), PT line ($2.00 below)
+    if is_put_day
+        float put_sl = open_930 + 1.50
+        float put_pt = open_930 - 2.00
+        entryLine := line.new(bar_index, open_930, bar_index + 5, open_930,
+                     color=#FF6600, width=3, style=line.style_solid)
+        slLine := line.new(bar_index, put_sl, bar_index + 5, put_sl,
+                     color=#FF4444, width=2, style=line.style_dashed)
+        sl_level := put_sl
+        // PT line (green dashed below)
+        line.new(bar_index, put_pt, bar_index + 5, put_pt,
+                     color=color.green, width=2, style=line.style_dashed)
+        label.new(bar_index + 5, put_sl, str.format("SL {0,number,#.##}", put_sl),
+             style=label.style_label_left, color=#FF4444, textcolor=color.white, size=size.small)
+        label.new(bar_index + 5, put_pt, str.format("PT {0,number,#.##}", put_pt),
+             style=label.style_label_left, color=color.green, textcolor=color.white, size=size.small)
+        label.new(bar_index, high + labelOff, str.format("PUT ZONE — short {0,number,#.##}", open_930),
+             style=label.style_label_down, color=#FF6600, textcolor=color.white, size=size.large)
+        alert(str.format("TSLA PUT — enter at {0,number,#.##}, PT {1,number,#.##} / SL {2,number,#.##}, exit by 9:32", open_930, put_pt, put_sl), alert.freq_once_per_bar)
 
 // ─── STATE 3: FAKEOUT CHECK (9:30 bar close) ──────────────
 if is0930 and state == 2
@@ -385,9 +443,18 @@ if is0930 and state == 2
                          bar1_chaotic ? color.orange : #00BFFF
         label.new(bar_index, low, entryTxt,
              style=label.style_label_up, color=entryCol, textcolor=color.white, size=size.normal)
-    else if tier == "LOW"
-        label.new(bar_index, low, "WATCHING",
-             style=label.style_label_up, color=color.gray, textcolor=color.white, size=size.normal)
+    else if is_put_day
+        // v1.4: bar1 RED confirmation on PUT days (82% win, Sharpe 12.69)
+        put_bar1_red := bar1_red
+        if bar1_red
+            label.new(bar_index, low, "BAR1 RED — ADD PUT",
+                 style=label.style_label_up, color=#FF6600, textcolor=color.white, size=size.normal)
+            alert("TSLA PUT bar1 RED — ADD SIZE (82% win)", alert.freq_once_per_bar)
+            logMsg(str.format("PUT BAR1_RED range={0} chaotic={1}", str.tostring(bar1_range, "#.##"), bar1_chaotic ? "Y" : "N"))
+        else
+            label.new(bar_index, low, "BAR1 GREEN — hold put",
+                 style=label.style_label_up, color=color.gray, textcolor=color.white, size=size.small)
+            logMsg("PUT BAR1_GREEN — no add")
 
     // v1.2c: Fakeout = warning only (one label, not two). UP→DOWN is info, not a hard exit command.
     // On MED/HIGH days the ORB breakout is the real decision — fakeout is context.
@@ -415,6 +482,17 @@ if state == 4 and isORBBuild
     if low < orb_low
         orb_low := low
 
+// v1.4: PUT exit label at 9:32 (2 min after open — peak Sharpe window)
+if is_put_day and h == 9 and m == 32 and not na(orig_open_930)
+    float put_pnl = orig_open_930 - close
+    color putExitCol = put_pnl > 0 ? #FF6600 : color.gray
+    label.new(bar_index, high + labelOff, str.format("PUT EXIT 2m — ${0,number,#.##}", put_pnl),
+         style=label.style_label_down, color=putExitCol, textcolor=color.white, size=size.large)
+    alert(str.format("TSLA PUT EXIT — 2m hold — P&L ${0,number,#.##}", put_pnl), alert.freq_once_per_bar)
+    logMsg(str.format("PUT EXIT close={0} entry={1} pnl={2} bar1_red={3}",
+         str.tostring(close, "#.##"), str.tostring(orig_open_930, "#.##"),
+         str.tostring(put_pnl, "#.##"), put_bar1_red ? "Y" : "N"))
+
 // ─── STATE 5: ORB WATCH (after 9:34) ──────────────────────
 // ORB complete at 9:34 close (5 bars: 9:30-9:34 = 5 minutes)
 if is0934 and (state == 3 or state == 4)
@@ -431,16 +509,17 @@ if is0934 and (state == 3 or state == 4)
                  color=color.yellow, width=2, style=line.style_dashed)
     linefill.new(orbHighLine, orbLowLine, color=color.new(color.yellow, 90))
 
-    // v1.3b: SL = ORB low, active from 9:35. Line starts at next bar to match activation
-    sl_level := orb_low
-    if not na(slLine)
-        line.delete(slLine)
-    slLine := line.new(bar_index + 1, sl_level, bar_index + 21, sl_level,
-                 color=#FF4444, width=3, style=line.style_solid)
-    if not na(slPriceLabel)
-        label.delete(slPriceLabel)
-    slPriceLabel := label.new(bar_index + 21, sl_level, str.format("SL {0,number,#.##} (ORB)", sl_level),
-         style=label.style_label_left, color=#FF4444, textcolor=color.white, size=size.small)
+    // v1.4: CALL-side SL = ORB low (skip on PUT days — PUT SL already drawn at 9:30)
+    if not is_put_day
+        sl_level := orb_low
+        if not na(slLine)
+            line.delete(slLine)
+        slLine := line.new(bar_index + 1, sl_level, bar_index + 21, sl_level,
+                     color=#FF4444, width=3, style=line.style_solid)
+        if not na(slPriceLabel)
+            label.delete(slPriceLabel)
+        slPriceLabel := label.new(bar_index + 21, sl_level, str.format("SL {0,number,#.##} (ORB)", sl_level),
+             style=label.style_label_left, color=#FF4444, textcolor=color.white, size=size.small)
 
     // v1.2: Check min ORB width
     float orb_width = orb_high - orb_low
@@ -468,10 +547,11 @@ if is0934 and (state == 3 or state == 4)
 
     state := 5
 
-// ─── SL Hit Detection (states 3-5) ─────────────────────────
+// ─── SL Hit Detection (states 3-5, CALL days only) ──────────
+// v1.4: suppress on PUT days — SL HIT is noise when not in a long trade
 // v1.3: sl_level is na during ORB build (no fallback), set to orb_low at 9:34
 // Skip 9:34 bar — if it sets the ORB low, sl_level == bar low → false trigger
-if (state >= 3 and state <= 5) and not sl_hit and not is0934 and not na(sl_level) and low <= sl_level
+if (state >= 3 and state <= 5) and not sl_hit and not is0934 and not na(sl_level) and low <= sl_level and not is_put_day
     sl_hit := true
     label.new(bar_index, sl_level, "SL HIT — EXIT",
          style=label.style_label_up, color=#FF4444, textcolor=color.white, size=size.large)
@@ -497,13 +577,15 @@ if state == 5 and hm >= 935 and hm <= 955 and not orb_narrow
              str.tostring(close, "#.##"), str.tostring(orb_high, "#.##"), shakeout_detected ? "Y" : "N"))
 
     // Bear breakout: close below ORB low
+    // v1.4: suppress label on PUT days (not in a long trade)
     if not orb_bull and not orb_bear and close < orb_low
         orb_bear := true
         breakout_bar := bar_index
         state := 6
-        label.new(bar_index, high + labelOff, "ORB BEAR — EXIT",
-             style=label.style_label_down, color=color.red, textcolor=color.white, size=size.large)
-        alert(str.format("TSLA ORB BEAR BREAK at {0,number,#.##} — EXIT", close), alert.freq_once_per_bar)
+        if not is_put_day
+            label.new(bar_index, high + labelOff, "ORB BEAR — EXIT",
+                 style=label.style_label_down, color=color.red, textcolor=color.white, size=size.large)
+            alert(str.format("TSLA ORB BEAR BREAK at {0,number,#.##} — EXIT", close), alert.freq_once_per_bar)
         float bear_pnl = close - open_930
         logMsg(str.format("ORB BEAR BREAK close={0} < orbL={1} entry={2} pnl={3}",
              str.tostring(close, "#.##"), str.tostring(orb_low, "#.##"),
@@ -567,8 +649,10 @@ if i_showBG and isActiveWindow
                    tier == "NO-GO" ? color.new(color.red, 92) :
                    color.new(color.green, 92)
     else if state == 2 or state == 3
-        if fakeout_fired
+        if fakeout_fired and not is_put_day
             bgColor := color.new(color.red, 85)
+        else if is_put_day
+            bgColor := color.new(#FF6600, 90)  // v1.4: orange bg for PUT days
         else
             bgColor := tier == "NO-GO" ? color.new(color.red, 92) : color.new(color.green, 92)
     else if state == 4
@@ -586,7 +670,7 @@ var table infoTable = table.new(position.top_right, 2, 5,
 
 if i_showTable and (isRTH or isActiveWindow)
     table.cell(infoTable, 0, 0, "TSLA OPEN SCALP", text_color=color.white, text_size=size.small)
-    table.cell(infoTable, 1, 0, "v1.3b", text_color=color.gray, text_size=size.tiny)
+    table.cell(infoTable, 1, 0, "v1.4b", text_color=color.gray, text_size=size.tiny)
 
     string stateStr = state == 0 ? "SLEEP" : state == 1 ? "PRE-SCAN" :
                       state == 2 ? "OPENING" : state == 3 ? "FAKEOUT" :
@@ -636,10 +720,11 @@ if not isRTH and not isPremarket
 // ─── Alerts ────────────────────────────────────────────────
 if is0929 and state == 1
     if not hard_kill and confidence >= 3
-        alert(str.format("TSLA GO: confidence {0} ({1}/5) — enter small at open", tier, confidence), alert.freq_once_per_bar)
-    if hard_kill or confidence < 2
+        alert(str.format("TSLA CALLS: {0} ({1}/5) — enter long at open", tier, confidence), alert.freq_once_per_bar)
+    if confidence <= 2 or hard_kill
+        // v1.4: PUT alert instead of skip
         string reason = hard_kill ? (not na(vix_prev_close) and vix_prev_close <= 15 ? "VIX <= 15" :
                        (pm_vol_5m < i_pmVolMinKill and pm_vol_5m > 0 ? "low PM vol" :
                        (not na(pm_position) and pm_position < 0.219 ? "P9 bear" : "gap trap"))) : "low score"
-        alert(str.format("TSLA NO-GO: {0} — skip today", reason), alert.freq_once_per_bar)
+        alert(str.format("TSLA PUTS: {0} ({1}/5) — {2} — buy put at open, PT $2 / SL $1.50", tier, confidence, reason), alert.freq_once_per_bar)
 // ORB breakout alerts are inline above (state 5→6 transition)
