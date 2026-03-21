@@ -9,6 +9,64 @@ after that: investigate each signal on the past if we fetch it right, how far it
   could use other findings we have but didnt use or in other circumstances.
 
 
+3/20/26 TSLA Scalp Indicator — INVESTIGATED
+why MED after 4m baerish down 2.5$?
+
+ANSWER: conf scored 3/5 (checks: PM pos ✓ 0.433, PM accel ✗ -1.95, VIX ✓ 24.1, align ✗ T↓S↓Q↓, no gap ✓).
+The 3 passing checks are STRUCTURAL (position in PM range, VIX level, gap size) — not DIRECTIONAL.
+The 2 failing checks (accel, alignment) ARE directional — both screaming bear. But 3/5 = MED threshold.
+
+The problem: pm_acc=-1.95 is the most negative in the entire 22-day dataset, pm_trend=-1.36 (falling hard),
+align=T↓S↓Q↓ (everything down), p9_30s=DN. EVERY directional signal was bearish.
+
+1s data shows the crash: open $379.60, by 9:30:06 already $377.01 (-$2.59 in 6 seconds!), SL breached at 9:31:42,
+day low $373.34 at 9:36:37. The -$2.50 in 4m was actually -$6.26 in 6.5 minutes.
+
+RESULT: CALL direction was WRONG. Dip-buy entry at $377.18, SL hit 1 minute later at $376.21 (loss -$0.97).
+ORB BEAR confirmed at 9:35 (pnl -$3.00).
+
+IF PUT: Entry $379.60 at open → exit at 9:32 close $375.57 → PUT PnL = +$4.03. The $2 PT ($377.60) was hit
+at 9:30:06 (6 seconds!). This was a textbook PUT day that the v1.4 system would have caught IF conf had been <=2.
+
+ROOT CAUSE: conf system weights structural checks equally with directional checks. A day can score 3/5 with
+zero directional confirmation. The fix: either add a directional meta-check ("if ALL directional signals bear,
+cap conf at 2 regardless of structural score") or weight PM accel/alignment higher.
+
+PROPOSED FIX: Add a "directional override" — if pm_accel < -1.0 AND pm_trend < -1.0 AND align all down,
+force tier to LOW regardless of conf score. This catches 3/20-type days where structure says MED but
+direction says strong bear. Needs backtesting before implementing.
+
+V1.4 PERFORMANCE SUMMARY (22 days, Feb 17 — Mar 20):
+  PUT days (14): 9 wins (64%), total +$14.33, avg +$1.02/trade
+  CALL days (8): 6 wins (75%), total +$24.54, avg +$3.07/trade (includes runners)
+  COMBINED: +$38.87 over 22 days (+$1.77/day avg)
+  3/20 was the only CALL day that should have been PUT. Cost: -$0.97 CALL loss + $4.03 missed PUT = -$5.00 total.
+
+---
+
+3/19/26 — INVESTIGATED → this conversation + debug/tsla-put-backtest-findings.md
+TSLA what did the big red labels mean and if it would be an entry, how it would worked out the next 3/5/10/20/60m?
+did they even fire in the right direction?
+
+ANSWER: The "big red labels" were SL HIT — EXIT ($380.65 at 9:36). This was on a LOW (2/5) day — the indicator
+said "WATCHING" (not entered), so the SL HIT label was confusing noise. There was no position to exit.
+
+v1.4 fixes this: SL HIT and ORB BEAR labels are now suppressed on PUT days. Instead, v1.4 shows:
+  9:30: PUT ZONE — short $387.23 (orange label)
+  9:30: BAR1 RED — ADD PUT (bar1 red, range $5.19, chaotic)
+  9:32: PUT EXIT 2m — $+4.77
+
+The open ($387.27) was literally the day high. Price never went above it.
+Full IB 1m data: long from $387.23 → MFE only +$0.04 (never went up), MAE -$7.51.
+Short from $387.27 (gap fade) → MFE +$7.55, MAE $0.00 (zero adverse excursion).
+
+3/19 was a textbook PUT day: LOW tier, bar1 RED+chaotic, immediate selloff.
+
+ALL SYMBOLS 3/19: Most symbols were BULL (SPY +$2.77, QQQ +$3.48, AMD +$10.14). TSLA was the outlier —
+gapped up and faded while market rallied. META also gap-faded (-$5.45). TSLA was decoupled from market.
+
+
+
 3/9/26 — INVESTIGATED → debug/investigation-2026-03-09.md + debug/deep_investigation_20260309.md
 V-shaped bull recovery day. SPY ATR=$9.45. All 11 major moves were bull. KLB caught late BRK cluster (15:15+).
 

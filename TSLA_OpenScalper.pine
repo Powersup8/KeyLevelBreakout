@@ -1,4 +1,6 @@
-// © TSLA Open Scalper
+// This Pine Script® code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © mabvvy61
+// TSLA Open Scalper
 // 0DTE/1DTE opening trade decision system (v1.4b)
 // v1.4b: S/M/L sizing labels with physical label size, gap<-5 kill (+$25), PUT rescue (+$14)
 // v1.4: dual direction — CALLS on MED/HIGH, PUTS on LOW/NO-GO. Suppress SL/BEAR labels on put days.
