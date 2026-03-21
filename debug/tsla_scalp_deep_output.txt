@@ -1,0 +1,139 @@
+=== BAR1 RED DEEP DIVE (CALL days only) ===
+
+CALL days with bar1 RED:   46 (41%)
+CALL days with bar1 GREEN: 67 (59%)
+
+Bar1 RED: pnl_2m mean=0.98
+  Win rate (CALL wins): 32.6%
+  Total CALL PnL: $-44.95
+  If played as PUT: $44.95
+
+Bar1 GREEN: pnl_2m mean=-1.61
+  Win rate (CALL wins): 71.6%
+  Total CALL PnL: $108.12
+
+--- Bar1 RED CALL days detail (sorted by 2m loss) ---
+      date  confidence  pm_accel  pm_late_trend  pm_position  est_gap  pnl_1m  pnl_2m
+2025-05-12           4      0.16           0.83     0.853047    23.74    6.30    7.95
+2025-10-08           3      0.22           1.02     0.752577     4.83    5.02    6.86
+2025-06-24           3     -0.79           0.01     0.468927     7.50    4.78    5.55
+2026-02-17           3     -0.24          -0.49     0.252998    -5.22    3.15    4.15
+2026-01-20           5      2.47           3.48     0.482803    -8.09    3.95    3.97
+2025-05-14           3     -0.36          -0.28     0.691194     8.44    3.39    3.49
+2025-05-28           3     -0.08          -0.23     0.726400     2.19    2.70    3.47
+2025-08-12           3      0.14           0.84     0.894825     5.99    2.65    3.24
+2025-09-23           3      1.04           1.04     0.894992     6.04    0.72    2.87
+2025-08-05           3      1.58           1.02     0.417284    -0.30    1.93    2.78
+2025-11-06           4      0.93           0.58     0.440650    -0.26    3.04    2.57
+2025-10-01           3      1.54           1.59     0.860795    -0.80    1.54    2.49
+2025-08-04           3     -0.54          -0.63     0.712975     6.50    2.67    2.48
+2025-11-21           3      0.72           1.38     0.987500     7.30    2.65    2.30
+2025-07-29           3      0.87           0.61     0.431694     0.07    2.91    2.16
+2026-02-04           4     -0.11           0.14     0.444874    -1.42    1.28    2.16
+2025-11-19           4      0.77           1.28     0.873391     5.02    1.37    1.87
+2025-05-23           3     -0.93           0.77     0.292874    -3.51    3.94    1.70
+2025-04-17           3      0.16           0.34     0.396304     1.93    1.43    1.62
+2025-10-14           5      1.65           1.16     0.355319    -9.09    1.83    1.46
+2025-11-03           4      1.96           1.33     0.359606    -0.51    0.73    1.02
+2025-06-18           4      0.09           0.26     0.292162     1.10    1.44    1.02
+2025-06-06           4      1.37           3.11     0.530008    14.13   -2.74    1.00
+2025-07-22           3      0.45          -0.20     0.932462     1.27    1.31    0.96
+2025-10-20           3     -0.37          -0.60     0.529412     4.73    1.68    0.83
+2025-05-13           4      0.01           0.44     0.697674     1.38    1.09    0.48
+2025-08-22           3      0.55           0.42     0.869048     1.61    1.05    0.24
+2025-04-28           3     -0.80          -1.82     0.664492     4.12    1.04    0.23
+2025-05-29           3     -0.60          -1.11     0.376258     8.28   -1.13    0.13
+2025-05-21           3     -0.20          -0.08     0.389610     0.74   -0.45    0.11
+2025-09-02           3      0.99           1.17     0.330454    -5.60    1.21    0.03
+2026-03-17           3     -0.01          -0.26     0.715470     0.20    1.75   -0.09
+2026-02-06           4      0.80          -1.21     0.621588     3.80    1.44   -0.11
+2026-03-03           5      1.85           2.02     0.522703    -8.22    1.30   -0.47
+2025-09-09           3      0.25           0.74     0.809524     2.15   -0.12   -0.77
+2025-03-20           4      0.25           0.89     0.314088    -2.34   -1.46   -0.90
+2025-09-24           4      0.54           1.05     0.870301     3.97   -0.88   -1.09
+2025-10-13           4      0.70           0.40     0.777202    10.23   -2.33   -1.27
+2025-03-19           3     -0.12          -0.23     0.600473     6.10   -1.02   -1.53
+2026-03-02           3      0.33          -0.80     0.162646   -12.05   -0.01   -2.50
+2026-03-04           3     -1.47          -2.40     0.736181     5.45   -0.91   -2.56
+2025-06-02           4      1.32           2.01     0.647643    -2.14   -0.87   -2.57
+2025-10-03           4      0.24           1.19     0.725835     7.46   -2.87   -2.62
+2025-03-24           3     -1.08          -1.34     0.717066     8.89   -2.15   -2.62
+2025-04-01           3     -0.02           0.16     0.381711     4.44   -2.52   -3.50
+2025-10-27           3      0.07           1.02     0.844291     6.30   -1.41   -3.64
+
+=== CAVEAT: bar1_red is POST-OPEN (available at 9:31) ===
+It's reactive, not predictive. Two options:
+  A) Use it to EXIT CALL at 9:31 (no flip to PUT)
+  B) Use it to FLIP to PUT at 9:31 (1 min PUT hold)
+
+A) CALL PnL with early exit on bar1 red: $57.70
+   CALL PnL holding all to 9:32:         $63.17
+   Delta: $-5.47
+
+B) CALL PnL with reactive flip on bar1 red: $52.23
+   Flipped: 46 days
+
+=== OVERFITTING CHECK: bar1_red by quarter ===
+  2025Q1: RED n=3 PUT_wr=0% CALL_pnl=$5.1 | GREEN n=3 CALL_wr=67% CALL_pnl=$4.0
+  2025Q2: RED n=14 PUT_wr=86% CALL_pnl=$-20.7 | GREEN n=18 CALL_wr=83% CALL_pnl=$42.4
+  2025Q3: RED n=10 PUT_wr=80% CALL_pnl=$-12.9 | GREEN n=15 CALL_wr=87% CALL_pnl=$25.4
+  2025Q4: RED n=11 PUT_wr=73% CALL_pnl=$-11.9 | GREEN n=22 CALL_wr=59% CALL_pnl=$19.7
+  2026Q1: RED n=8 PUT_wr=38% CALL_pnl=$-4.6 | GREEN n=9 CALL_wr=56% CALL_pnl=$16.7
+
+=== GAP DEEP DIVE (CALL days only) ===
+gap < -3: n=15, as PUT total=$9.23, PUT wr=60%
+gap < -5: n=12, as PUT total=$9.49, PUT wr=67%
+gap < -8: n=9, as PUT total=$7.71, PUT wr=67%
+gap < -10: n=5, as PUT total=$1.88, PUT wr=60%
+
+=== DEFINITIVE PREDICTIVE OVERRIDE TESTS ===
+(All remove accel kill, then add one override)
+
+--- Baseline variants ---
+  current (with accel kill): CALL=118 PUT=133 Total=$112.42 (delta=$-2.30)
+  ACTUAL CURRENT: Total=$114.72
+  no accel kill (baseline for tests): CALL=118 PUT=133 Total=$112.42 (delta=$-2.30)
+
+--- Single predictive overrides (CALL->PUT) ---
+  gap < -5: CALL=106 PUT=145 Total=$131.40 (delta=$+16.68)
+  gap < -8: CALL=109 PUT=142 Total=$127.84 (delta=$+13.12)
+  gap < -10: CALL=113 PUT=138 Total=$116.18 (delta=$+1.46)
+  gap < -5 AND accel < 0: CALL=117 PUT=134 Total=$120.72 (delta=$+6.00)
+  accel < 0: CALL=86 PUT=165 Total=$112.64 (delta=$-2.08)
+  accel < -0.5: CALL=103 PUT=148 Total=$122.92 (delta=$+8.20)
+
+--- PUT->CALL rescue overrides ---
+  rescue: accel>1 pos>0.7: CALL=120 PUT=131 Total=$126.46 (delta=$+11.74)
+  rescue: accel>0.5 pos>0.8: CALL=122 PUT=129 Total=$125.10 (delta=$+10.38)
+  rescue: VIX kill + accel>0 + conf>=3: CALL=132 PUT=119 Total=$106.56 (delta=$-8.16)
+
+--- Combined overrides ---
+  gap<-5 + rescue(accel>1,pos>0.7): CALL=108 PUT=143 Total=$145.44 (delta=$+30.72)
+  gap<-8 + rescue(accel>1,pos>0.7): CALL=111 PUT=140 Total=$141.88 (delta=$+27.16)
+  gap<-5 + rescue(VIX+accel>0+conf3): CALL=120 PUT=131 Total=$125.54 (delta=$+10.82)
+
+=== RESCUE DETAIL: VIX kill + accel>0 + conf>=3 ===
+  2025-08-14 conf=3 accel=0.60 vix=14.5 pnl_2m=0.16 (as CALL: $-0.16)
+  2025-08-15 conf=3 accel=0.45 vix=14.8 pnl_2m=-0.29 (as CALL: $0.29)
+  2025-08-28 conf=3 accel=0.50 vix=14.8 pnl_2m=-1.34 (as CALL: $1.34)
+  2025-08-29 conf=3 accel=0.05 vix=14.4 pnl_2m=-0.02 (as CALL: $0.02)
+  2025-09-12 conf=3 accel=0.23 vix=14.7 pnl_2m=-2.76 (as CALL: $2.76)
+  2025-12-12 conf=3 accel=1.13 vix=14.8 pnl_2m=-2.98 (as CALL: $2.98)
+  2025-12-22 conf=3 accel=1.81 vix=14.9 pnl_2m=-4.04 (as CALL: $4.04)
+  2025-12-23 conf=4 accel=1.02 vix=14.1 pnl_2m=1.08 (as CALL: $-1.08)
+  2025-12-24 conf=3 accel=0.36 vix=14.0 pnl_2m=2.29 (as CALL: $-2.29)
+  2025-12-29 conf=4 accel=0.59 vix=13.6 pnl_2m=3.41 (as CALL: $-3.41)
+  2026-01-02 conf=4 accel=1.03 vix=14.9 pnl_2m=2.49 (as CALL: $-2.49)
+  2026-01-05 conf=4 accel=0.89 vix=14.5 pnl_2m=1.42 (as CALL: $-1.42)
+  2026-01-07 conf=4 accel=0.32 vix=14.8 pnl_2m=2.88 (as CALL: $-2.88)
+  2026-01-12 conf=4 accel=1.29 vix=14.5 pnl_2m=0.63 (as CALL: $-0.63)
+
+=== RESCUE DETAIL: accel>1 AND pos>0.7 ===
+  2025-12-12 conf=3 accel=1.13 pos=0.909 vix=14.8 pnl_2m=-2.98 kill=VIX
+  2025-12-22 conf=3 accel=1.81 pos=0.947 vix=14.9 pnl_2m=-4.04 kill=VIX
+
+=== FULL GRID SEARCH: best single accel threshold (no accel kill base) ===
+Best single accel threshold: -0.35 -> Total=$131.56 (delta vs current=$+16.84)
+
+=== WHAT 3/20/26 WOULD HAVE LOOKED LIKE ===
+  3/20/26 not found in data

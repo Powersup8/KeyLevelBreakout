@@ -1,0 +1,10 @@
+handover TSLA loop
+
+ The real question
+
+  The backtest shows 25% win rate overall because the fallback SL kills >50% of trades. But the winning trades average +$4.95. The question is: should we widen the
+  fallback SL to $3.00 and accept larger individual losses on stopped trades, or keep it tight and accept fewer but cleaner winners?
+
+  $3.00 fallback: more trades survive → higher score → but when you DO get stopped, you lose $3 instead of $1.50.
+
+  What's your take — widen the fallback, or rethink the pre-ORB protection entirely?

@@ -1,7 +1,9 @@
 // This Pine Script® code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
 // © mabvvy61
 // TSLA Open Scalper
-// 0DTE/1DTE opening trade decision system (v2.0)
+// 0DTE/1DTE opening trade decision system (v2.1)
+// v2.1: CRASH/SURGE direction override + immediate entry, SURGE pat_max_hold=20
+// v2.0a: skip on agree=0/2 (3/20 fix), ORB label spacing
 // v2.0: VWAP+EMA20 agreement sizing, 1m-bar trail exit, smart entry (confirm/bounce)
 // v1.4b: S/M/L sizing, gap<-5 kill, PUT rescue, dual direction
 // v1.4: dual direction — CALLS on MED/HIGH, PUTS on LOW/NO-GO
@@ -10,7 +12,7 @@
 // v1.2: 2m accel, 15s/30s sub-bars, ORB-based SL, min ORB width
 // Designed for TSLA on 1-min chart with Extended Hours ON
 //@version=6
-indicator("TSLA Open Scalper v2.0", overlay=true, max_labels_count=50, max_lines_count=20)
+indicator("TSLA Open Scalper v2.1", overlay=true, max_labels_count=50, max_lines_count=20)
 
 // ─── Inputs ────────────────────────────────────────────────
 i_vixSymbol    = input.string("CBOE:VIX", "VIX Symbol", tooltip="VIX data provider. Try TVC:VIX if CBOE:VIX fails.", group="Data")
@@ -148,10 +150,15 @@ var bool  trade_active  = false // currently in a trade
 var bool  trail_exited  = false // trail stop was hit
 
 // v2.0: Smart entry tracking
+var bool  skip_day       = false // v2.0a: agree=0 → skip trade
 var bool  going_right    = false // bar0 went in our direction
 var bool  waiting_confirm = false // waiting for bar1 confirmation
 var bool  waiting_bounce  = false // waiting for dip bounce
 var float dip_extreme    = na   // running low (bull) or high (bear) for bounce calc
+
+// v2.1: Pattern-based direction overrides
+var string opening_pattern = "UNKNOWN"
+var int    pat_max_hold    = 7   // per-pattern max hold (default matches i_maxHold)
 
 // ─── Daily Reset ───────────────────────────────────────────
 bool newRTH = isRTH and not isRTH[1]
@@ -206,10 +213,13 @@ if newSession or (newRTH and not pmSeen)
     entry_bar_idx     := na
     trade_active      := false
     trail_exited      := false
+    skip_day          := false
     going_right       := false
     waiting_confirm   := false
     waiting_bounce    := false
     dip_extreme       := na
+    opening_pattern   := "UNKNOWN"
+    pat_max_hold      := 7
 
 // ─── Prev Day Close ───────────────────────────────────────
 if isRTH
@@ -387,9 +397,20 @@ if is0930 and state == 1
     orb_high := high
     orb_low  := low
 
-    logMsg(str.format("OPENING entry={0} gap={1} tier={2} direction={3} agree={4}/2",
+    // v2.1: Classify bar0 pattern (CRASH/SURGE identifiable at bar0 close)
+    float bar0_range = high - low
+    if close < open and bar0_range > 2.50
+        opening_pattern := "CRASH"
+        is_call_tier    := false  // override binary conf: CRASH → always PUT
+        pat_max_hold    := 7
+    else if close >= open and bar0_range > 2.50
+        opening_pattern := "SURGE"
+        is_call_tier    := true   // override binary conf: SURGE → always CALL
+        pat_max_hold    := 20     // SURGE holds longer (research peak at 14m)
+
+    logMsg(str.format("OPENING entry={0} gap={1} tier={2} direction={3} agree={4}/2 pat={5}",
          str.tostring(open_930, "#.##"), str.tostring(nz(gap), "#.##"), tier,
-         is_call_tier ? "CALL" : "PUT", agree_count))
+         is_call_tier ? "CALL" : "PUT", agree_count, opening_pattern))
 
     // Draw entry line
     entryLine := line.new(bar_index, open_930, bar_index + 25, open_930,
@@ -397,8 +418,21 @@ if is0930 and state == 1
     label.new(bar_index + 25, open_930, str.format("entry {0,number,#.##}", open_930),
          style=label.style_label_left, color=is_call_tier ? #00BFFF : #FF6600, textcolor=color.white, size=size.small)
 
+    // v2.0a: Skip trade on S tier (agree=0/2 — VWAP+EMA both disagree with binary)
+    skip_day := agree_count == 0 and not triple_agree
+    // v2.1: Never skip CRASH/SURGE — direction is always reliable for these patterns
+    if opening_pattern == "CRASH" or opening_pattern == "SURGE"
+        skip_day := false
+    if skip_day
+        label.new(bar_index, is_call_tier ? high + labelOff : low - labelOff,
+             "SKIP — 0/2 agree",
+             style=is_call_tier ? label.style_label_down : label.style_label_up,
+             color=color.gray, textcolor=color.white, size=size.small)
+        logMsg("SKIP — agreement 0/2, no trade")
+        state := 5  // jump to DONE
+
     // v2.0: Non-smart entry — enter immediately at open
-    if not i_smartEntry
+    if not i_smartEntry and not skip_day
         trade_entry   := open_930
         trade_active  := true
         entry_bar_idx := bar_index
@@ -410,12 +444,28 @@ if is0930 and state == 1
         alert(str.format("TSLA {0} — entered at {1,number,#.##}", entryDir, open_930), alert.freq_once_per_bar)
         state := 4  // skip to ACTIVE
 
+    // v2.1: Force immediate entry for CRASH/SURGE on smart-entry mode
+    // (these patterns are direction-reliable — no need to wait for bar1 confirm)
+    if i_smartEntry and not skip_day and not trade_active and
+         (opening_pattern == "CRASH" or opening_pattern == "SURGE")
+        trade_entry   := open_930
+        trade_active  := true
+        entry_bar_idx := bar_index
+        string patDir = is_call_tier ? "CALL" : "PUT"
+        label.new(bar_index, is_call_tier ? low : high + labelOff,
+             str.format("{0} {1} — {2,number,#.##}", opening_pattern, patDir, open_930),
+             style=is_call_tier ? label.style_label_up : label.style_label_down,
+             color=is_call_tier ? #00BFFF : #FF6600, textcolor=color.white, size=size.large)
+        alert(str.format("TSLA {0} {1} — entered at {2,number,#.##}", opening_pattern, patDir, open_930), alert.freq_once_per_bar)
+        logMsg(str.format("CRASH/SURGE IMMEDIATE ENTRY pat={0} dir={1} open={2}", opening_pattern, patDir, str.tostring(open_930, "#.##")))
+        state := 4  // skip to ACTIVE
+
 // ─── STATE 3: ENTRY WATCH (9:30 bar close) ─────────────────
 // v2.0: Smart entry — check bar0 direction, decide confirm vs bounce
 if is0930 and state == 2
     state := 3
 
-    if i_smartEntry
+    if i_smartEntry and not skip_day
         // Check if bar0 went in our direction
         if is_call_tier
             going_right := close >= orig_open_930  // bar0 bullish
@@ -592,7 +642,7 @@ if hm >= 935 and hm <= 955 and not orb_narrow and not na(orb_high) and not na(or
     // Bull breakout: close above ORB high
     if not orb_bull and not orb_bear and close > orb_high
         orb_bull := true
-        label.new(bar_index, low - labelOff, "ORB BULL BREAK",
+        label.new(bar_index, low - labelOff * 2, "ORB BULL BREAK",
              style=label.style_label_up, color=color.green, textcolor=color.white, size=size.normal)
         alert(str.format("TSLA ORB BULL BREAK at {0,number,#.##}", close), alert.freq_once_per_bar)
         logMsg(str.format("ORB BULL BREAK close={0} > orbH={1}",
@@ -601,7 +651,7 @@ if hm >= 935 and hm <= 955 and not orb_narrow and not na(orb_high) and not na(or
     // Bear breakout: close below ORB low
     if not orb_bull and not orb_bear and close < orb_low
         orb_bear := true
-        label.new(bar_index, high + labelOff, "ORB BEAR BREAK",
+        label.new(bar_index, high + labelOff * 2, "ORB BEAR BREAK",
              style=label.style_label_down, color=color.red, textcolor=color.white, size=size.normal)
         alert(str.format("TSLA ORB BEAR BREAK at {0,number,#.##}", close), alert.freq_once_per_bar)
         logMsg(str.format("ORB BEAR BREAK close={0} < orbL={1}",
@@ -628,8 +678,8 @@ if trade_active and not trail_exited and not na(trade_entry) and state == 4
         if bars_held >= 1 and peak_pnl > 0 and cur_pnl <= peak_pnl - i_trailAmt
             should_exit := true
             exit_reason := "TRAIL"
-        // Max hold
-        if bars_held >= i_maxHold
+        // Max hold (v2.1: per-pattern, default=i_maxHold, SURGE=20)
+        if bars_held >= pat_max_hold
             should_exit := true
             exit_reason := exit_reason == "" ? "MAX HOLD" : exit_reason
     else
@@ -693,7 +743,7 @@ var table infoTable = table.new(position.top_right, 2, 5,
 
 if i_showTable and (isRTH or isActiveWindow)
     table.cell(infoTable, 0, 0, "TSLA OPEN SCALP", text_color=color.white, text_size=size.small)
-    table.cell(infoTable, 1, 0, "v2.0", text_color=color.gray, text_size=size.tiny)
+    table.cell(infoTable, 1, 0, "v2.1", text_color=color.gray, text_size=size.tiny)
 
     string stateStr = state == 0 ? "SLEEP" : state == 1 ? "PRE-SCAN" :
                       state == 2 ? "OPENING" : state == 3 ? "ENTRY WATCH" :
@@ -702,8 +752,9 @@ if i_showTable and (isRTH or isActiveWindow)
                        tier == "HIGH" ? color.green : tier == "MED" ? color.lime :
                        tier == "LOW" ? color.gray : tier == "NO-GO" ? color.red : color.white
 
-    // Row 1: State + Tier + agreement
-    string tierAgree = tier != "—" ? str.format("{0} ({1}/5) {2}", tier, confidence, triple_agree ? "3/3" : str.format("{0}/2", agree_count)) : ""
+    // Row 1: State + Tier + agreement + pattern
+    string patStr = opening_pattern != "UNKNOWN" ? " " + opening_pattern : ""
+    string tierAgree = tier != "—" ? str.format("{0} ({1}/5) {2}{3}", tier, confidence, triple_agree ? "3/3" : str.format("{0}/2", agree_count), patStr) : ""
     table.cell(infoTable, 0, 1, stateStr, text_color=stateColor, text_size=size.normal)
     table.cell(infoTable, 1, 1, tierAgree, text_color=stateColor, text_size=size.small)
 
