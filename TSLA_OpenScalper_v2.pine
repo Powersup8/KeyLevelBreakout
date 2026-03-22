@@ -1,7 +1,8 @@
 // This Pine Script® code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
 // © mabvvy61
 // TSLA Open Scalper
-// 0DTE/1DTE opening trade decision system (v2.3c)
+// 0DTE/1DTE opening trade decision system (v2.3d)
+// v2.3d: bar15s_1 gate for CRASH/SURGE (stalling reversal skip) + INVV body filter (<30%)
 // v2.3c: DRIFT entry disabled by default (i_tradeDrift=false) — edge front-loaded in bars 0-1
 // v2.3b: CRASH/SURGE threshold normalized to price (open×0.65%) — scales with TSLA level
 // v2.3a: CRASH/SURGE body filter ≥30% — prevents thin-bar false fires (VSHAPE misclassified)
@@ -17,7 +18,7 @@
 // v1.2: 2m accel, 15s/30s sub-bars, ORB-based SL, min ORB width
 // Designed for TSLA on 1-min chart with Extended Hours ON
 //@version=6
-indicator("TSLA Open Scalper v2.3c", overlay=true, max_labels_count=50, max_lines_count=20)
+indicator("TSLA Open Scalper v2.3d", overlay=true, max_labels_count=50, max_lines_count=20)
 
 // ─── Inputs ────────────────────────────────────────────────
 i_vixSymbol    = input.string("CBOE:VIX", "VIX Symbol", tooltip="VIX data provider. Try TVC:VIX if CBOE:VIX fails.", group="Data")
@@ -170,6 +171,8 @@ var string bar0_dir        = ""  // "G" or "R" — set at bar0 close
 var string bar1_dir        = ""  // "G" or "R" — set at bar1 close
 // v2.3: 15sec sub-bar direction from bar0 (saved for use at 9:32)
 var string bar15s_1_dir    = ""  // "G" or "R" — direction of 2nd 15sec sub-bar at 9:30
+// v2.3d: bar0 body pct stored for INVV body filter at 9:32
+var float  bar0_body_pct_v = 0.0 // bar0 body/range ratio, saved for later bars
 
 // ─── Daily Reset ───────────────────────────────────────────
 bool newRTH = isRTH and not isRTH[1]
@@ -234,6 +237,7 @@ if newSession or (newRTH and not pmSeen)
     bar0_dir          := ""
     bar1_dir          := ""
     bar15s_1_dir      := ""
+    bar0_body_pct_v   := 0.0
 
 // ─── Prev Day Close ───────────────────────────────────────
 if isRTH
@@ -421,6 +425,7 @@ if is0930 and state == 1
     // v2.3b: normalize range threshold to price (0.65% of open) — scales with TSLA price level
     float bar0_body      = math.abs(close - open)
     float bar0_body_pct  = bar0_range > 0 ? bar0_body / bar0_range : 0
+    bar0_body_pct_v     := bar0_body_pct  // v2.3d: persist for INVV filter at 9:32
     float crash_surge_th = open * 0.0065  // ~$2.50 at $385, scales automatically
     if close < open and bar0_range > crash_surge_th and bar0_body_pct >= 0.30
         opening_pattern := "CRASH"
@@ -446,6 +451,14 @@ if is0930 and state == 1
     // v2.1: Never skip CRASH/SURGE — direction is always reliable for these patterns
     if opening_pattern == "CRASH" or opening_pattern == "SURGE"
         skip_day := false
+    // v2.3d: bar15s_1 flip gate — if 2nd 15sec bar reverses direction, CRASH/SURGE is stalling
+    // Research: CRASH with bar15s_1==G → 50% WR; bar15s_1==R → 90% WR
+    if opening_pattern == "CRASH" and bar15s_1_dir == "G"
+        skip_day := true
+        logMsg("CRASH bar15s_1=G — skip (stalling reversal)")
+    if opening_pattern == "SURGE" and bar15s_1_dir == "R"
+        skip_day := true
+        logMsg("SURGE bar15s_1=R — skip (stalling surge)")
     if skip_day
         label.new(bar_index, is_call_tier ? high + labelOff : low - labelOff,
              "SKIP — 0/2 agree",
@@ -660,7 +673,8 @@ if h == 9 and m == 32 and not trade_active and opening_pattern == "UNKNOWN"
 
     if is_invv
         opening_pattern := "INVV"
-        if bar15s_1_dir == "G"  // early 15sec recovery → enter CALL
+        // v2.3d: strong-body INVV = failed breakout (WR 44%, -$0.89); weak-body (<30%) = real reversal (WR 77%)
+        if bar15s_1_dir == "G" and bar0_body_pct_v < 0.30  // recovery confirmed + weak bar0 body
             is_call_tier    := true
             pat_max_hold    := 1
             skip_day        := false
@@ -673,7 +687,7 @@ if h == 9 and m == 32 and not trade_active and opening_pattern == "UNKNOWN"
             logMsg(str.format("INVV bar15s_1=G → CALL entry={0}", str.tostring(close, "#.##")))
             state := 4
         else
-            logMsg("INVV bar15s_1=R — skip")
+            logMsg(str.format("INVV skip — bar15s_1={0} body_pct={1}", bar15s_1_dir, str.tostring(bar0_body_pct_v, "#.##")))
             state := 5
 
     else if is_vshape
