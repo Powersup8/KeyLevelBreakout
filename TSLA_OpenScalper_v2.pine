@@ -1,7 +1,8 @@
 // This Pine Script® code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
 // © mabvvy61
 // TSLA Open Scalper
-// 0DTE/1DTE opening trade decision system (v2.4c)
+// 0DTE/1DTE opening trade decision system (v2.5)
+// v2.5: trade_size=2x on ★ days (CRASH/SURGE pm_r2>0.50) — label/alert/table show "★ PAT DIR 2x"
 // v2.4c: ★ label on CRASH/SURGE entry when pm_r2 > 0.50 (100% WR in research, 0.818 corr to parquet)
 // v2.4b: fix pm_r2 — move ta.correlation to top-level (was inside if-block → computed per-day not per-bar)
 // v2.4a: fix pm_r2 window 30→10 bars (9:20-9:29 matches parquet, corr=0.897 vs -0.243)
@@ -22,7 +23,7 @@
 // v1.2: 2m accel, 15s/30s sub-bars, ORB-based SL, min ORB width
 // Designed for TSLA on 1-min chart with Extended Hours ON
 //@version=6
-indicator("TSLA Open Scalper v2.4c", overlay=true, max_labels_count=50, max_lines_count=20)
+indicator("TSLA Open Scalper v2.5", overlay=true, max_labels_count=50, max_lines_count=20)
 
 // ─── Inputs ────────────────────────────────────────────────
 i_vixSymbol    = input.string("CBOE:VIX", "VIX Symbol", tooltip="VIX data provider. Try TVC:VIX if CBOE:VIX fails.", group="Data")
@@ -168,6 +169,8 @@ var bool  trail_exited  = false // trail stop was hit
 
 // v2.0: Smart entry tracking
 var bool  skip_day       = false // v2.0a: agree=0 → skip trade
+// v2.5: sizing — 1=normal, 2=double (CRASH/SURGE with pm_r2>0.50)
+var int   trade_size     = 1
 var bool  going_right    = false // bar0 went in our direction
 var bool  waiting_confirm = false // waiting for bar1 confirmation
 var bool  waiting_bounce  = false // waiting for dip bounce
@@ -249,6 +252,7 @@ if newSession or (newRTH and not pmSeen)
     bar1_dir          := ""
     bar15s_1_dir      := ""
     bar0_body_pct_v   := 0.0
+    trade_size        := 1
 
 // ─── Prev Day Close ───────────────────────────────────────
 if isRTH
@@ -503,14 +507,17 @@ if is0930 and state == 1
         trade_active  := true
         entry_bar_idx := bar_index
         string patDir  = is_call_tier ? "CALL" : "PUT"
-        // v2.4c: ★ prefix when pm_r2 > 0.50 — high-quality PM trend (100% WR in research)
-        string r2star  = pm_r2 > 0.50 ? "★ " : ""
+        // v2.5: 2x size on ★ days (pm_r2>0.50 = 100% WR in research, 28 days/year)
+        bool   is_star = pm_r2 > 0.50
+        trade_size    := is_star ? 2 : 1
+        string r2star  = is_star ? "★ " : ""
+        string sizeStr = is_star ? " 2x" : ""
         label.new(bar_index, is_call_tier ? low : high + labelOff,
-             str.format("{0}{1} {2} — {3,number,#.##}", r2star, opening_pattern, patDir, open_930),
+             str.format("{0}{1} {2}{3} — {4,number,#.##}", r2star, opening_pattern, patDir, sizeStr, open_930),
              style=is_call_tier ? label.style_label_up : label.style_label_down,
              color=is_call_tier ? #00BFFF : #FF6600, textcolor=color.white, size=size.large)
-        alert(str.format("TSLA {0}{1} {2} — entered at {3,number,#.##} (pm_r2={4})", r2star, opening_pattern, patDir, open_930, str.tostring(pm_r2, "#.##")), alert.freq_once_per_bar)
-        logMsg(str.format("CRASH/SURGE IMMEDIATE ENTRY pat={0} dir={1} open={2} pm_r2={3}{4}", opening_pattern, patDir, str.tostring(open_930, "#.##"), str.tostring(pm_r2, "#.##"), pm_r2 > 0.50 ? " ★HIGH" : ""))
+        alert(str.format("TSLA {0}{1} {2}{3} — entered at {4,number,#.##} (pm_r2={5})", r2star, opening_pattern, patDir, sizeStr, open_930, str.tostring(pm_r2, "#.##")), alert.freq_once_per_bar)
+        logMsg(str.format("CRASH/SURGE ENTRY pat={0} dir={1} open={2} pm_r2={3} size={4}x", opening_pattern, patDir, str.tostring(open_930, "#.##"), str.tostring(pm_r2, "#.##"), trade_size))
         state := 4  // skip to ACTIVE
 
 // ─── STATE 3: ENTRY WATCH (9:30 bar close) ─────────────────
@@ -896,7 +903,7 @@ var table infoTable = table.new(position.top_right, 2, 5,
 
 if i_showTable and (isRTH or isActiveWindow)
     table.cell(infoTable, 0, 0, "TSLA OPEN SCALP", text_color=color.white, text_size=size.small)
-    table.cell(infoTable, 1, 0, "v2.3b", text_color=color.gray, text_size=size.tiny)
+    table.cell(infoTable, 1, 0, "v2.5", text_color=color.gray, text_size=size.tiny)
 
     string stateStr = state == 0 ? "SLEEP" : state == 1 ? "PRE-SCAN" :
                       state == 2 ? "OPENING" : state == 3 ? "ENTRY WATCH" :
@@ -905,9 +912,10 @@ if i_showTable and (isRTH or isActiveWindow)
                        tier == "HIGH" ? color.green : tier == "MED" ? color.lime :
                        tier == "LOW" ? color.gray : tier == "NO-GO" ? color.red : color.white
 
-    // Row 1: State + Tier + agreement + pattern
-    string patStr = opening_pattern != "UNKNOWN" ? " " + opening_pattern : ""
-    string tierAgree = tier != "—" ? str.format("{0} ({1}/5) {2}{3}", tier, confidence, triple_agree ? "3/3" : str.format("{0}/2", agree_count), patStr) : ""
+    // Row 1: State + Tier + agreement + pattern + size
+    string patStr   = opening_pattern != "UNKNOWN" ? " " + opening_pattern : ""
+    string sizeDisp = trade_size == 2 ? " ★2x" : ""
+    string tierAgree = tier != "—" ? str.format("{0} ({1}/5) {2}{3}{4}", tier, confidence, triple_agree ? "3/3" : str.format("{0}/2", agree_count), patStr, sizeDisp) : ""
     table.cell(infoTable, 0, 1, stateStr, text_color=stateColor, text_size=size.normal)
     table.cell(infoTable, 1, 1, tierAgree, text_color=stateColor, text_size=size.small)
 
