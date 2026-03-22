@@ -1,7 +1,9 @@
 // This Pine Script® code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
 // © mabvvy61
 // TSLA Open Scalper
-// 0DTE/1DTE opening trade decision system (v2.5)
+// 0DTE/1DTE opening trade decision system (v2.6)
+// v2.6: DRIFT pm_r2>0.65 regime gate (skip in chop); INVV→follow_binary; FAKEUP pat_max_hold 1→2
+// v2.5a: normalize gap thresholds to % (est_gap/prev_close): -0.5% and -1.25% (was -$2/-$5, not price-scaled)
 // v2.5: trade_size=2x on ★ days (CRASH/SURGE pm_r2>0.50) — label/alert/table show "★ PAT DIR 2x"
 // v2.4c: ★ label on CRASH/SURGE entry when pm_r2 > 0.50 (100% WR in research, 0.818 corr to parquet)
 // v2.4b: fix pm_r2 — move ta.correlation to top-level (was inside if-block → computed per-day not per-bar)
@@ -23,7 +25,7 @@
 // v1.2: 2m accel, 15s/30s sub-bars, ORB-based SL, min ORB width
 // Designed for TSLA on 1-min chart with Extended Hours ON
 //@version=6
-indicator("TSLA Open Scalper v2.5", overlay=true, max_labels_count=50, max_lines_count=20)
+indicator("TSLA Open Scalper v2.6", overlay=true, max_labels_count=50, max_lines_count=20)
 
 // ─── Inputs ────────────────────────────────────────────────
 i_vixSymbol    = input.string("CBOE:VIX", "VIX Symbol", tooltip="VIX data provider. Try TVC:VIX if CBOE:VIX fails.", group="Data")
@@ -333,7 +335,9 @@ if state == 1 and isPremarket
             confidence += 1
         // Check 5: No gap danger
         float est_gap = not na(prev_day_close) ? close - prev_day_close : 0
-        bool gapDangerFlat = est_gap < -2 and not na(pm_late_trend) and math.abs(pm_late_trend) < 0.48
+        // v2.5a: normalize to % so thresholds scale with TSLA price (was -$2/-$5 → now -0.5%/-1.25%)
+        float est_gap_pct = not na(prev_day_close) and prev_day_close > 0 ? est_gap / prev_day_close : 0
+        bool gapDangerFlat = est_gap_pct < -0.005 and not na(pm_late_trend) and math.abs(pm_late_trend) < 0.48
         if not gapDangerFlat
             confidence += 1
 
@@ -348,7 +352,7 @@ if state == 1 and isPremarket
         if gapDangerFlat
             hard_kill := true
         // v1.4b: Gap-down override — large gap-downs kill calls even when PM looks bullish
-        if est_gap < -5
+        if est_gap_pct < -0.0125
             hard_kill := true
         // Low PM volume — skip kill if conf>=4 (high-confidence days trade regardless)
         if pm_vol_5m < i_pmVolMinKill and pm_vol_5m > 0 and confidence < 4
@@ -590,7 +594,8 @@ if is0930 and state == 2
 // v2.3c: DRIFT entry disabled by default (i_tradeDrift=false) — edge front-loaded in bars 0-1
 if h == 9 and m == 31 and state == 3 and not trade_active
     bar1_dir := close >= open ? "G" : "R"
-    if opening_pattern == "UNKNOWN" and i_tradeDrift
+    // v2.6: require trending PM (pm_r2>0.65) — DRIFT in chop loses -$22, in trend gains +$78 (research)
+    if opening_pattern == "UNKNOWN" and i_tradeDrift and pm_r2 > 0.65
         bool is_drift_up = bar0_dir == "G" and bar1_dir == "G"
         bool is_drift_dn = bar0_dir == "R" and bar1_dir == "R"
         if is_drift_up or is_drift_dn
@@ -698,17 +703,20 @@ if h == 9 and m == 32 and not trade_active and opening_pattern == "UNKNOWN"
     if is_invv
         opening_pattern := "INVV"
         // v2.3d: strong-body INVV = failed breakout (WR 44%, -$0.89); weak-body (<30%) = real reversal (WR 77%)
+        // v2.6: follow_binary — is_call_tier from pre-scan stands (always_call only +$1.70, -$3.32 H1)
         if bar15s_1_dir == "G" and bar0_body_pct_v < 0.30  // recovery confirmed + weak bar0 body
-            is_call_tier    := true
             pat_max_hold    := 1
             skip_day        := false
             trade_entry     := close
             trade_active    := true
             entry_bar_idx   := bar_index
-            label.new(bar_index, low, str.format("INVV CALL — {0,number,#.##}", close),
-                 style=label.style_label_up, color=#00BFFF, textcolor=color.white, size=size.large)
-            alert(str.format("TSLA INVV CALL — entered at {0,number,#.##}", close), alert.freq_once_per_bar)
-            logMsg(str.format("INVV bar15s_1=G → CALL entry={0}", str.tostring(close, "#.##")))
+            string invvDir = is_call_tier ? "CALL" : "PUT"
+            label.new(bar_index, is_call_tier ? low : high + labelOff,
+                 str.format("INVV {0} — {1,number,#.##}", invvDir, close),
+                 style=is_call_tier ? label.style_label_up : label.style_label_down,
+                 color=is_call_tier ? #00BFFF : #FF6600, textcolor=color.white, size=size.large)
+            alert(str.format("TSLA INVV {0} — entered at {1,number,#.##}", invvDir, close), alert.freq_once_per_bar)
+            logMsg(str.format("INVV bar15s_1=G body<30 → {0} entry={1}", invvDir, str.tostring(close, "#.##")))
             state := 4
         else
             logMsg(str.format("INVV skip — bar15s_1={0} body_pct={1}", bar15s_1_dir, str.tostring(bar0_body_pct_v, "#.##")))
@@ -734,8 +742,9 @@ if h == 9 and m == 32 and not trade_active and opening_pattern == "UNKNOWN"
 
     else if is_fakeup
         opening_pattern := "FAKEUP"
-        // follow_binary — trust PM confidence direction; exit fast
-        pat_max_hold    := 1
+        // follow_binary — trust PM confidence direction
+        // v2.6: hold 2m (research: 2m=$17.40 peak vs 1m, fades fast after 3m)
+        pat_max_hold    := 2
         skip_day        := false
         trade_entry     := close
         trade_active    := true
@@ -903,7 +912,7 @@ var table infoTable = table.new(position.top_right, 2, 5,
 
 if i_showTable and (isRTH or isActiveWindow)
     table.cell(infoTable, 0, 0, "TSLA OPEN SCALP", text_color=color.white, text_size=size.small)
-    table.cell(infoTable, 1, 0, "v2.5", text_color=color.gray, text_size=size.tiny)
+    table.cell(infoTable, 1, 0, "v2.6", text_color=color.gray, text_size=size.tiny)
 
     string stateStr = state == 0 ? "SLEEP" : state == 1 ? "PRE-SCAN" :
                       state == 2 ? "OPENING" : state == 3 ? "ENTRY WATCH" :
