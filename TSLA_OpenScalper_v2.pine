@@ -1,8 +1,9 @@
 // This Pine Script® code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
 // © mabvvy61
 // TSLA Open Scalper
-// 0DTE/1DTE opening trade decision system (v2.4)
-// v2.4: pm_r2 computed at 9:29 (R² of 30-bar PM linear regression) — logged + table display
+// 0DTE/1DTE opening trade decision system (v2.4a)
+// v2.4a: fix pm_r2 window 30→10 bars (9:20-9:29 matches parquet, corr=0.897 vs -0.243)
+// v2.4: pm_r2 computed at 9:29 (R² of PM linear regression) — logged + table display
 // v2.3d: bar15s_1 gate for CRASH/SURGE (stalling reversal skip) + INVV body filter (<30%)
 // v2.3c: DRIFT entry disabled by default (i_tradeDrift=false) — edge front-loaded in bars 0-1
 // v2.3b: CRASH/SURGE threshold normalized to price (open×0.65%) — scales with TSLA level
@@ -19,7 +20,7 @@
 // v1.2: 2m accel, 15s/30s sub-bars, ORB-based SL, min ORB width
 // Designed for TSLA on 1-min chart with Extended Hours ON
 //@version=6
-indicator("TSLA Open Scalper v2.4", overlay=true, max_labels_count=50, max_lines_count=20)
+indicator("TSLA Open Scalper v2.4a", overlay=true, max_labels_count=50, max_lines_count=20)
 
 // ─── Inputs ────────────────────────────────────────────────
 i_vixSymbol    = input.string("CBOE:VIX", "VIX Symbol", tooltip="VIX data provider. Try TVC:VIX if CBOE:VIX fails.", group="Data")
@@ -111,7 +112,7 @@ var float open_927      = na    // for 2m accel (9:27→9:29)
 var float open_925      = na    // kept for PM volume window
 var float open_920_tsla = na
 var float pm_vol_5m     = 0.0   // PM volume 9:25-9:29
-// v2.4: PM trend linearity — R² of linear regression over last 30 PM bars (9:00-9:29)
+// v2.4: PM trend linearity — R² of linear regression over last 10 PM bars (9:20-9:29)
 var float pm_r2         = 0.0   // 0=choppy, 1=clean linear trend
 
 // Cross-symbol PM
@@ -284,8 +285,9 @@ if state == 1 and isPremarket
         pm_position   := pm_range > 0 ? (close - pm_low) / pm_range : 0.5
         pm_accel      := not na(open_927) ? close - open_927 : na   // v1.2: 2m window (9:27→9:29)
         pm_late_trend := not na(open_920_tsla) ? close - open_920_tsla : na
-        // v2.4: PM trend linearity — R² = corr(price, time)² over last 30 PM bars (9:00-9:29)
-        float corr_r  = ta.correlation(close, bar_index, 30)
+        // v2.4: PM trend linearity — R² = corr(price, time)² over last 10 PM bars (9:20-9:29)
+        // Research uses 15sec bars 9:20-9:29; 10×1m is the best 1m-chart approximation (corr=0.897)
+        float corr_r  = ta.correlation(close, bar_index, 10)
         pm_r2        := na(corr_r) ? 0.0 : corr_r * corr_r
         spy_929 := spy_close
         qqq_929 := qqq_close
