@@ -1,7 +1,8 @@
 // This Pine Script® code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
 // © mabvvy61
 // TSLA Open Scalper
-// 0DTE/1DTE opening trade decision system (v2.3b)
+// 0DTE/1DTE opening trade decision system (v2.3c)
+// v2.3c: DRIFT entry disabled by default (i_tradeDrift=false) — edge front-loaded in bars 0-1
 // v2.3b: CRASH/SURGE threshold normalized to price (open×0.65%) — scales with TSLA level
 // v2.3a: CRASH/SURGE body filter ≥30% — prevents thin-bar false fires (VSHAPE misclassified)
 // v2.3: INVV/VSHAPE (bar15s_1=G→CALL@1m) + FAKEUP (follow_binary@1m) entry at bar2
@@ -16,7 +17,7 @@
 // v1.2: 2m accel, 15s/30s sub-bars, ORB-based SL, min ORB width
 // Designed for TSLA on 1-min chart with Extended Hours ON
 //@version=6
-indicator("TSLA Open Scalper v2.3b", overlay=true, max_labels_count=50, max_lines_count=20)
+indicator("TSLA Open Scalper v2.3c", overlay=true, max_labels_count=50, max_lines_count=20)
 
 // ─── Inputs ────────────────────────────────────────────────
 i_vixSymbol    = input.string("CBOE:VIX", "VIX Symbol", tooltip="VIX data provider. Try TVC:VIX if CBOE:VIX fails.", group="Data")
@@ -27,6 +28,7 @@ i_smartEntry   = input.bool(true, "Smart Entry", tooltip="If going right: wait f
 i_bounceRecov  = input.float(15.0, "Bounce Recovery (%)", minval=5.0, maxval=50.0, step=5.0, tooltip="On dip days: enter when price bounces X% of the dip. Research: 15-20% optimal.", group="Trade")
 i_minOrbWidth  = input.float(1.0, "Min ORB Width ($)", minval=0.25, step=0.25, tooltip="Skip breakout if ORB range < this (noise filter). Research: P25=$3.70, too narrow = false breakouts.", group="Trade")
 i_pmVolMinKill = input.float(3000, "PM Vol Min Kill", minval=0, step=1000, tooltip="Hard kill if PM volume (9:25-9:29) < this. Set 0 to disable. Research: 3000 catches dead days (Sharpe 3.20), 7000 killed 20 winners.", group="Trade")
+i_tradeDrift   = input.bool(false, "Trade DRIFT patterns", tooltip="DRIFT_UP/DN: enter at bar1 close. Disabled: edge is front-loaded in bars 0-1, bar1 entry captures nothing. Re-enable when earlier entry is found.", group="Trade")
 i_showTable    = input.bool(true, "Show Info Table", group="Visuals")
 i_showBG       = input.bool(true, "Show Background Colors", group="Visuals")
 i_debugLog     = input.bool(false, "Log Signals (Pine Logs)", group="Debug")
@@ -548,9 +550,10 @@ if is0930 and state == 2
 // ─── v2.2: Bar1 Pattern Classification + DRIFT Entry (9:31) ──
 // Store bar1_dir always (needed for FAKEDN detection at 9:32)
 // Detect DRIFT_UP (GG) and DRIFT_DN (RR) — both bars same direction, no large range
+// v2.3c: DRIFT entry disabled by default (i_tradeDrift=false) — edge front-loaded in bars 0-1
 if h == 9 and m == 31 and state == 3 and not trade_active
     bar1_dir := close >= open ? "G" : "R"
-    if opening_pattern == "UNKNOWN"
+    if opening_pattern == "UNKNOWN" and i_tradeDrift
         bool is_drift_up = bar0_dir == "G" and bar1_dir == "G"
         bool is_drift_dn = bar0_dir == "R" and bar1_dir == "R"
         if is_drift_up or is_drift_dn
