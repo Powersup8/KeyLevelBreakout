@@ -1,7 +1,8 @@
 // This Pine Script® code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
 // © mabvvy61
 // TSLA Open Scalper
-// 0DTE/1DTE opening trade decision system (v2.3d)
+// 0DTE/1DTE opening trade decision system (v2.4)
+// v2.4: pm_r2 computed at 9:29 (R² of 30-bar PM linear regression) — logged + table display
 // v2.3d: bar15s_1 gate for CRASH/SURGE (stalling reversal skip) + INVV body filter (<30%)
 // v2.3c: DRIFT entry disabled by default (i_tradeDrift=false) — edge front-loaded in bars 0-1
 // v2.3b: CRASH/SURGE threshold normalized to price (open×0.65%) — scales with TSLA level
@@ -18,7 +19,7 @@
 // v1.2: 2m accel, 15s/30s sub-bars, ORB-based SL, min ORB width
 // Designed for TSLA on 1-min chart with Extended Hours ON
 //@version=6
-indicator("TSLA Open Scalper v2.3d", overlay=true, max_labels_count=50, max_lines_count=20)
+indicator("TSLA Open Scalper v2.4", overlay=true, max_labels_count=50, max_lines_count=20)
 
 // ─── Inputs ────────────────────────────────────────────────
 i_vixSymbol    = input.string("CBOE:VIX", "VIX Symbol", tooltip="VIX data provider. Try TVC:VIX if CBOE:VIX fails.", group="Data")
@@ -110,6 +111,8 @@ var float open_927      = na    // for 2m accel (9:27→9:29)
 var float open_925      = na    // kept for PM volume window
 var float open_920_tsla = na
 var float pm_vol_5m     = 0.0   // PM volume 9:25-9:29
+// v2.4: PM trend linearity — R² of linear regression over last 30 PM bars (9:00-9:29)
+var float pm_r2         = 0.0   // 0=choppy, 1=clean linear trend
 
 // Cross-symbol PM
 var float spy_920       = na
@@ -194,6 +197,7 @@ if newSession or (newRTH and not pmSeen)
     open_925          := na
     open_920_tsla     := na
     pm_vol_5m         := 0.0
+    pm_r2             := 0.0
     spy_920           := na
     qqq_920           := na
     spy_929           := na
@@ -280,6 +284,9 @@ if state == 1 and isPremarket
         pm_position   := pm_range > 0 ? (close - pm_low) / pm_range : 0.5
         pm_accel      := not na(open_927) ? close - open_927 : na   // v1.2: 2m window (9:27→9:29)
         pm_late_trend := not na(open_920_tsla) ? close - open_920_tsla : na
+        // v2.4: PM trend linearity — R² = corr(price, time)² over last 30 PM bars (9:00-9:29)
+        float corr_r  = ta.correlation(close, bar_index, 30)
+        pm_r2        := na(corr_r) ? 0.0 : corr_r * corr_r
         spy_929 := spy_close
         qqq_929 := qqq_close
 
@@ -397,6 +404,7 @@ if state == 1 and isPremarket
              str.tostring(nz(pm_vwap), "#.##"),
              str.tostring(nz(pm_ema5), "#.##"),
              str.format("{0}/2", agree_count)))
+        logMsg(str.format("PM_R2={0} (pm_r2>0.50=high-quality CRASH/SURGE day)", str.tostring(pm_r2, "#.##")))
 
 // Extended Hours warning
 if is0930 and not pmSeen
@@ -436,9 +444,10 @@ if is0930 and state == 1
         is_call_tier    := true   // override binary conf: SURGE → always CALL
         pat_max_hold    := 20     // SURGE holds longer (research peak at 14m)
 
-    logMsg(str.format("OPENING entry={0} gap={1} tier={2} direction={3} agree={4}/2 pat={5}",
+    logMsg(str.format("OPENING entry={0} gap={1} tier={2} direction={3} agree={4}/2 pat={5} pm_r2={6}",
          str.tostring(open_930, "#.##"), str.tostring(nz(gap), "#.##"), tier,
-         is_call_tier ? "CALL" : "PUT", agree_count, opening_pattern))
+         is_call_tier ? "CALL" : "PUT", agree_count, opening_pattern,
+         str.tostring(pm_r2, "#.##")))
 
     // Draw entry line
     entryLine := line.new(bar_index, open_930, bar_index + 25, open_930,
@@ -902,7 +911,7 @@ if i_showTable and (isRTH or isActiveWindow)
 
     // Row 3: PM info, ORB info, or Trail info
     if state <= 3 and not trade_active
-        string pmStr = not na(pm_position) ? str.format("PM: pos={0,number,#.##} acc={1,number,#.#}", pm_position, nz(pm_accel)) : "PM: waiting..."
+        string pmStr = not na(pm_position) ? str.format("PM: pos={0,number,#.##} acc={1,number,#.#} r²={2,number,#.##}", pm_position, nz(pm_accel), pm_r2) : "PM: waiting..."
         table.cell(infoTable, 0, 3, pmStr, text_color=color.white, text_size=size.small)
         // Show VWAP/EMA agreement
         string agreeInfo = not na(pm_vwap) ? str.format("VWAP:{0} EMA:{1}", vwap_agrees ? "Y" : "N", ema_agrees ? "Y" : "N") : ""
