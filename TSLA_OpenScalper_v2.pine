@@ -1,7 +1,8 @@
 // This Pine Script® code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
 // © mabvvy61
 // TSLA Open Scalper
-// 0DTE/1DTE opening trade decision system (v2.4b)
+// 0DTE/1DTE opening trade decision system (v2.4c)
+// v2.4c: ★ label on CRASH/SURGE entry when pm_r2 > 0.50 (100% WR in research, 0.818 corr to parquet)
 // v2.4b: fix pm_r2 — move ta.correlation to top-level (was inside if-block → computed per-day not per-bar)
 // v2.4a: fix pm_r2 window 30→10 bars (9:20-9:29 matches parquet, corr=0.897 vs -0.243)
 // v2.4: pm_r2 computed at 9:29 (R² of PM linear regression) — logged + table display
@@ -21,7 +22,7 @@
 // v1.2: 2m accel, 15s/30s sub-bars, ORB-based SL, min ORB width
 // Designed for TSLA on 1-min chart with Extended Hours ON
 //@version=6
-indicator("TSLA Open Scalper v2.4b", overlay=true, max_labels_count=50, max_lines_count=20)
+indicator("TSLA Open Scalper v2.4c", overlay=true, max_labels_count=50, max_lines_count=20)
 
 // ─── Inputs ────────────────────────────────────────────────
 i_vixSymbol    = input.string("CBOE:VIX", "VIX Symbol", tooltip="VIX data provider. Try TVC:VIX if CBOE:VIX fails.", group="Data")
@@ -501,13 +502,15 @@ if is0930 and state == 1
         trade_entry   := open_930
         trade_active  := true
         entry_bar_idx := bar_index
-        string patDir = is_call_tier ? "CALL" : "PUT"
+        string patDir  = is_call_tier ? "CALL" : "PUT"
+        // v2.4c: ★ prefix when pm_r2 > 0.50 — high-quality PM trend (100% WR in research)
+        string r2star  = pm_r2 > 0.50 ? "★ " : ""
         label.new(bar_index, is_call_tier ? low : high + labelOff,
-             str.format("{0} {1} — {2,number,#.##}", opening_pattern, patDir, open_930),
+             str.format("{0}{1} {2} — {3,number,#.##}", r2star, opening_pattern, patDir, open_930),
              style=is_call_tier ? label.style_label_up : label.style_label_down,
              color=is_call_tier ? #00BFFF : #FF6600, textcolor=color.white, size=size.large)
-        alert(str.format("TSLA {0} {1} — entered at {2,number,#.##}", opening_pattern, patDir, open_930), alert.freq_once_per_bar)
-        logMsg(str.format("CRASH/SURGE IMMEDIATE ENTRY pat={0} dir={1} open={2}", opening_pattern, patDir, str.tostring(open_930, "#.##")))
+        alert(str.format("TSLA {0}{1} {2} — entered at {3,number,#.##} (pm_r2={4})", r2star, opening_pattern, patDir, open_930, str.tostring(pm_r2, "#.##")), alert.freq_once_per_bar)
+        logMsg(str.format("CRASH/SURGE IMMEDIATE ENTRY pat={0} dir={1} open={2} pm_r2={3}{4}", opening_pattern, patDir, str.tostring(open_930, "#.##"), str.tostring(pm_r2, "#.##"), pm_r2 > 0.50 ? " ★HIGH" : ""))
         state := 4  // skip to ACTIVE
 
 // ─── STATE 3: ENTRY WATCH (9:30 bar close) ─────────────────
