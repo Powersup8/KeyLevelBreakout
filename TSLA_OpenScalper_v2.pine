@@ -1,7 +1,8 @@
 // This Pine Script® code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
 // © mabvvy61
 // TSLA Open Scalper
-// 0DTE/1DTE opening trade decision system (v2.3a)
+// 0DTE/1DTE opening trade decision system (v2.3b)
+// v2.3b: CRASH/SURGE threshold normalized to price (open×0.65%) — scales with TSLA level
 // v2.3a: CRASH/SURGE body filter ≥30% — prevents thin-bar false fires (VSHAPE misclassified)
 // v2.3: INVV/VSHAPE (bar15s_1=G→CALL@1m) + FAKEUP (follow_binary@1m) entry at bar2
 // v2.2: DRIFT_UP/DN detection+entry at bar1, FAKEDN extended hold (19m) at bar2
@@ -15,7 +16,7 @@
 // v1.2: 2m accel, 15s/30s sub-bars, ORB-based SL, min ORB width
 // Designed for TSLA on 1-min chart with Extended Hours ON
 //@version=6
-indicator("TSLA Open Scalper v2.3a", overlay=true, max_labels_count=50, max_lines_count=20)
+indicator("TSLA Open Scalper v2.3b", overlay=true, max_labels_count=50, max_lines_count=20)
 
 // ─── Inputs ────────────────────────────────────────────────
 i_vixSymbol    = input.string("CBOE:VIX", "VIX Symbol", tooltip="VIX data provider. Try TVC:VIX if CBOE:VIX fails.", group="Data")
@@ -415,13 +416,15 @@ if is0930 and state == 1
     if array.size(sub15_close) >= 2
         bar15s_1_dir := array.get(sub15_close, 1) >= array.get(sub15_close, 0) ? "G" : "R"
     // v2.3a: body filter — require ≥30% body/range to avoid thin-bar false CRASH/SURGE
-    float bar0_body     = math.abs(close - open)
-    float bar0_body_pct = bar0_range > 0 ? bar0_body / bar0_range : 0
-    if close < open and bar0_range > 2.50 and bar0_body_pct >= 0.30
+    // v2.3b: normalize range threshold to price (0.65% of open) — scales with TSLA price level
+    float bar0_body      = math.abs(close - open)
+    float bar0_body_pct  = bar0_range > 0 ? bar0_body / bar0_range : 0
+    float crash_surge_th = open * 0.0065  // ~$2.50 at $385, scales automatically
+    if close < open and bar0_range > crash_surge_th and bar0_body_pct >= 0.30
         opening_pattern := "CRASH"
         is_call_tier    := false  // override binary conf: CRASH → always PUT
         pat_max_hold    := 7
-    else if close >= open and bar0_range > 2.50 and bar0_body_pct >= 0.30
+    else if close >= open and bar0_range > crash_surge_th and bar0_body_pct >= 0.30
         opening_pattern := "SURGE"
         is_call_tier    := true   // override binary conf: SURGE → always CALL
         pat_max_hold    := 20     // SURGE holds longer (research peak at 14m)
@@ -859,7 +862,7 @@ var table infoTable = table.new(position.top_right, 2, 5,
 
 if i_showTable and (isRTH or isActiveWindow)
     table.cell(infoTable, 0, 0, "TSLA OPEN SCALP", text_color=color.white, text_size=size.small)
-    table.cell(infoTable, 1, 0, "v2.3a", text_color=color.gray, text_size=size.tiny)
+    table.cell(infoTable, 1, 0, "v2.3b", text_color=color.gray, text_size=size.tiny)
 
     string stateStr = state == 0 ? "SLEEP" : state == 1 ? "PRE-SCAN" :
                       state == 2 ? "OPENING" : state == 3 ? "ENTRY WATCH" :
